@@ -49,15 +49,43 @@ function cubicAt([p0, p1, p2, p3]: Cubic, t: number): Pt {
   ]
 }
 
+const lerp = (a: Pt, b: Pt, t: number): Pt => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]
+
+/** The part of a cubic from its start to t (de Casteljau). */
+function head([p0, p1, p2, p3]: Cubic, t: number): Cubic {
+  const a = lerp(p0, p1, t)
+  const b = lerp(p1, p2, t)
+  const c = lerp(p2, p3, t)
+  const d = lerp(a, b, t)
+  return [p0, a, d, lerp(d, lerp(b, c, t), t)]
+}
+
+/** A hex colour moved toward black (k < 0) or white (k > 0), integer channels only. */
+export function shade(hex: string, k: number): string {
+  const v = Number.parseInt(hex.slice(1), 16)
+  const target = k < 0 ? 0 : 255
+  const f = Math.abs(k)
+  const ch = (c: number) =>
+    Math.round(c + (target - c) * f)
+      .toString(16)
+      .padStart(2, '0')
+  return `#${ch(v >> 16)}${ch((v >> 8) & 255)}${ch(v & 255)}`
+}
+
 export interface BodyGeometry {
   top: number
   height: number
   radius: number
-  /** right-half outline, base centre to apex */
-  right: readonly [Cubic, Cubic]
+  /** right-half soft curves: base to widest point, widest point to where the facets start */
+  curves: readonly [Cubic, Cubic]
+  /** right-half low-poly crown vertices, from the end of the curves up to the apex */
+  facets: readonly Pt[]
   /** half-width of the body at a given y, by sampling the outline */
   halfWidthAt(y: number): number
 }
+
+/** How far along the crown curve the low-poly facets take over from the soft body. */
+const FACET_START = 0.3
 
 export function body(s: Silhouette): BodyGeometry {
   const height = s.hw * BW
@@ -76,13 +104,21 @@ export function body(s: Silhouette): BodyGeometry {
     [CX + radius * (0.55 - 0.45 * s.crown), top + (yw - top) * 0.28 * s.crown],
     [CX, top],
   ]
+  const curved = head(upper, FACET_START)
+  const facets: Pt[] = []
+  for (let i = 0; i <= s.facets; i++) {
+    facets.push(cubicAt(upper, FACET_START + ((1 - FACET_START) * i) / s.facets))
+  }
   const samples: Pt[] = []
-  for (const seg of [lower, upper]) for (let i = 0; i <= 24; i++) samples.push(cubicAt(seg, i / 24))
+  for (const seg of [lower, curved])
+    for (let i = 0; i <= 24; i++) samples.push(cubicAt(seg, i / 24))
+  samples.push(...facets)
   return {
     top,
     height,
     radius,
-    right: [lower, upper],
+    curves: [lower, curved],
+    facets,
     halfWidthAt(y) {
       let best = 0
       for (let i = 1; i < samples.length; i++) {
@@ -101,11 +137,48 @@ const mirror = ([x, y]: Pt): Pt => [2 * CX - x, y]
 const pt = ([x, y]: Pt) => `${n(x)},${n(y)}`
 
 function bodyPath(g: BodyGeometry): string {
-  const [lower, upper] = g.right
-  const lu = upper.map(mirror).reverse() as unknown as Cubic
-  const ll = lower.map(mirror).reverse() as unknown as Cubic
+  const [lower, curved] = g.curves
   const c = (seg: Cubic) => `C${pt(seg[1])} ${pt(seg[2])} ${pt(seg[3])}`
-  return `M${pt(lower[0])}${c(lower)}${c(upper)}${c(lu)}${c(ll)}Z`
+  const rev = (seg: Cubic) => seg.map(mirror).reverse() as unknown as Cubic
+  const up = g.facets
+    .slice(1)
+    .map((p) => `L${pt(p)}`)
+    .join('')
+  const down = g.facets
+    .slice(0, -1)
+    .reverse()
+    .map((p) => `L${pt(mirror(p))}`)
+    .join('')
+  return `M${pt(lower[0])}${c(lower)}${c(curved)}${up}${down}${c(rev(curved))}${c(rev(lower))}Z`
+}
+
+/** Facet planes stop this far down from the crown, so the face always sits on plain shell. */
+export const FACET_LIMIT = 0.36
+
+/** Tones of the shell for the crown planes: right half in shadow, left half in light. */
+const PLANE_TONES = [-0.1, -0.05, 0.22, 0.1] as const
+
+/**
+ * Low-poly planes on the crown, in flat tones of the shell. Each plane runs from
+ * the outline to the centre ridge, so the planes read as cuts in the crown
+ * rather than patches on it: alternating shadow tones on the right, alternating
+ * light tones on the left.
+ */
+function facetPlanes(g: BodyGeometry, shell: string): string {
+  const limit = g.top + FACET_LIMIT * g.height
+  const band = (a: Pt, b: Pt) => `M${pt(a)}L${pt(b)}L${n(CX)},${n(b[1])}L${n(CX)},${n(a[1])}Z`
+  const paths = ['', '', '', '']
+  for (let i = 0; i < g.facets.length - 1; i++) {
+    let a = g.facets[i] as Pt
+    const b = g.facets[i + 1] as Pt
+    if (b[1] >= limit) continue
+    if (a[1] > limit) a = lerp(a, b, (a[1] - limit) / (a[1] - b[1]))
+    paths[i % 2] += band(a, b)
+    paths[2 + (i % 2)] += band(mirror(a), mirror(b))
+  }
+  return paths
+    .map((d, k) => (d ? `<path d="${d}" fill="${shade(shell, PLANE_TONES[k] as number)}"/>` : ''))
+    .join('')
 }
 
 function antenna(g: BodyGeometry, a: Antennae, side: -1 | 1, accent: string): string {
@@ -276,6 +349,7 @@ export function render(t: Traits, opts: RenderOptions = {}): string {
     antenna(g, t.antennae, -1, t.palette.accent),
     antenna(g, t.antennae, 1, t.palette.accent),
     `<path d="${bodyPath(g)}" fill="${t.palette.shell}"/>`,
+    facetPlanes(g, t.palette.shell),
     small ? '' : extra(g, t),
     face.svg,
     brow(t, face.top, face.outer, small),

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { body, cosDeg, n, render, sinDeg } from '../src/svg'
+import { body, cosDeg, FACET_LIMIT, n, render, shade, sinDeg } from '../src/svg'
 import type { Traits } from '../src/types'
 
 const TRAITS: Traits = {
   gen: 1,
-  silhouette: { hw: 0.96, widest: 0.38, crown: 0.4, base: 0.7 },
+  silhouette: { hw: 0.96, widest: 0.38, crown: 0.6, base: 0.7, facets: 3 },
   antennae: { lean: [22, 30], length: [0.34, 0.46], bend: 0.3, tip: 0.08 },
   eyes: { shape: 'tall', size: 0.12, spacing: 0.38, depth: 0.54, catchlight: 'asymmetric' },
   brow: { shape: 'wave', tilt: 3 },
@@ -46,6 +46,56 @@ describe('body', () => {
     expect(g.halfWidthAt(yw)).toBeCloseTo(g.radius, 1)
     expect(g.halfWidthAt(g.top - 1)).toBe(0)
     expect(g.halfWidthAt(g.top + g.height / 2)).toBeLessThanOrEqual(g.radius + 1e-9)
+  })
+})
+
+describe('shade', () => {
+  it('moves a colour toward black or white on integer channels', () => {
+    expect(shade('#808080', 0)).toBe('#808080')
+    expect(shade('#808080', -1)).toBe('#000000')
+    expect(shade('#808080', 1)).toBe('#ffffff')
+    expect(shade('#a8e0d1', -0.08)).toBe('#9bcec0')
+  })
+})
+
+describe('faceted crown', () => {
+  it('turns the crown into straight segments above the soft body', () => {
+    for (const facets of [2, 3, 4]) {
+      const g = body({ ...TRAITS.silhouette, facets })
+      expect(g.facets).toHaveLength(facets + 1)
+      const apex = g.facets[facets] as readonly [number, number]
+      expect(apex[0]).toBeCloseTo(50, 9)
+      expect(apex[1]).toBeCloseTo(g.top, 9)
+      const outline = render({ ...TRAITS, silhouette: { ...TRAITS.silhouette, facets } })
+      const d = outline.match(/<path d="(M[^"]+Z)" fill="#8fd3c1"\/>/)?.[1] ?? ''
+      expect(d.match(/L/g)).toHaveLength(2 * facets)
+    }
+  })
+
+  it('paints the planes in flat tones of the shell, never gradients', () => {
+    const out = render(TRAITS)
+    for (const k of [-0.1, -0.05, 0.22, 0.1]) {
+      expect(out).toContain(`fill="${shade('#8fd3c1', k)}"`)
+    }
+    expect(out).not.toMatch(/gradient/i)
+  })
+
+  it('keeps every plane above the face, so eyes and brow sit on plain shell', () => {
+    const shells = new Set([-0.1, -0.05, 0.22, 0.1].map((k) => shade('#8fd3c1', k)))
+    for (const widest of [0.2, 0.3, 0.42, 0.46]) {
+      for (const facets of [2, 3, 4]) {
+        const silhouette = { ...TRAITS.silhouette, widest, facets }
+        const g = body(silhouette)
+        const limit = g.top + FACET_LIMIT * g.height + 0.01
+        const out = render({ ...TRAITS, silhouette })
+        for (const [, d, fill] of out.matchAll(/<path d="([^"]+)" fill="(#[0-9a-f]{6})"\/>/g)) {
+          if (!shells.has(fill as string)) continue
+          for (const [, y] of (d as string).matchAll(/,(-?[\d.]+)/g)) {
+            expect(Number(y)).toBeLessThanOrEqual(limit)
+          }
+        }
+      }
+    }
   })
 })
 

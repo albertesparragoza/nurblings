@@ -10,10 +10,12 @@ export interface Silhouette {
   hw: number
   /** height of the widest point, as a fraction of height from the base */
   widest: number
-  /** 0 = round dome, 1 = pointed ogive crown */
+  /** crown sharpness; family crowns are soft ogive points (0.55..1), never domes */
   crown: number
   /** 0 = rounded base, 1 = broad flat base */
   base: number
+  /** straight low-poly segments per side on the crown, above the soft body */
+  facets: number
 }
 
 export interface Antennae {
