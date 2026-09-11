@@ -17,7 +17,7 @@
     "publint": "pnpm -r --filter \"./packages/*\" exec publint",
     "attw": "pnpm -r --filter \"./packages/*\" --filter \"!@nurblings/astro\" exec attw --pack . --profile esm-only",
     "size": "size-limit",
-    "sheet": "tsup scripts/trait-sheet.ts --format esm --out-dir wip/.sheet --silent && node wip/.sheet/trait-sheet.js",
+    "sheet": "tsup scripts/container-sheet.ts --format esm --out-dir wip/.sheet --silent && node wip/.sheet/container-sheet.js",
     "changeset": "changeset"
   },
   "devDependencies": {
