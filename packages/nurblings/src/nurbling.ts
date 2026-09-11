@@ -53,7 +53,9 @@ const PINNABLE: readonly (readonly [keyof NurblingOptions, readonly string[]])[]
 ]
 
 // Every trait is always drawn, then overridden by a pinned option, so pinning
-// one trait never shifts what the seed gives any other.
+// one trait never shifts any other random draw. The one deliberate exception:
+// a pinned shell re-pairs its accent and wear colour from the accents that
+// read on that shell, because the contrast rules come first.
 function draw(seed: string, attempt: number, opts: NurblingOptions): Traits {
   const key = (group: string) => stream(seed, attempt === 0 ? group : `${group}#${attempt}`)
 

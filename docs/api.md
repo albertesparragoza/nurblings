@@ -38,7 +38,9 @@ so `Ada Lovelace`, `ada.lovelace` and `ADA_LOVELACE` hatch the same Nurbling.
 | `shell` | `'mint' \| 'sky' \| 'butter' \| 'peach' \| 'lilac' \| 'sage' \| 'cloud' \| 'blush' \| 'lemon'` | from the seed | Pins the body colour. The accent is still chosen from the colours that read well on it. |
 
 Pinning one trait never changes any other: every trait is drawn from its own
-random stream.
+random stream. The one exception is `shell`: pinning it re-picks the accent
+from the colours that read well on that shell, so the brow and antennae keep
+their contrast.
 
 An unknown value for `gen`, `mood`, `mouth`, `extra`, `silhouette` or `shell`
 throws a `RangeError`, and so does a `size` that is not a positive number.
