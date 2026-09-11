@@ -4,13 +4,15 @@ Thanks for wanting to help raise the Nurblings.
 
 ## Setup
 
-You need Node 20 or newer. pnpm comes through corepack:
+You need Node 22.13 or newer (pnpm 11 requires it; the published packages
+themselves run on any current Node). pnpm comes through corepack:
 
 ```bash
 git clone git@github.com:albertesparragoza/nurblings.git
 cd nurblings
 corepack enable
 pnpm install
+pnpm build
 git config core.hooksPath .githooks
 ```
 
