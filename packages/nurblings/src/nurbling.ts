@@ -41,6 +41,13 @@ const MAX_REROLLS = 8
 
 const SILHOUETTE_NAMES = Object.keys(SILHOUETTES) as SilhouetteName[]
 const SHELL_NAMES = Object.keys(SHELLS) as ShellName[]
+const PINNABLE: readonly (readonly [keyof NurblingOptions, readonly string[]])[] = [
+  ['mood', MOODS.map(([m]) => m)],
+  ['mouth', MOUTHS.map(([m]) => m)],
+  ['extra', EXTRAS.map(([e]) => e)],
+  ['silhouette', SILHOUETTE_NAMES],
+  ['shell', SHELL_NAMES],
+]
 
 // Every trait is always drawn, then overridden by a pinned option, so pinning
 // one trait never shifts what the seed gives any other.
@@ -84,7 +91,8 @@ function draw(seed: string, attempt: number, opts: NurblingOptions): Traits {
 
   return {
     gen: 1,
-    silhouette: SILHOUETTES[silhouetteName],
+    // a copy: callers may mutate what traits() returns without touching the tables
+    silhouette: { ...SILHOUETTES[silhouetteName] },
     antennae: { lean, length: [l0, l1], bend, tip },
     eyes,
     brow,
@@ -132,17 +140,21 @@ export function traits(seed: string, opts: NurblingOptions = {}): Traits {
   if (opts.gen !== undefined && opts.gen !== 1) {
     throw new RangeError(`nurblings: unknown generation ${String(opts.gen)}`)
   }
-  if (opts.silhouette !== undefined && !(opts.silhouette in SILHOUETTES)) {
-    throw new RangeError(`nurblings: unknown silhouette ${String(opts.silhouette)}`)
-  }
-  if (opts.shell !== undefined && !(opts.shell in SHELLS)) {
-    throw new RangeError(`nurblings: unknown shell ${String(opts.shell)}`)
+  for (const [name, allowed] of PINNABLE) {
+    const value = opts[name]
+    if (value !== undefined && !allowed.includes(value as string)) {
+      throw new RangeError(`nurblings: unknown ${name} ${String(value)}`)
+    }
   }
   const normal = normaliseSeed(seed)
   let t = draw(normal, 0, opts)
   for (let attempt = 1; attempt <= MAX_REROLLS && inProtectedRegion(t); attempt++) {
     t = draw(normal, attempt, opts)
   }
+  // No generation 1 accent is near the flagship's, so the region can only be
+  // reached through Nurbi's quiet face. A pinned pale shell could keep landing
+  // on it; a wave brow always breaks it, whatever the rerolls drew.
+  if (inProtectedRegion(t)) t = { ...t, brow: { ...t.brow, shape: 'wave' } }
   return t
 }
 

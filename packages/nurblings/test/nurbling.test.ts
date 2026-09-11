@@ -93,7 +93,7 @@ describe('traits', () => {
     const shells = new Set<string>()
     for (const seed of SEEDS.slice(0, 2_000)) {
       const t = traits(seed)
-      shapes.add(t.silhouette)
+      shapes.add(JSON.stringify(t.silhouette))
       shells.add(t.palette.shell)
     }
     expect(shapes.size).toBe(Object.keys(SILHOUETTES).length)
@@ -104,7 +104,7 @@ describe('traits', () => {
     const free = traits('pinned-seed')
     const pinned = traits('pinned-seed', { mood: 'sleepy', shell: 'lemon', silhouette: 'bell' })
     expect(pinned.mood).toBe('sleepy')
-    expect(pinned.silhouette).toBe(SILHOUETTES.bell)
+    expect(pinned.silhouette).toEqual(SILHOUETTES.bell)
     expect(pinned.palette.shell).toBe(SHELLS.lemon.shell)
     expect(pinned.antennae).toEqual(free.antennae)
     expect(pinned.eyes).toEqual(free.eyes)
@@ -116,6 +116,19 @@ describe('traits', () => {
     expect(() => traits('x', { gen: 2 as 1 })).toThrow(RangeError)
     expect(() => traits('x', { silhouette: 'blob' as 'bell' })).toThrow(RangeError)
     expect(() => traits('x', { shell: 'ivory' as 'mint' })).toThrow(RangeError)
+    expect(() => traits('x', { mood: 'angry' as 'sleepy' })).toThrow(RangeError)
+    expect(() => traits('x', { mouth: 'fangs' as 'dot' })).toThrow(RangeError)
+    expect(() => traits('x', { extra: 'cape' as 'pin' })).toThrow(RangeError)
+    expect(() => nurbling('x', { mood: 'angry' as 'sleepy' })).toThrow(RangeError)
+  })
+
+  it('returns copies, so mutating a result never changes later avatars', () => {
+    const before = nurbling('mutation-probe')
+    const t = traits('mutation-probe')
+    t.silhouette.hw = 2
+    t.silhouette.facets = 9
+    expect(traits('mutation-probe').silhouette.hw).not.toBe(2)
+    expect(nurbling('mutation-probe')).toBe(before)
   })
 })
 
@@ -130,6 +143,20 @@ describe('protected region', () => {
   it("catches a near-ivory shell with Nurbi's quiet face", () => {
     const quiet = { ...base, mouth: 'none', brow: { shape: 'level', tilt: 0 } } as const
     expect(inProtectedRegion({ ...quiet, palette: near })).toBe(true)
+  })
+
+  it('has no generation 1 accent near the flagship accent, so only the quiet face can reach it', () => {
+    for (const [name, hex] of Object.entries(ACCENTS)) {
+      expect(colourDistance(hex, '#ff2f6e'), name).toBeGreaterThanOrEqual(80 * 80)
+    }
+  })
+
+  it('keeps pinned pale shells out of the region for every seed', () => {
+    for (const shell of ['cloud', 'blush'] as const) {
+      for (const seed of SEEDS.slice(0, 5_000)) {
+        expect(inProtectedRegion(traits(seed, { shell, mouth: 'none' }))).toBe(false)
+      }
+    }
   })
 
   it('lets a pale shell with a lively face through', () => {
