@@ -3,6 +3,7 @@
 import {
   ACCENTS,
   type AccentName,
+  ANTENNA_COUNTS,
   BENDS,
   BROWS,
   CATCHLIGHT,
@@ -13,15 +14,17 @@ import {
   MOODS,
   MOUTHS,
   RANGES,
+  SHAPE_JITTER,
   SHELLS,
   type ShellName,
+  SILHOUETTE_WEIGHTS,
   SILHOUETTES,
   type SilhouetteName,
 } from './gen1'
 import { isFlagshipSeed, renderFlagship } from './protect'
 import { normaliseSeed, stream } from './seed'
 import { render } from './svg'
-import type { Extra, Mood, Mouth, RenderOptions, Traits } from './types'
+import type { Extra, Mood, Mouth, RenderOptions, Silhouette, Traits } from './types'
 
 export interface NurblingOptions extends RenderOptions {
   /** trait generation; pin it so an avatar never changes under a future release */
@@ -54,7 +57,19 @@ const PINNABLE: readonly (readonly [keyof NurblingOptions, readonly string[]])[]
 function draw(seed: string, attempt: number, opts: NurblingOptions): Traits {
   const key = (group: string) => stream(seed, attempt === 0 ? group : `${group}#${attempt}`)
 
-  const silhouetteName = opts.silhouette ?? key('body').pick(SILHOUETTE_NAMES)
+  // a locked design, then this seed's own small variation of it and its own plate pattern
+  const b = key('body')
+  const drawnShape = b.weighted(SILHOUETTE_WEIGHTS)
+  const shape = SILHOUETTES[opts.silhouette ?? drawnShape]
+  const wobble = (x: number, j: number) => round(x + b.range(-j, j))
+  const silhouette: Silhouette = {
+    ...shape,
+    hw: wobble(shape.hw, SHAPE_JITTER.hw),
+    width: wobble(shape.width, SHAPE_JITTER.width),
+    belly: wobble(shape.belly, SHAPE_JITTER.belly),
+    tip: wobble(shape.tip, SHAPE_JITTER.tip),
+    grain: 1 + b.int(999_999),
+  }
 
   const c = key('colour')
   const drawnShell = c.pick(SHELL_NAMES)
@@ -73,6 +88,7 @@ function draw(seed: string, attempt: number, opts: NurblingOptions): Traits {
   const lean: [number, number] = [round(a.range(...RANGES.lean)), round(a.range(...RANGES.lean))]
   const bend = a.weighted(BENDS)
   const tip = round(a.range(...RANGES.tip))
+  const count = a.weighted(ANTENNA_COUNTS)
 
   const e = key('eyes')
   const eyes = {
@@ -91,9 +107,9 @@ function draw(seed: string, attempt: number, opts: NurblingOptions): Traits {
 
   return {
     gen: 1,
-    // a copy: callers may mutate what traits() returns without touching the tables
-    silhouette: { ...SILHOUETTES[silhouetteName] },
-    antennae: { lean, length: [l0, l1], bend, tip },
+    // a fresh object: callers may mutate what traits() returns without touching the tables
+    silhouette,
+    antennae: { count, lean, length: [l0, l1], bend, tip },
     eyes,
     brow,
     mouth: opts.mouth ?? mouth,

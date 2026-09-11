@@ -4,17 +4,51 @@
 
 import type { Brow, Catchlight, Extra, EyeShape, Mood, Mouth, Silhouette } from './types'
 
-/** Approved at the trait-sheet gate: soft curved bodies under faceted, soft-point crowns. */
+/**
+ * The locked family designs: exaggerated variations of Nurbi's own outline,
+ * each with its plates in one place. A seed picks one, adds a small variation
+ * of its own (`SHAPE_JITTER`), and always gets its own plate pattern (`grain`).
+ */
 export const SILHOUETTES = {
-  pebble: { hw: 0.94, widest: 0.42, crown: 0.6, base: 0.45, facets: 3 },
-  drop: { hw: 1.14, widest: 0.3, crown: 0.9, base: 0.55, facets: 4 },
-  bean: { hw: 0.86, widest: 0.42, crown: 0.6, base: 0.9, facets: 2 },
-  bell: { hw: 0.98, widest: 0.2, crown: 0.6, base: 1, facets: 3 },
-  acorn: { hw: 1.08, widest: 0.44, crown: 0.75, base: 0.6, facets: 4 },
-  loaf: { hw: 0.82, widest: 0.46, crown: 0.55, base: 1, facets: 3 },
-} as const satisfies Record<string, Silhouette>
+  classic: { hw: 1.02, width: 1, belly: 0.31, tip: 1, rows: 3, cols: 4, plates: 'crown' },
+  basketball: { hw: 1.6, width: 0.7, belly: 0.3, tip: 0.95, rows: 4, cols: 3, plates: 'crown' },
+  squat: { hw: 0.78, width: 1.2, belly: 0.36, tip: 1.1, rows: 3, cols: 5, plates: 'crown' },
+  firm: { hw: 1.2, width: 0.85, belly: 0.28, tip: 0.8, rows: 4, cols: 4, plates: 'crown' },
+  round: { hw: 0.9, width: 1.08, belly: 0.38, tip: 1.2, rows: 3, cols: 5, plates: 'crown' },
+  bell: { hw: 1.32, width: 0.9, belly: 0.44, tip: 1.2, rows: 4, cols: 2, plates: 'side' },
+  wide: { hw: 0.9, width: 1.12, belly: 0.3, tip: 1, rows: 4, cols: 2, plates: 'side' },
+  smooth: { hw: 1.12, width: 0.92, belly: 0.33, tip: 0.9, rows: 3, cols: 4, plates: 'none' },
+  pear: { hw: 1.08, width: 1.04, belly: 0.2, tip: 1.15, rows: 2, cols: 5, plates: 'base' },
+  tall: { hw: 1.42, width: 0.8, belly: 0.3, tip: 1, rows: 2, cols: 4, plates: 'base' },
+} as const satisfies Record<string, Omit<Silhouette, 'grain'>>
 
 export type SilhouetteName = keyof typeof SILHOUETTES
+
+/**
+ * How often each silhouette is drawn: crown plates for half the family, side
+ * plates and smooth bodies a fifth each, base plates a tenth.
+ */
+export const SILHOUETTE_WEIGHTS: readonly (readonly [SilhouetteName, number])[] = [
+  ['classic', 2],
+  ['basketball', 2],
+  ['squat', 2],
+  ['firm', 2],
+  ['round', 2],
+  ['bell', 2],
+  ['wide', 2],
+  ['smooth', 4],
+  ['pear', 1],
+  ['tall', 1],
+]
+
+/** How far a seed may move its silhouette away from the preset, in each direction. */
+export const SHAPE_JITTER = { hw: 0.04, width: 0.03, belly: 0.02, tip: 0.03 } as const
+
+/** Two antennae for most seeds, one on the centre line for about 1 in 8. */
+export const ANTENNA_COUNTS: readonly (readonly [1 | 2, number])[] = [
+  [2, 7],
+  [1, 1],
+]
 
 /** Mid-luminance accents: every one clears 2.5:1 on both the dark and the light ground. */
 export const ACCENTS = {

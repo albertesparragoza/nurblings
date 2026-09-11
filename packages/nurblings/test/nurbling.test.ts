@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ACCENTS, RANGES, SHELLS, SILHOUETTES } from '../src/gen1'
+import { ACCENTS, RANGES, SHAPE_JITTER, SHELLS, SILHOUETTE_WEIGHTS, SILHOUETTES } from '../src/gen1'
 import { colourDistance, inProtectedRegion, nurbling, toDataUri, traits } from '../src/nurbling'
 
 const lin = (c: number) => {
@@ -18,6 +18,8 @@ const contrast = (a: string, b: string) => {
 const DARK = '#16161a'
 const LIGHT = '#f7f5f2'
 const SEEDS = Array.from({ length: 50_000 }, (_, i) => `seed-${i}@example.com`)
+// the seed sweeps are heavy; a busy CI runner needs more than the 5 s default
+const SWEEP = { timeout: 30_000 }
 
 describe('colour rules', () => {
   it('every accent clears 2.5:1 on both the dark and the light ground', () => {
@@ -53,12 +55,22 @@ describe('colour rules', () => {
 })
 
 describe('silhouettes', () => {
-  it('give every crown a soft point and low-poly facets', () => {
+  it('are the ten locked designs, each with its plates in one place', () => {
+    expect(Object.keys(SILHOUETTES)).toHaveLength(10)
     for (const s of Object.values(SILHOUETTES)) {
-      expect(s.crown).toBeGreaterThanOrEqual(0.55)
-      expect(s.facets).toBeGreaterThanOrEqual(2)
-      expect(s.facets).toBeLessThanOrEqual(4)
+      expect(['crown', 'side', 'base', 'none']).toContain(s.plates)
+      expect(s.hw).toBeGreaterThanOrEqual(0.7)
+      expect(s.hw).toBeLessThanOrEqual(1.7)
     }
+  })
+
+  it('weights every design, with crown plates for about half the family', () => {
+    expect(new Set(SILHOUETTE_WEIGHTS.map(([name]) => name))).toEqual(
+      new Set(Object.keys(SILHOUETTES)),
+    )
+    const total = SILHOUETTE_WEIGHTS.reduce((sum, [, w]) => sum + w, 0)
+    const crown = SILHOUETTE_WEIGHTS.filter(([name]) => SILHOUETTES[name].plates === 'crown')
+    expect(crown.reduce((sum, [, w]) => sum + w, 0) / total).toBeCloseTo(0.5, 5)
   })
 })
 
@@ -69,8 +81,8 @@ describe('traits', () => {
     expect(nurbling('ada@example.com')).toBe(nurbling('ada@example.com'))
   })
 
-  // the seed sweeps are heavy; a busy CI runner needs more than the 5 s default
-  it('keeps every family invariant across 50,000 seeds', { timeout: 30_000 }, () => {
+  it('keeps every family invariant across 50,000 seeds', SWEEP, () => {
+    let single = 0
     for (const seed of SEEDS) {
       const t = traits(seed)
       const [l0, l1] = t.antennae.length
@@ -79,6 +91,8 @@ describe('traits', () => {
         expect(l).toBeGreaterThanOrEqual(RANGES.length[0])
         expect(l).toBeLessThanOrEqual(RANGES.length[1])
       }
+      expect([1, 2]).toContain(t.antennae.count)
+      if (t.antennae.count === 1) single++
       expect(Math.abs(t.brow.tilt)).toBeLessThanOrEqual(6)
       expect(t.eyes.depth).toBeGreaterThanOrEqual(RANGES.eyeDepth[0])
       expect(t.eyes.depth).toBeLessThanOrEqual(RANGES.eyeDepth[1])
@@ -87,25 +101,45 @@ describe('traits', () => {
       expect(t.palette.wear).not.toBe(t.palette.accent)
       expect(inProtectedRegion(t)).toBe(false)
     }
+    // one antenna for about 1 in 8 seeds
+    expect(single / SEEDS.length).toBeGreaterThan(0.1)
+    expect(single / SEEDS.length).toBeLessThan(0.15)
   })
 
-  it('reaches every silhouette and every shell', () => {
-    const shapes = new Set<unknown>()
+  it('reaches every plate placement, every shell and both extremes of shape', () => {
+    const zones = new Set<string>()
     const shells = new Set<string>()
+    let tallest = 0
+    let widest = 0
     for (const seed of SEEDS.slice(0, 2_000)) {
       const t = traits(seed)
-      shapes.add(JSON.stringify(t.silhouette))
+      zones.add(t.silhouette.plates ?? 'crown')
       shells.add(t.palette.shell)
+      tallest = Math.max(tallest, t.silhouette.hw)
+      widest = Math.max(widest, t.silhouette.width ?? 1)
     }
-    expect(shapes.size).toBe(Object.keys(SILHOUETTES).length)
+    expect(zones).toEqual(new Set(['crown', 'side', 'base', 'none']))
     expect(shells.size).toBe(Object.keys(SHELLS).length)
+    expect(tallest).toBeGreaterThan(1.5)
+    expect(widest).toBeGreaterThan(1.15)
+  })
+
+  it('varies each seed a little around its design and gives it its own plate pattern', () => {
+    const t = traits('jitter-probe', { silhouette: 'basketball' })
+    const preset = SILHOUETTES.basketball
+    expect(Math.abs(t.silhouette.hw - preset.hw)).toBeLessThanOrEqual(SHAPE_JITTER.hw + 1e-9)
+    expect(Math.abs((t.silhouette.width ?? 1) - preset.width)).toBeLessThanOrEqual(
+      SHAPE_JITTER.width + 1e-9,
+    )
+    expect(t.silhouette.plates).toBe(preset.plates)
+    expect(t.silhouette.grain).not.toBe(traits('another-probe').silhouette.grain)
   })
 
   it('pins a trait without shifting any other', () => {
     const free = traits('pinned-seed')
     const pinned = traits('pinned-seed', { mood: 'sleepy', shell: 'lemon', silhouette: 'bell' })
     expect(pinned.mood).toBe('sleepy')
-    expect(pinned.silhouette).toEqual(SILHOUETTES.bell)
+    expect(pinned.silhouette.plates).toBe(SILHOUETTES.bell.plates)
     expect(pinned.palette.shell).toBe(SHELLS.lemon.shell)
     expect(pinned.antennae).toEqual(free.antennae)
     expect(pinned.eyes).toEqual(free.eyes)
@@ -127,7 +161,7 @@ describe('traits', () => {
     const before = nurbling('mutation-probe')
     const t = traits('mutation-probe')
     t.silhouette.hw = 2
-    t.silhouette.facets = 9
+    t.silhouette.rows = 9
     expect(traits('mutation-probe').silhouette.hw).not.toBe(2)
     expect(nurbling('mutation-probe')).toBe(before)
   })
@@ -152,7 +186,7 @@ describe('protected region', () => {
     }
   })
 
-  it('keeps pinned pale shells out of the region for every seed', { timeout: 30_000 }, () => {
+  it('keeps pinned pale shells out of the region for every seed', SWEEP, () => {
     for (const shell of ['cloud', 'blush'] as const) {
       for (const seed of SEEDS.slice(0, 5_000)) {
         expect(inProtectedRegion(traits(seed, { shell, mouth: 'none' }))).toBe(false)
@@ -175,7 +209,7 @@ describe('nurbling', () => {
     }
   })
 
-  it('never produces the flagship colours for anyone else', { timeout: 30_000 }, () => {
+  it('never produces the flagship colours for anyone else', SWEEP, () => {
     for (const seed of SEEDS.slice(0, 5_000)) {
       const svg = nurbling(seed)
       expect(svg).not.toContain('#efe9df')
