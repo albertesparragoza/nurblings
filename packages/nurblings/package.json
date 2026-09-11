@@ -1,0 +1,37 @@
+{
+  "name": "nurblings",
+  "version": "0.0.0",
+  "description": "Deterministic avatars: any string in, a small curious creature out.",
+  "license": "MIT",
+  "author": "Albert Esparragoza",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/albertesparragoza/nurblings.git",
+    "directory": "packages/nurblings"
+  },
+  "homepage": "https://github.com/albertesparragoza/nurblings#readme",
+  "bugs": "https://github.com/albertesparragoza/nurblings/issues",
+  "keywords": [
+    "avatar",
+    "identicon",
+    "svg",
+    "deterministic",
+    "generative"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}
