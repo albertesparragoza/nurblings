@@ -37,6 +37,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm build
       - run: pnpm test
 
   package:
@@ -50,8 +51,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
-      - run: pnpm typecheck
       - run: pnpm build
+      - run: pnpm typecheck
       - run: pnpm publint
       - run: pnpm attw
       - run: pnpm size
