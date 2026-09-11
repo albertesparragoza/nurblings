@@ -1,3 +1,6 @@
+export type { AccentName, ShellName, SilhouetteName } from './gen1'
+export type { NurblingOptions } from './nurbling'
+export { nurbling, toDataUri, traits } from './nurbling'
 export { isFlagshipSeed } from './protect'
 export { normaliseSeed } from './seed'
 export { render as renderTraits } from './svg'
