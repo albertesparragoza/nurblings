@@ -56,6 +56,13 @@ describe('shade', () => {
     expect(shade('#808080', 1)).toBe('#ffffff')
     expect(shade('#a8e0d1', -0.08)).toBe('#9bcec0')
   })
+
+  it('clamps factors beyond one, so it always returns a valid colour', () => {
+    expect(shade('#ffffff', -2)).toBe('#000000')
+    expect(shade('#000000', 5)).toBe('#ffffff')
+    for (const k of [-3, -1, -0.5, 0, 0.5, 1, 3])
+      expect(shade('#8fd3c1', k)).toMatch(/^#[0-9a-f]{6}$/)
+  })
 })
 
 describe('faceted crown', () => {
@@ -82,11 +89,17 @@ describe('faceted crown', () => {
 
   it('keeps every plane above the face, so eyes and brow sit on plain shell', () => {
     const shells = new Set([-0.1, -0.05, 0.22, 0.1].map((k) => shade('#8fd3c1', k)))
-    for (const widest of [0.2, 0.3, 0.42, 0.46]) {
+    for (const [hw, widest] of [
+      [0.96, 0.2],
+      [0.96, 0.3],
+      [0.95955, 0.3],
+      [0.96, 0.42],
+      [1.14, 0.46],
+    ] as const) {
       for (const facets of [2, 3, 4]) {
-        const silhouette = { ...TRAITS.silhouette, widest, facets }
+        const silhouette = { ...TRAITS.silhouette, hw, widest, facets }
         const g = body(silhouette)
-        const limit = g.top + FACET_LIMIT * g.height + 0.01
+        const limit = g.top + FACET_LIMIT * g.height
         const out = render({ ...TRAITS, silhouette })
         for (const [, d, fill] of out.matchAll(/<path d="([^"]+)" fill="(#[0-9a-f]{6})"\/>/g)) {
           if (!shells.has(fill as string)) continue

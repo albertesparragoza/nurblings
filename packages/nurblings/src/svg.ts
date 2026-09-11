@@ -64,7 +64,7 @@ function head([p0, p1, p2, p3]: Cubic, t: number): Cubic {
 export function shade(hex: string, k: number): string {
   const v = Number.parseInt(hex.slice(1), 16)
   const target = k < 0 ? 0 : 255
-  const f = Math.abs(k)
+  const f = Math.min(1, Math.abs(k))
   const ch = (c: number) =>
     Math.round(c + (target - c) * f)
       .toString(16)
@@ -165,7 +165,8 @@ const PLANE_TONES = [-0.1, -0.05, 0.22, 0.1] as const
  * light tones on the left.
  */
 function facetPlanes(g: BodyGeometry, shell: string): string {
-  const limit = g.top + FACET_LIMIT * g.height
+  // rounded down before clipping, so the two-decimal output never lands below the limit
+  const limit = Math.floor((g.top + FACET_LIMIT * g.height) * 100) / 100
   const band = (a: Pt, b: Pt) => `M${pt(a)}L${pt(b)}L${n(CX)},${n(b[1])}L${n(CX)},${n(a[1])}Z`
   const paths = ['', '', '', '']
   for (let i = 0; i < g.facets.length - 1; i++) {
