@@ -14,8 +14,8 @@ const SEPARATORS = /[\s\p{P}\p{Z}\p{Cc}\p{Cf}]/gu
  * combining marks stripped, separators and whitespace removed.
  *
  * `Ada Lovelace`, `ada.lovelace` and `ＡＤＡ－ＬＯＶＥＬＡＣＥ` all normalise to
- * `adalovelace`. A seed made only of separators normalises to its NFKC form
- * so it still hashes to something of its own.
+ * `adalovelace`. A seed made only of separators, marks or format characters
+ * normalises to its NFKC form so it still hashes to something of its own.
  */
 export function normaliseSeed(seed: string): string {
   const folded = seed.normalize('NFKC').toLowerCase().normalize('NFD').replace(MARKS, '')
