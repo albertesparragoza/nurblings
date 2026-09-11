@@ -228,7 +228,7 @@ function eyes(
   const y = g.top + e.depth * g.height
   const rx = (e.size * BW) / 2
   const ry = rx * RATIO[e.shape]
-  const open = OPEN[t.mood]
+  const open = OPEN[t.mood] ?? 1
   const oy = ry * open
   const cy = y + (ry - oy)
   const dx = (e.spacing * BW) / 2
@@ -248,7 +248,7 @@ function eyes(
 }
 
 function brow(t: Traits, top: number, outer: number, small: boolean): string {
-  const lift = LIFT[t.mood] * BW
+  const lift = (LIFT[t.mood] ?? 0) * BW
   const y = top - 0.045 * BW - lift
   const w = t.brow.shape === 'bold' || small ? 0.034 * BW : 0.02 * BW
   const tilt = Math.max(-6, Math.min(6, t.brow.tilt))
