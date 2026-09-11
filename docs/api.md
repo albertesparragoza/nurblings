@@ -80,6 +80,47 @@ removed. Emoji are kept, so an emoji seed still hatches its own Nurbling.
 `true` for the few reserved seeds that render Nurbi, the family's flagship
 character. Every other seed is kept away from Nurbi's look.
 
+## Your own palette, designs and parts: `createNurblings(config)`
+
+Configure once, use everywhere:
+
+```ts
+import { createNurblings, SILHOUETTES } from 'nurblings'
+
+const { pear, ...designs } = SILHOUETTES
+
+export const avatars = createNurblings({
+  // brand colours replace the built-in palette
+  shells: { mist: '#e4ebf2', sand: '#f1e4cf' },
+  accents: { ink: '#2c5fd9', coral: '#c94f38', forest: '#2e7d4f' },
+  // spread the built-in designs to extend them; leave names out to drop them
+  silhouettes: {
+    ...designs,
+    robot: { hw: 1.1, width: 0.9, belly: 0.3, tip: 0.9, rows: 4, cols: 2, plates: 'side', weight: 2 },
+  },
+  slots: {
+    mouth: false,                                               // drop a part
+    extra: () => '<circle cx="50" cy="80" r="3" fill="#2c5fd9"/>', // replace it
+    brow: (ctx, base) => `<g opacity="0.9">${base()}</g>`,         // wrap it
+  },
+  defaults: { size: 48, background: 'circle' },
+})
+
+avatars.nurbling('ada@example.com')
+avatars.traits('ada@example.com', { silhouette: 'robot' }) // custom names are typed
+```
+
+- **Colours are paired by contrast.** An accent is used only if it reads on
+  light and dark pages (2.5:1) and on a shell (3:1); every shell needs
+  readable eyes and at least two such accents. Setup throws a `RangeError`
+  naming the colour when that is not possible.
+- **Slots** are `backdrop`, `antennae`, `body`, `plates`, `extra`, `eyes`,
+  `brow` and `mouth`, painted in that order. Each receives the traits, the body
+  geometry and the size. Keep your markup free of `id` attributes, so many
+  avatars can share a page.
+- The same config and seed always render the same avatar. Only the default
+  `nurbling()` draws Nurbi for its reserved seeds.
+
 ## Generations and stability
 
 Traits ship in numbered generations. Within a generation, a seed renders the

@@ -1,9 +1,15 @@
 [
   {
-    "name": "nurblings",
+    "name": "nurblings: nurbling()",
+    "path": "packages/nurblings/dist/index.js",
+    "import": "{ nurbling }",
+    "limit": "8 KB"
+  },
+  {
+    "name": "nurblings: everything, createNurblings included",
     "path": "packages/nurblings/dist/index.js",
     "import": "*",
-    "limit": "8 KB"
+    "limit": "8.5 KB"
   },
   {
     "name": "@nurblings/vue",

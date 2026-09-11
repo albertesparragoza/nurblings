@@ -1,9 +1,18 @@
 export type { AccentName, ShellName, SilhouetteName } from './gen1'
-export type { NurblingOptions } from './nurbling'
-export { nurbling, toDataUri, traits } from './nurbling'
+export { ACCENTS, SHELLS, SILHOUETTES } from './gen1'
+export type {
+  ConfiguredOptions,
+  Hex,
+  NurblingOptions,
+  Nurblings,
+  NurblingsConfig,
+  SilhouetteShape,
+} from './nurbling'
+export { contrast, createNurblings, nurbling, toDataUri, traits } from './nurbling'
 export { isFlagshipSeed } from './protect'
 export { normaliseSeed } from './seed'
-export { render as renderTraits } from './svg'
+export type { Slot, SlotContext, SlotName, Slots } from './svg'
+export { render as renderTraits, SLOTS } from './svg'
 export type {
   Antennae,
   Background,
@@ -13,10 +22,12 @@ export type {
   Extra,
   EyeShape,
   Eyes,
+  Frame,
   Generation,
   Mood,
   Mouth,
   Palette,
+  PlateZone,
   RenderOptions,
   Silhouette,
   Traits,

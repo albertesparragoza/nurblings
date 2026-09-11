@@ -518,24 +518,72 @@ export function pixelSize(size: number | undefined): number {
   return s
 }
 
-export function render(t: Traits, opts: RenderOptions = {}): string {
+/** The drawn parts, in paint order. Each can be replaced, wrapped or dropped. */
+export const SLOTS = [
+  'backdrop',
+  'antennae',
+  'body',
+  'plates',
+  'extra',
+  'eyes',
+  'brow',
+  'mouth',
+] as const
+
+export type SlotName = (typeof SLOTS)[number]
+
+/** Read-only all the way down; functions stay callable. */
+export type DeepReadonly<T> = T extends (...args: never[]) => unknown
+  ? T
+  : T extends object
+    ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+    : T
+
+export interface SlotContext {
+  readonly traits: DeepReadonly<Traits>
+  readonly geometry: DeepReadonly<BodyGeometry>
+  readonly size: number
+  /** true at 32 px and below, where the built-in mouth and extras are dropped */
+  readonly small: boolean
+}
+
+/**
+ * A slot override: `false` drops the part; a function replaces it, or wraps it
+ * by calling `base()` for the built-in markup. Output must stay id-free.
+ */
+export type Slot = false | ((ctx: SlotContext, base: () => string) => string)
+
+export type Slots = Partial<Record<SlotName, Slot>>
+
+export function render(t: Traits, opts: RenderOptions = {}, slots: Slots = {}): string {
   const size = pixelSize(opts.size)
   const small = size <= 32
   const g = body(t.silhouette)
   const box = frameBox(g, t, resolveFrame(opts.frame, size))
   const face = eyes(g, t, small)
   const title = esc(opts.title ?? 'Nurbling')
+  const built: Record<SlotName, () => string> = {
+    backdrop: () => backdrop(opts.background ?? 'none', t.palette.background, box),
+    antennae: () =>
+      stems(g, t.antennae)
+        .map((s) => antennaSvg(g, t.antennae, s, t.palette.accent))
+        .join(''),
+    body: () => `<path d="${outlinePath(g)}" fill="${t.palette.shell}"/>`,
+    plates: () => plates(g, t.silhouette, t.palette.shell, small),
+    extra: () => (small ? '' : extra(g, t)),
+    eyes: () => face.svg,
+    brow: () => brow(g, t, face.top, face.outer, small),
+    mouth: () => (small ? '' : mouth(t, face.y, g)),
+  }
+  const ctx: SlotContext = { traits: t, geometry: g, size, small }
   const parts = [
     opts.animate ? SWAY : '',
     `<title>${title}</title>`,
-    backdrop(opts.background ?? 'none', t.palette.background, box),
-    ...stems(g, t.antennae).map((s) => antennaSvg(g, t.antennae, s, t.palette.accent)),
-    `<path d="${outlinePath(g)}" fill="${t.palette.shell}"/>`,
-    plates(g, t.silhouette, t.palette.shell, small),
-    small ? '' : extra(g, t),
-    face.svg,
-    brow(g, t, face.top, face.outer, small),
-    small ? '' : mouth(t, face.y, g),
+    ...SLOTS.map((name) => {
+      const slot = slots[name]
+      if (slot === false) return ''
+      return slot ? slot(ctx, built[name]) : built[name]()
+    }),
   ]
   const vb = `${n(box.x)} ${n(box.y)} ${n(box.s)} ${n(box.s)}`
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${n(size)}" height="${n(size)}" role="img" aria-label="${title}" class="nb">${parts.join('')}</svg>`
