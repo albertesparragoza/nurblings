@@ -532,9 +532,16 @@ export const SLOTS = [
 
 export type SlotName = (typeof SLOTS)[number]
 
+/** Read-only all the way down; functions stay callable. */
+export type DeepReadonly<T> = T extends (...args: never[]) => unknown
+  ? T
+  : T extends object
+    ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+    : T
+
 export interface SlotContext {
-  readonly traits: Traits
-  readonly geometry: BodyGeometry
+  readonly traits: DeepReadonly<Traits>
+  readonly geometry: DeepReadonly<BodyGeometry>
   readonly size: number
   /** true at 32 px and below, where the built-in mouth and extras are dropped */
   readonly small: boolean

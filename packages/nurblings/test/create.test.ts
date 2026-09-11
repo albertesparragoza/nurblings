@@ -34,6 +34,29 @@ describe('createNurblings', () => {
     expect(() => createNurblings({ ...BRAND, shells: { slate: '#555b66' } })).toThrow(/slate/)
     expect(() => createNurblings({ accents: { only: '#2c5fd9' } })).toThrow(RangeError)
     expect(() => createNurblings({ shells: { bad: '#12345' as '#' } })).toThrow(/hex/)
+    // two names for one colour count once
+    expect(() =>
+      createNurblings({
+        shells: { sand: '#f1e4cf' },
+        accents: { ink: '#2c5fd9', ink2: '#2C5FD9' },
+      }),
+    ).toThrow(/sand/)
+    const { classic } = SILHOUETTES
+    expect(() => createNurblings({ silhouettes: { a: { ...classic, weight: 0 } } })).toThrow(
+      /weight/,
+    )
+  })
+
+  it('keeps slot context read-only in its types', () => {
+    createNurblings({
+      slots: {
+        body: (ctx, base) => {
+          // @ts-expect-error slots cannot repaint the shared traits
+          ctx.traits.palette.shell = '#000000'
+          return base()
+        },
+      },
+    })
   })
 
   it('adds and drops designs, typed by name', () => {

@@ -289,6 +289,9 @@ function buildTables(config: NurblingsConfig): Tables {
   const weights = config.silhouettes
     ? Object.entries(config.silhouettes).map(([name, s]) => [name, s.weight ?? 1] as const)
     : SILHOUETTE_WEIGHTS
+  if (weights.some(([, w]) => !(w >= 0)) || !weights.some(([, w]) => w > 0)) {
+    throw new RangeError('nurblings: silhouette weights must be 0 or more, at least one above 0')
+  }
   if (!config.shells && !config.accents) return { ...DEFAULT_TABLES, silhouettes, weights }
 
   const accents = hexes(config.accents ?? ACCENTS).filter(
@@ -302,7 +305,10 @@ function buildTables(config: NurblingsConfig): Tables {
     if (contrast(EYE, shell) < 4.5) {
       throw new RangeError(`nurblings: shell ${name} (${shell}) is too dark for the eyes (4.5:1)`)
     }
-    const paired = accents.filter(([, hex]) => contrast(hex, shell) >= 3).map(([, hex]) => hex)
+    // distinct colours only: two names for one colour cannot be accent and wear at once
+    const paired = [
+      ...new Set(accents.filter(([, hex]) => contrast(hex, shell) >= 3).map(([, hex]) => hex)),
+    ]
     if (paired.length < 2) {
       throw new RangeError(
         `nurblings: shell ${name} (${shell}) needs two accents that read on it at 3:1, has ${paired.length}`,
