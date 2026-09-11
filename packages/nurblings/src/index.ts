@@ -1,3 +1,4 @@
+export { isFlagshipSeed } from './protect'
 export { normaliseSeed } from './seed'
 export { render as renderTraits } from './svg'
 export type {
