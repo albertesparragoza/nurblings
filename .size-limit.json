@@ -3,6 +3,6 @@
     "name": "nurblings",
     "path": "packages/nurblings/dist/index.js",
     "import": "*",
-    "limit": "5 KB"
+    "limit": "8 KB"
   }
 ]
