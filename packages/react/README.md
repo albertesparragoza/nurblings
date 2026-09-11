@@ -47,5 +47,31 @@ export default function Avatar() {
 | `silhouette` | `'classic' \| 'basketball' \| 'squat' \| 'firm' \| 'round' \| 'bell' \| 'wide' \| 'smooth' \| 'pear' \| 'tall'` | derived from seed | Pins the body design; each seed still varies it slightly. |
 | `shell` | `'mint' \| 'sky' \| 'butter' \| 'peach' \| 'lilac' \| 'sage' \| 'cloud' \| 'blush' \| 'lemon'` | derived from seed | Pins the shell colour trait. |
 
+## App-wide configuration
+
+Make an instance with `createNurblings` (your palette, designs, drawn parts,
+defaults), then use it everywhere:
+
+```tsx
+// server components (Next.js default): wrap once
+import { Nurbling, type NurblingProps } from '@nurblings/react'
+import { avatars } from './avatars'
+
+export const Avatar = (props: NurblingProps) => <Nurbling nurblings={avatars} {...props} />
+```
+
+```tsx
+// client components: a provider
+'use client'
+import { Nurbling, NurblingsProvider } from '@nurblings/react/client'
+
+<NurblingsProvider value={avatars}>
+  <Nurbling seed="ada@example.com" />
+</NurblingsProvider>
+```
+
+Server components cannot read React context, which is why the provider lives
+in the client entry.
+
 See the [root README](https://github.com/albertesparragoza/nurblings#readme)
 for the full `nurblings` API and the ideas behind it.

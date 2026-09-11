@@ -45,6 +45,20 @@ safe to use in a Nuxt page, layout or server component.
 | `shell` | `'mint' \| 'sky' \| 'butter' \| 'peach' \| 'lilac' \| 'sage' \| 'cloud' \| 'blush' \| 'lemon'` | Lock the shell colour. |
 | `class` / `style` | | Forwarded to the wrapper `<span>`. |
 
+## App-wide configuration
+
+Make an instance with `createNurblings` (your palette, designs, drawn parts,
+defaults) and install it once; a `nurblings` prop overrides it per component.
+
+```ts
+import { NurblingsPlugin } from '@nurblings/vue'
+import { avatars } from './avatars'
+
+app.use(NurblingsPlugin(avatars))
+```
+
+In Nuxt, do the same from a plugin file with `nuxtApp.vueApp.use(...)`.
+
 See the [root documentation](https://github.com/albertesparragoza/nurblings#readme)
 for the full trait model and the `nurbling`, `traits` and `toDataUri` core
 functions.

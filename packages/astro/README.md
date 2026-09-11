@@ -54,6 +54,18 @@ markup on the server and the client.
 | `class` | `string` | | Forwarded to the wrapper `<span>`. |
 | `style` | `string` | | Forwarded to the wrapper `<span>`, merged after its own inline layout styles. |
 
+For an app-wide configuration, make an instance with `createNurblings` and
+pass it as `nurblings`, or wrap the component once in your own `Avatar.astro`:
+
+```astro
+---
+import { Nurbling } from '@nurblings/astro'
+import { avatars } from '../avatars'
+const props = Astro.props
+---
+<Nurbling nurblings={avatars} {...props} />
+```
+
 Pinning a trait only fixes that one trait; every other trait is still drawn
 from the seed. See the [root docs](https://github.com/albertesparragoza/nurblings#readme)
 for the full `nurblings` API.
