@@ -39,11 +39,12 @@ export default function Avatar() {
 | `background` | `'none' \| 'circle' \| 'squircle' \| 'square'` | `'none'` | Background shape. |
 | `title` | `string` | `'Nurbling'` | Accessible name for the SVG. |
 | `animate` | `boolean` | `false` | Antenna sway on hover, only without reduced motion. |
+| `frame` | `'auto' \| 'full' \| 'portrait'` | `'auto'` | Portrait crops closer on the face for small round avatars; full shows the whole figure. Auto picks portrait at 48 px and below. |
 | `gen` | `1` | `1` | Trait generation. |
 | `mood` | `'neutral' \| 'curious' \| 'pleased' \| 'thinking' \| 'sleepy'` | derived from seed | Pins the mood trait. |
 | `mouth` | `'none' \| 'dot' \| 'line' \| 'smile'` | derived from seed | Pins the mouth trait. |
 | `extra` | `'none' \| 'scarf' \| 'pin' \| 'hat' \| 'collar'` | derived from seed | Pins the extra trait. |
-| `silhouette` | `'pebble' \| 'drop' \| 'bean' \| 'bell' \| 'acorn' \| 'loaf'` | derived from seed | Pins the silhouette trait. |
+| `silhouette` | `'classic' \| 'basketball' \| 'squat' \| 'firm' \| 'round' \| 'bell' \| 'wide' \| 'smooth' \| 'pear' \| 'tall'` | derived from seed | Pins the body design; each seed still varies it slightly. |
 | `shell` | `'mint' \| 'sky' \| 'butter' \| 'peach' \| 'lilac' \| 'sage' \| 'cloud' \| 'blush' \| 'lemon'` | derived from seed | Pins the shell colour trait. |
 
 See the [root README](https://github.com/albertesparragoza/nurblings#readme)
