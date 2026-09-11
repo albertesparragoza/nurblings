@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  hooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell syntax
+        run: bash -n .githooks/*
+      - name: Commit message hook
+        run: |
+          printf 'feat(seed): add seed normalisation\n' > "$RUNNER_TEMP/ok"
+          .githooks/commit-msg "$RUNNER_TEMP/ok"
+          printf 'Added some stuff\n' > "$RUNNER_TEMP/bad"
+          if .githooks/commit-msg "$RUNNER_TEMP/bad"; then
+            echo "commit-msg accepted a non-conventional message"; exit 1
+          fi
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
