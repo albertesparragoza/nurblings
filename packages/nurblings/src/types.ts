@@ -105,6 +105,23 @@ export type Background = 'none' | 'circle' | 'squircle' | 'square'
  */
 export type Frame = 'auto' | 'full' | 'portrait'
 
+/**
+ * Anything that turns a seed into an SVG string: the default package, or an
+ * instance from `createNurblings`. Framework components accept one to render
+ * with an app-wide configuration. `silhouette` and `shell` are plain strings
+ * here so an instance with its own names fits; the instance itself still types
+ * them.
+ */
+export interface NurblingRenderer {
+  nurbling(
+    seed: string,
+    opts?: Omit<import('./nurbling').NurblingOptions, 'silhouette' | 'shell'> & {
+      silhouette?: string
+      shell?: string
+    },
+  ): string
+}
+
 export interface RenderOptions {
   /** rendered width and height in pixels; <= 32 switches to small-size mode */
   size?: number
