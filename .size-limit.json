@@ -11,5 +11,12 @@
     "import": "*",
     "limit": "1 KB",
     "ignore": ["nurblings", "vue"]
+  },
+  {
+    "name": "@nurblings/react",
+    "path": "packages/react/dist/index.js",
+    "import": "*",
+    "limit": "1 KB",
+    "ignore": ["nurblings", "react", "react/jsx-runtime"]
   }
 ]
