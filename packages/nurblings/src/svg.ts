@@ -1,4 +1,4 @@
-// Draft for feat/core-svg: Traits -> SVG string.
+// Traits to SVG string.
 //
 // Stability rules for everything in this file:
 // - only + - * / and Math.sqrt/floor/round/abs/min/max on geometry: those are

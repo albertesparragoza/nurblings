@@ -1,5 +1,5 @@
-// Draft for feat/core-svg: the fully resolved description of one Nurbling.
-// The renderer turns a Traits object into SVG; gen 1 tables (phase 3) pick
+// The fully resolved description of one Nurbling.
+// The renderer turns a Traits object into SVG; generation tables pick
 // Traits from a seed. Nothing here draws the flagship: that is a stored asset.
 
 export type Generation = 1
