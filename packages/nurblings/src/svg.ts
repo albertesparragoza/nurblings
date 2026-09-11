@@ -337,8 +337,17 @@ export const esc = (s: string) =>
 const SWAY =
   '<style>@media (prefers-reduced-motion:no-preference){.nb:hover .nb-al,.nb:focus-visible .nb-al{animation:nb-l 2.4s ease-in-out infinite}.nb:hover .nb-ar,.nb:focus-visible .nb-ar{animation:nb-r 2.4s ease-in-out infinite}.nb-al,.nb-ar{transform-box:view-box;transform-origin:50% 40%}@keyframes nb-l{50%{transform:rotate(-4deg)}}@keyframes nb-r{50%{transform:rotate(3deg)}}}</style>'
 
+/** The rendered size in pixels. Must be a positive, finite number; defaults to 128. */
+export function pixelSize(size: number | undefined): number {
+  const s = size ?? 128
+  if (!Number.isFinite(s) || s <= 0) {
+    throw new RangeError(`nurblings: size must be a positive number, got ${String(s)}`)
+  }
+  return s
+}
+
 export function render(t: Traits, opts: RenderOptions = {}): string {
-  const size = opts.size ?? 128
+  const size = pixelSize(opts.size)
   const small = size <= 32
   const g = body(t.silhouette)
   const face = eyes(g, t, small)
@@ -356,5 +365,5 @@ export function render(t: Traits, opts: RenderOptions = {}): string {
     brow(t, face.top, face.outer, small),
     small ? '' : mouth(t, face.y, g),
   ]
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VIEW} ${VIEW}" width="${size}" height="${size}" role="img" aria-label="${title}" class="nb">${parts.join('')}</svg>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VIEW} ${VIEW}" width="${n(size)}" height="${n(size)}" role="img" aria-label="${title}" class="nb">${parts.join('')}</svg>`
 }

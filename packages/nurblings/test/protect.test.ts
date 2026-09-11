@@ -26,6 +26,13 @@ describe('flagship', () => {
     expect(out).not.toMatch(/<!--/)
   })
 
+  it('prints the size with two decimals and rejects invalid sizes', () => {
+    expect(renderFlagship({ size: 64.126 })).toContain('width="64.13" height="64.13"')
+    for (const size of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(() => renderFlagship({ size })).toThrow(RangeError)
+    }
+  })
+
   it('uses no ids, so it can share a page with other avatars', () => {
     const out = renderFlagship()
     expect(out).not.toMatch(/\sid=/)

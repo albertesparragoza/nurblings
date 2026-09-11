@@ -174,4 +174,12 @@ describe('render', () => {
   it('is deterministic', () => {
     expect(render(TRAITS, { size: 256 })).toBe(svg)
   })
+
+  it('prints the size like every other number and rejects invalid sizes', () => {
+    expect(render(TRAITS, { size: 128.456789 })).toContain('width="128.46" height="128.46"')
+    expect(render(TRAITS, { size: 1e21 })).not.toMatch(/\de[+-]?\d/)
+    for (const size of [0, -10, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(() => render(TRAITS, { size })).toThrow(RangeError)
+    }
+  })
 })
