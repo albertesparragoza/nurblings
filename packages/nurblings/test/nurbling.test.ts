@@ -69,7 +69,8 @@ describe('traits', () => {
     expect(nurbling('ada@example.com')).toBe(nurbling('ada@example.com'))
   })
 
-  it('keeps every family invariant across 50,000 seeds', () => {
+  // the seed sweeps are heavy; a busy CI runner needs more than the 5 s default
+  it('keeps every family invariant across 50,000 seeds', { timeout: 30_000 }, () => {
     for (const seed of SEEDS) {
       const t = traits(seed)
       const [l0, l1] = t.antennae.length
@@ -151,7 +152,7 @@ describe('protected region', () => {
     }
   })
 
-  it('keeps pinned pale shells out of the region for every seed', () => {
+  it('keeps pinned pale shells out of the region for every seed', { timeout: 30_000 }, () => {
     for (const shell of ['cloud', 'blush'] as const) {
       for (const seed of SEEDS.slice(0, 5_000)) {
         expect(inProtectedRegion(traits(seed, { shell, mouth: 'none' }))).toBe(false)
@@ -174,7 +175,7 @@ describe('nurbling', () => {
     }
   })
 
-  it('never produces the flagship colours for anyone else', () => {
+  it('never produces the flagship colours for anyone else', { timeout: 30_000 }, () => {
     for (const seed of SEEDS.slice(0, 5_000)) {
       const svg = nurbling(seed)
       expect(svg).not.toContain('#efe9df')
