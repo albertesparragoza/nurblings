@@ -1,0 +1,33 @@
+name: Bug report
+description: Something renders wrong, crashes, or behaves differently than documented.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: The seed, the options and the package you used. A seed that shows the problem is the most useful thing you can share.
+      placeholder: |
+        nurbling('ada@example.com', { size: 24 })
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package and version
+      placeholder: '@nurblings/react 0.1.0'
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Framework and version, runtime, browser if relevant.
+      placeholder: Next.js 15, Node 22, Firefox 142
