@@ -6,9 +6,9 @@ license covers the code, not the brand.
 The following are not covered by the MIT license and remain reserved by
 Albert Esparragoza:
 
-- the names **Nurbi**, **Nurblings** and **Tangent Node**, used as the name of
+- the names **Nurbi** and **Nurblings**, used as the name of
   a product, character, library or service
-- the flagship character Nurbi (formally Tangent Node) and its artwork
+- the flagship character Nurbi and its artwork
 
 What is fine without asking:
 
