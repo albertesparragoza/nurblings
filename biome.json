@@ -1,6 +1,10 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
   "files": {
     "includes": [
       "**",
@@ -12,10 +16,42 @@
       "!**/coverage"
     ]
   },
-  "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
-  "javascript": {
-    "formatter": { "quoteStyle": "single", "semicolons": "asNeeded", "trailingCommas": "all" }
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
   },
-  "linter": { "enabled": true, "rules": { "preset": "recommended" } },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } }
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "trailingCommas": "all"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended"
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.astro"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedImports": "off",
+            "noUnusedVariables": "off"
+          }
+        }
+      }
+    }
+  ]
 }
