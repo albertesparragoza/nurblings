@@ -1,18 +1,42 @@
 import { describe, expect, it } from 'vitest'
-import { body, cosDeg, FACET_LIMIT, n, render, shade, sinDeg } from '../src/svg'
-import type { Traits } from '../src/types'
+import {
+  body,
+  bodySvg,
+  cosDeg,
+  n,
+  PORTRAIT_UP_TO,
+  profileAt,
+  render,
+  resolveFrame,
+  shade,
+  sinDeg,
+} from '../src/svg'
+import type { Silhouette, Traits } from '../src/types'
+
+const SHELL = '#8fd3c1'
+
+const SHAPE: Silhouette = {
+  hw: 1.02,
+  width: 1,
+  belly: 0.31,
+  tip: 1,
+  rows: 3,
+  cols: 4,
+  grain: 7,
+  plates: 'crown',
+}
 
 const TRAITS: Traits = {
   gen: 1,
-  silhouette: { hw: 0.96, widest: 0.38, crown: 0.6, base: 0.7, facets: 3 },
-  antennae: { lean: [22, 30], length: [0.34, 0.46], bend: 0.3, tip: 0.08 },
+  silhouette: SHAPE,
+  antennae: { count: 2, lean: [22, 30], length: [0.34, 0.46], bend: 0.3, tip: 0.08 },
   eyes: { shape: 'tall', size: 0.12, spacing: 0.38, depth: 0.54, catchlight: 'asymmetric' },
   brow: { shape: 'wave', tilt: 3 },
   mouth: 'smile',
   extra: 'scarf',
   mood: 'curious',
   palette: {
-    shell: '#8fd3c1',
+    shell: SHELL,
     accent: '#2d3a8c',
     eye: '#141414',
     catchlight: '#9a9a9a',
@@ -20,6 +44,16 @@ const TRAITS: Traits = {
     background: '#f4efe6',
   },
 }
+
+/** The body outline path alone. */
+const outline = (s: Silhouette) =>
+  bodySvg(s, SHELL).match(new RegExp(`<path d="([^"]+)" fill="${SHELL}"/>`))?.[1] ?? ''
+
+/** The plate paths alone (every path in a tone other than the shell). */
+const platePaths = (svg: string) =>
+  [...svg.matchAll(/<path d="([^"]+)" fill="(#[0-9a-f]{6})"\/>/g)]
+    .filter(([, , fill]) => fill !== SHELL)
+    .map(([, d]) => d as string)
 
 describe('n', () => {
   it('rounds to two decimals and never prints -0 or exponents', () => {
@@ -39,16 +73,6 @@ describe('trigonometry', () => {
   })
 })
 
-describe('body', () => {
-  it('is widest near the widest point and closed at crown and base', () => {
-    const g = body(TRAITS.silhouette)
-    const yw = 93 - TRAITS.silhouette.widest * g.height
-    expect(g.halfWidthAt(yw)).toBeCloseTo(g.radius, 1)
-    expect(g.halfWidthAt(g.top - 1)).toBe(0)
-    expect(g.halfWidthAt(g.top + g.height / 2)).toBeLessThanOrEqual(g.radius + 1e-9)
-  })
-})
-
 describe('shade', () => {
   it('moves a colour toward black or white on integer channels', () => {
     expect(shade('#808080', 0)).toBe('#808080')
@@ -60,55 +84,117 @@ describe('shade', () => {
   it('clamps factors beyond one, so it always returns a valid colour', () => {
     expect(shade('#ffffff', -2)).toBe('#000000')
     expect(shade('#000000', 5)).toBe('#ffffff')
-    for (const k of [-3, -1, -0.5, 0, 0.5, 1, 3])
-      expect(shade('#8fd3c1', k)).toMatch(/^#[0-9a-f]{6}$/)
+    for (const k of [-3, -1, -0.5, 0, 0.5, 1, 3]) expect(shade(SHELL, k)).toMatch(/^#[0-9a-f]{6}$/)
   })
 })
 
-describe('faceted crown', () => {
-  it('turns the crown into straight segments above the soft body', () => {
-    for (const facets of [2, 3, 4]) {
-      const g = body({ ...TRAITS.silhouette, facets })
-      expect(g.facets).toHaveLength(facets + 1)
-      const apex = g.facets[facets] as readonly [number, number]
-      expect(apex[0]).toBeCloseTo(50, 9)
-      expect(apex[1]).toBeCloseTo(g.top, 9)
-      const outline = render({ ...TRAITS, silhouette: { ...TRAITS.silhouette, facets } })
-      const d = outline.match(/<path d="(M[^"]+Z)" fill="#8fd3c1"\/>/)?.[1] ?? ''
-      expect(d.match(/L/g)).toHaveLength(2 * facets)
-    }
+describe('profile', () => {
+  it("follows Nurbi's outline: soft point at the apex, broad belly, broad base", () => {
+    const nurbi: Silhouette = { ...SHAPE, hw: 1.024, belly: 0.313, tip: 1 }
+    expect(profileAt(nurbi, 0)).toBe(0)
+    expect(profileAt(nurbi, 1)).toBe(0)
+    expect(profileAt(nurbi, 0.313)).toBeCloseTo(1, 2)
+    expect(profileAt(nurbi, 0.03)).toBeGreaterThan(0.5)
   })
 
-  it('paints the planes in flat tones of the shell, never gradients', () => {
-    const out = render(TRAITS)
-    for (const k of [-0.1, -0.05, 0.22, 0.1]) {
-      expect(out).toContain(`fill="${shade('#8fd3c1', k)}"`)
-    }
-    expect(out).not.toMatch(/gradient/i)
-  })
-
-  it('keeps every plane above the face, so eyes and brow sit on plain shell', () => {
-    const shells = new Set([-0.1, -0.05, 0.22, 0.1].map((k) => shade('#8fd3c1', k)))
-    for (const [hw, widest] of [
-      [0.96, 0.2],
-      [0.96, 0.3],
-      [0.95955, 0.3],
-      [0.96, 0.42],
-      [1.14, 0.46],
-    ] as const) {
-      for (const facets of [2, 3, 4]) {
-        const silhouette = { ...TRAITS.silhouette, hw, widest, facets }
-        const g = body(silhouette)
-        const limit = g.top + FACET_LIMIT * g.height
-        const out = render({ ...TRAITS, silhouette })
-        for (const [, d, fill] of out.matchAll(/<path d="([^"]+)" fill="(#[0-9a-f]{6})"\/>/g)) {
-          if (!shells.has(fill as string)) continue
-          for (const [, y] of (d as string).matchAll(/,(-?[\d.]+)/g)) {
-            expect(Number(y)).toBeLessThanOrEqual(limit)
-          }
+  it('stays within the widest half-width for any belly or tip', () => {
+    for (const tip of [0.5, 0.8, 1, 1.2, 2]) {
+      for (const belly of [0.1, 0.2, 0.31, 0.45, 0.6]) {
+        for (let f = 0; f <= 1; f += 0.02) {
+          const h = profileAt({ ...SHAPE, tip, belly }, f)
+          expect(h).toBeGreaterThanOrEqual(0)
+          expect(h).toBeLessThanOrEqual(1)
         }
       }
     }
+  })
+})
+
+describe('plate zones', () => {
+  it('turns the crown outline into straight plate edges, one per band on each side', () => {
+    for (const rows of [2, 3, 4]) {
+      expect(outline({ ...SHAPE, rows }).match(/L/g)).toHaveLength(2 * rows)
+    }
+  })
+
+  it("keeps Nurbi's smooth bottom line under base plates", () => {
+    const shape: Silhouette = { ...SHAPE, plates: 'base' }
+    expect(outline(shape)).not.toContain('L')
+    expect(platePaths(bodySvg(shape, SHELL)).length).toBeGreaterThan(0)
+  })
+
+  it('plates one flank only on the side zone', () => {
+    const g = body({ ...SHAPE, plates: 'side' })
+    const straight = g.outline.filter((v) => v.straight)
+    expect(straight.length).toBeGreaterThan(0)
+    for (const v of straight) expect(v.p[0]).toBeGreaterThan(50)
+  })
+
+  it('draws a fully smooth body with no plates', () => {
+    const svg = bodySvg({ ...SHAPE, plates: 'none' }, SHELL)
+    expect(svg.match(/<path/g)).toHaveLength(1)
+    expect(outline({ ...SHAPE, plates: 'none' })).not.toContain('L')
+  })
+
+  it('keeps crown plates above the face', () => {
+    for (const hw of [0.8, 1.02, 1.6]) {
+      const shape: Silhouette = { ...SHAPE, hw }
+      const g = body(shape)
+      const limit = 93 - 0.6 * g.height + 0.01
+      for (const d of platePaths(bodySvg(shape, SHELL))) {
+        for (const [, y] of d.matchAll(/,(-?[\d.]+)/g)) expect(Number(y)).toBeLessThanOrEqual(limit)
+      }
+    }
+  })
+
+  it('paints plates in flat tones only: no gradients, no seams', () => {
+    const svg = render(TRAITS)
+    expect(svg).not.toMatch(/gradient/i)
+    expect(svg).not.toContain('stroke-linejoin')
+  })
+
+  it('merges plates into a few large ones at small sizes', () => {
+    const quads = (size: number) =>
+      platePaths(render(TRAITS, { size })).reduce((sum, d) => sum + (d.match(/Z/g)?.length ?? 0), 0)
+    expect(quads(24)).toBeLessThan(quads(128))
+  })
+
+  it('varies the plate tones with the grain', () => {
+    expect(bodySvg({ ...SHAPE, grain: 1 }, SHELL)).not.toBe(bodySvg({ ...SHAPE, grain: 2 }, SHELL))
+  })
+})
+
+describe('antennae', () => {
+  const groups = (count: 0 | 1 | 2) =>
+    render({ ...TRAITS, antennae: { ...TRAITS.antennae, count } }).match(/class="nb-a[lr]"/g)
+      ?.length ?? 0
+
+  it('draws the classic pair, a single centre antenna, or none', () => {
+    expect(groups(2)).toBe(2)
+    expect(groups(1)).toBe(1)
+    expect(groups(0)).toBe(0)
+  })
+})
+
+describe('framing', () => {
+  it('picks a portrait at small sizes and the full figure above', () => {
+    expect(resolveFrame(undefined, PORTRAIT_UP_TO)).toBe('portrait')
+    expect(resolveFrame('auto', PORTRAIT_UP_TO + 1)).toBe('full')
+    expect(resolveFrame('full', 24)).toBe('full')
+    expect(resolveFrame('portrait', 256)).toBe('portrait')
+  })
+
+  it('frames in a square view box, closer in for a portrait', () => {
+    const box = (svg: string) =>
+      svg
+        .match(/viewBox="([^"]+)"/)?.[1]
+        ?.split(' ')
+        .map(Number) ?? []
+    const full = box(render(TRAITS, { frame: 'full' }))
+    const portrait = box(render(TRAITS, { frame: 'portrait' }))
+    expect(full[2]).toBe(full[3])
+    expect(portrait[2]).toBe(portrait[3])
+    expect(portrait[2] as number).toBeLessThan(full[2] as number)
   })
 })
 
@@ -139,11 +225,6 @@ describe('render', () => {
     expect(svg).not.toMatch(/\de[+-]?\d/)
   })
 
-  it('draws exactly two antennae with square tips', () => {
-    expect(svg.match(/class="nb-a[lr]"/g)).toHaveLength(2)
-    expect(svg.match(/<rect x=/g)?.length).toBeGreaterThanOrEqual(2)
-  })
-
   it('drops mouth and extras at 32 px and below', () => {
     const plain = { ...TRAITS, mouth: 'none', extra: 'none' } as const
     expect(render(TRAITS, { size: 32 })).toBe(render(plain, { size: 32 }))
@@ -166,9 +247,7 @@ describe('render', () => {
 
   it('draws a backdrop only when asked', () => {
     expect(svg).not.toContain('#f4efe6')
-    expect(render(TRAITS, { background: 'circle' })).toContain(
-      '<circle cx="50" cy="50" r="50" fill="#f4efe6"/>',
-    )
+    expect(render(TRAITS, { background: 'circle' })).toMatch(/<circle [^>]*fill="#f4efe6"\/>/)
   })
 
   it('is deterministic', () => {

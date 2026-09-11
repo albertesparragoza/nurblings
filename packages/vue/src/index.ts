@@ -21,6 +21,7 @@ const OPTION_KEYS = [
   'extra',
   'silhouette',
   'shell',
+  'frame',
 ] as const satisfies readonly (keyof NurblingOptions)[]
 
 export const Nurbling = defineComponent({
@@ -43,6 +44,7 @@ export const Nurbling = defineComponent({
       default: undefined,
     },
     shell: { type: String as PropType<NurblingOptions['shell']>, default: undefined },
+    frame: { type: String as PropType<NurblingOptions['frame']>, default: undefined },
   },
   setup(props) {
     return () => {

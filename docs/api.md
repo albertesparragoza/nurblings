@@ -29,15 +29,18 @@ so `Ada Lovelace`, `ada.lovelace` and `ADA_LOVELACE` hatch the same Nurbling.
 | `background` | `'none' \| 'circle' \| 'squircle' \| 'square'` | `'none'` | A backdrop in a tint of the Nurbling's own shell colour. |
 | `title` | `string` | `'Nurbling'` | The accessible name, used for `aria-label` and `<title>`. Escaped for you. |
 | `animate` | `boolean` | `false` | Antennae sway on hover and keyboard focus. Never moves when the viewer prefers reduced motion. |
+| `frame` | `'auto' \| 'full' \| 'portrait'` | `'auto'` | How the Nurbling sits in its square. `portrait` crops closer on the face, which reads better in small round avatars; `full` shows the whole figure, antennae included. `auto` uses a portrait at 48 px and below and the full figure above. |
 | `gen` | `1` | `1` | The trait generation. Pin it to keep an avatar identical across future releases. |
 | `mood` | `'neutral' \| 'curious' \| 'pleased' \| 'thinking' \| 'sleepy'` | from the seed | Pins the resting mood. |
 | `mouth` | `'none' \| 'dot' \| 'line' \| 'smile'` | from the seed | Pins the mouth. |
 | `extra` | `'none' \| 'scarf' \| 'pin' \| 'hat' \| 'collar'` | from the seed | Pins the extra. |
-| `silhouette` | `'pebble' \| 'drop' \| 'bean' \| 'bell' \| 'acorn' \| 'loaf'` | from the seed | Pins the body shape. |
+| `silhouette` | `'classic' \| 'basketball' \| 'squat' \| 'firm' \| 'round' \| 'bell' \| 'wide' \| 'smooth' \| 'pear' \| 'tall'` | from the seed | Pins the body design. Each seed still varies it slightly and gets its own plate pattern. |
 | `shell` | `'mint' \| 'sky' \| 'butter' \| 'peach' \| 'lilac' \| 'sage' \| 'cloud' \| 'blush' \| 'lemon'` | from the seed | Pins the body colour. The accent is still chosen from the colours that read well on it. |
 
 Pinning one trait never changes any other: every trait is drawn from its own
-random stream.
+random stream. The one exception is `shell`: pinning it re-picks the accent
+from the colours that read well on that shell, so the brow and antennae keep
+their contrast.
 
 An unknown value for `gen`, `mood`, `mouth`, `extra`, `silhouette` or `shell`
 throws a `RangeError`, and so does a `size` that is not a positive number.

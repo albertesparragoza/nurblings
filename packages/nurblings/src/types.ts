@@ -4,21 +4,39 @@
 
 export type Generation = 1
 
-/** Body outline, in body-width units. The flagship's values are never in a pool. */
+/**
+ * Body outline: a mild variation of Nurbi's own measured profile, smooth on the
+ * lower body and plated on the upper head. The flagship's exact values are never
+ * in a pool.
+ */
 export interface Silhouette {
-  /** height / width */
+  /** height / width (Nurbi: 1.024) */
   hw: number
-  /** height of the widest point, as a fraction of height from the base */
-  widest: number
-  /** crown sharpness; family crowns are soft ogive points (0.55..1), never domes */
-  crown: number
-  /** 0 = rounded base, 1 = broad flat base */
-  base: number
-  /** straight low-poly segments per side on the crown, above the soft body */
-  facets: number
+  /** body width as a share of the standard width; below 1 is thinner, above 1 wider */
+  width?: number
+  /** height of the widest point, as a fraction of height from the base (Nurbi: 0.313) */
+  belly: number
+  /** crown fullness near the apex: below 1 a firmer point, above 1 fuller; never pinched */
+  tip: number
+  /** bands of flat plates on the upper head, each ending in a visible outline corner */
+  rows: number
+  /** plates across the head in each band */
+  cols: number
+  /** any whole number; varies the plate tones so no two heads are tiled alike */
+  grain: number
+  /** where the flat plates sit; the rest of the body stays smooth. Defaults to `crown`. */
+  plates?: PlateZone
 }
 
+/**
+ * Where a Nurbling's low-poly plates sit: on the crown (like Nurbi), around the
+ * base with a smooth head, down one flank, or nowhere (fully smooth).
+ */
+export type PlateZone = 'crown' | 'base' | 'side' | 'none'
+
 export interface Antennae {
+  /** how many handles the crown carries; two is the classic Nurbling, one stands on the centre line */
+  count?: 0 | 1 | 2
   /** lean from vertical in degrees, left stem then right stem (both positive = splayed) */
   lean: readonly [number, number]
   /** stem length in body widths, left then right; never equal */
@@ -79,6 +97,14 @@ export interface Traits {
 
 export type Background = 'none' | 'circle' | 'squircle' | 'square'
 
+/**
+ * How the creature sits in its square. `full` fits the whole figure, antenna
+ * tips included. `portrait` crops closer on the face and body for avatar
+ * containers, letting antenna tips run off the edge. `auto` picks portrait at
+ * 48 px and below, where a bigger face reads better, and full above.
+ */
+export type Frame = 'auto' | 'full' | 'portrait'
+
 export interface RenderOptions {
   /** rendered width and height in pixels; <= 32 switches to small-size mode */
   size?: number
@@ -87,4 +113,6 @@ export interface RenderOptions {
   title?: string
   /** sway antennae on hover/focus (always off under prefers-reduced-motion) */
   animate?: boolean
+  /** framing inside the square; defaults to `auto` */
+  frame?: Frame
 }

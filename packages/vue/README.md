@@ -36,11 +36,12 @@ safe to use in a Nuxt page, layout or server component.
 | `background` | `'none' \| 'circle' \| 'squircle' \| 'square'` | Background shape behind the creature. |
 | `title` | `string` | Accessible name, default `"Nurbling"`. |
 | `animate` | `boolean` | Sway the antennae on hover, only when reduced motion is not requested. |
+| `frame` | `'auto' \| 'full' \| 'portrait'` | Portrait crops closer on the face for small round avatars; full shows the whole figure. Auto (the default) picks portrait at 48 px and below. |
 | `gen` | `1` | Trait generation. Pin it so an avatar never changes under a future release. |
 | `mood` | `'neutral' \| 'curious' \| 'pleased' \| 'thinking' \| 'sleepy'` | Lock the mood instead of deriving it from the seed. |
 | `mouth` | `'none' \| 'dot' \| 'line' \| 'smile'` | Lock the mouth. |
 | `extra` | `'none' \| 'scarf' \| 'pin' \| 'hat' \| 'collar'` | Lock the extra. |
-| `silhouette` | `'pebble' \| 'drop' \| 'bean' \| 'bell' \| 'acorn' \| 'loaf'` | Lock the silhouette. |
+| `silhouette` | `'classic' \| 'basketball' \| 'squat' \| 'firm' \| 'round' \| 'bell' \| 'wide' \| 'smooth' \| 'pear' \| 'tall'` | Lock the body design; each seed still varies it slightly. |
 | `shell` | `'mint' \| 'sky' \| 'butter' \| 'peach' \| 'lilac' \| 'sage' \| 'cloud' \| 'blush' \| 'lemon'` | Lock the shell colour. |
 | `class` / `style` | | Forwarded to the wrapper `<span>`. |
 

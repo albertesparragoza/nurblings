@@ -11,7 +11,7 @@ const OPTION_SETS: Omit<NurblingProps, 'seed'>[] = [
   {},
   { size: 32 },
   { background: 'circle', title: 'Bob' },
-  { mood: 'curious', mouth: 'smile', extra: 'scarf', silhouette: 'bean', shell: 'sky' },
+  { mood: 'curious', mouth: 'smile', extra: 'scarf', silhouette: 'pear', shell: 'sky' },
   { animate: true },
 ]
 
