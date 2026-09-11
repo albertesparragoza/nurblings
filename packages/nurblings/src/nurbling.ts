@@ -2,7 +2,6 @@
 
 import {
   ACCENTS,
-  type AccentName,
   ANTENNA_COUNTS,
   BENDS,
   BROWS,
@@ -23,7 +22,7 @@ import {
 } from './gen1'
 import { isFlagshipSeed, renderFlagship } from './protect'
 import { normaliseSeed, stream } from './seed'
-import { render } from './svg'
+import { render, type Slots, shade } from './svg'
 import type { Extra, Mood, Mouth, RenderOptions, Silhouette, Traits } from './types'
 
 export interface NurblingOptions extends RenderOptions {
@@ -37,48 +36,101 @@ export interface NurblingOptions extends RenderOptions {
   shell?: ShellName
 }
 
+/** A colour as 6-digit hex. */
+export type Hex = `#${string}`
+
+/** A body design: a silhouette without its per-seed grain, and how often it is drawn. */
+export type SilhouetteShape = Omit<Silhouette, 'grain'> & { weight?: number }
+
+/** App-wide overrides for `createNurblings`. Each table replaces the built-in one. */
+export interface NurblingsConfig {
+  /** body colours; each is paired only with accents that read on it */
+  shells?: Readonly<Record<string, Hex>>
+  /** brow and antenna colours; ones that do not read on light and dark pages are never used */
+  accents?: Readonly<Record<string, Hex>>
+  /** body designs; spread `SILHOUETTES` to extend the built-in set, leave names out to drop them */
+  silhouettes?: Readonly<Record<string, SilhouetteShape>>
+  /** replace, wrap or drop any drawn part */
+  slots?: Slots
+  /** options applied to every call */
+  defaults?: Omit<NurblingOptions, 'silhouette' | 'shell'>
+}
+
+type NamesOf<T, Fallback extends string> =
+  T extends Readonly<Record<string, unknown>> ? Extract<keyof T, string> : Fallback
+
+/** Options for a configured instance: `silhouette` and `shell` name that instance's own tables. */
+export type ConfiguredOptions<C extends NurblingsConfig> = Omit<
+  NurblingOptions,
+  'silhouette' | 'shell'
+> & {
+  silhouette?: NamesOf<C['silhouettes'], SilhouetteName>
+  shell?: NamesOf<C['shells'], ShellName>
+}
+
+type Pins = Omit<NurblingOptions, 'silhouette' | 'shell'> & { silhouette?: string; shell?: string }
+
+interface ShellEntry {
+  shell: string
+  background: string
+  /** accents that read on this shell, as hex */
+  accents: readonly string[]
+}
+
+interface Tables {
+  shells: Readonly<Record<string, ShellEntry>>
+  silhouettes: Readonly<Record<string, SilhouetteShape>>
+  weights: readonly (readonly [string, number])[]
+}
+
+const DEFAULT_TABLES: Tables = {
+  shells: Object.fromEntries(
+    Object.entries(SHELLS).map(([name, s]) => [
+      name,
+      { shell: s.shell, background: s.background, accents: s.accents.map((a) => ACCENTS[a]) },
+    ]),
+  ),
+  silhouettes: SILHOUETTES,
+  weights: SILHOUETTE_WEIGHTS,
+}
+
 const round = (x: number) => Math.round(x * 100) / 100
 
 /** Most rerolls before a seed stops trying to leave the protected region. */
 const MAX_REROLLS = 8
 
-const SILHOUETTE_NAMES = Object.keys(SILHOUETTES) as SilhouetteName[]
-const SHELL_NAMES = Object.keys(SHELLS) as ShellName[]
-const PINNABLE: readonly (readonly [keyof NurblingOptions, readonly string[]])[] = [
+const CHOICES: readonly (readonly [keyof Pins, readonly string[]])[] = [
   ['mood', MOODS.map(([m]) => m)],
   ['mouth', MOUTHS.map(([m]) => m)],
   ['extra', EXTRAS.map(([e]) => e)],
-  ['silhouette', SILHOUETTE_NAMES],
-  ['shell', SHELL_NAMES],
 ]
 
 // Every trait is always drawn, then overridden by a pinned option, so pinning
 // one trait never shifts any other random draw. The one deliberate exception:
 // a pinned shell re-pairs its accent and wear colour from the accents that
 // read on that shell, because the contrast rules come first.
-function draw(seed: string, attempt: number, opts: NurblingOptions): Traits {
+function draw(seed: string, attempt: number, opts: Pins, tables: Tables): Traits {
   const key = (group: string) => stream(seed, attempt === 0 ? group : `${group}#${attempt}`)
 
-  // a locked design, then this seed's own small variation of it and its own plate pattern
+  // a design, then this seed's own small variation of it and its own plate pattern
   const b = key('body')
-  const drawnShape = b.weighted(SILHOUETTE_WEIGHTS)
-  const shape = SILHOUETTES[opts.silhouette ?? drawnShape]
+  const drawnShape = b.weighted(tables.weights)
+  const shape = tables.silhouettes[opts.silhouette ?? drawnShape] as SilhouetteShape
   const wobble = (x: number, j: number) => round(x + b.range(-j, j))
   const silhouette: Silhouette = {
     ...shape,
     hw: wobble(shape.hw, SHAPE_JITTER.hw),
-    width: wobble(shape.width, SHAPE_JITTER.width),
+    width: wobble(shape.width ?? 1, SHAPE_JITTER.width),
     belly: wobble(shape.belly, SHAPE_JITTER.belly),
     tip: wobble(shape.tip, SHAPE_JITTER.tip),
     grain: 1 + b.int(999_999),
   }
 
   const c = key('colour')
-  const drawnShell = c.pick(SHELL_NAMES)
-  const shellName = opts.shell ?? drawnShell
-  const entry = SHELLS[shellName]
-  const accent: AccentName = c.pick(entry.accents)
-  const wear: AccentName = c.pick(entry.accents.filter((a) => a !== accent))
+  const drawnShell = c.pick(Object.keys(tables.shells))
+  const entry = tables.shells[opts.shell ?? drawnShell] as ShellEntry
+  const accent = c.pick(entry.accents)
+  const wear = c.pick(entry.accents.filter((a) => a !== accent))
 
   const a = key('antennae')
   const [lo, hi] = RANGES.length
@@ -119,10 +171,10 @@ function draw(seed: string, attempt: number, opts: NurblingOptions): Traits {
     mood: opts.mood ?? mood,
     palette: {
       shell: entry.shell,
-      accent: ACCENTS[accent],
+      accent,
       eye: EYE,
       catchlight: CATCHLIGHT,
-      wear: ACCENTS[wear],
+      wear,
       background: entry.background,
     },
   }
@@ -153,27 +205,35 @@ export function inProtectedRegion(t: Traits): boolean {
   return shellNear && (accentNear || quietFace)
 }
 
-/** The traits a seed resolves to, before rendering. */
-export function traits(seed: string, opts: NurblingOptions = {}): Traits {
+function resolve(seed: string, opts: Pins, tables: Tables): Traits {
   if (opts.gen !== undefined && opts.gen !== 1) {
     throw new RangeError(`nurblings: unknown generation ${String(opts.gen)}`)
   }
-  for (const [name, allowed] of PINNABLE) {
+  const pins: readonly (readonly [keyof Pins, readonly string[]])[] = [
+    ...CHOICES,
+    ['silhouette', Object.keys(tables.silhouettes)],
+    ['shell', Object.keys(tables.shells)],
+  ]
+  for (const [name, allowed] of pins) {
     const value = opts[name]
     if (value !== undefined && !allowed.includes(value as string)) {
       throw new RangeError(`nurblings: unknown ${name} ${String(value)}`)
     }
   }
   const normal = normaliseSeed(seed)
-  let t = draw(normal, 0, opts)
+  let t = draw(normal, 0, opts, tables)
   for (let attempt = 1; attempt <= MAX_REROLLS && inProtectedRegion(t); attempt++) {
-    t = draw(normal, attempt, opts)
+    t = draw(normal, attempt, opts, tables)
   }
-  // No generation 1 accent is near the flagship's, so the region can only be
-  // reached through Nurbi's quiet face. A pinned pale shell could keep landing
-  // on it; a wave brow always breaks it, whatever the rerolls drew.
+  // The region can only be reached through Nurbi's quiet face unless a palette
+  // brings its own near-flagship accent; a wave brow always breaks the quiet face.
   if (inProtectedRegion(t)) t = { ...t, brow: { ...t.brow, shape: 'wave' } }
   return t
+}
+
+/** The traits a seed resolves to, before rendering. */
+export function traits(seed: string, opts: NurblingOptions = {}): Traits {
+  return resolve(seed, opts, DEFAULT_TABLES)
 }
 
 /** Any string in, a Nurbling out, as an SVG string. The same string always hatches the same one. */
@@ -186,3 +246,96 @@ export function nurbling(seed: string, opts: NurblingOptions = {}): string {
 export function toDataUri(svg: string): string {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
+
+const LIGHT_GROUND = '#f7f5f2'
+const DARK_GROUND = '#16161a'
+
+/** WCAG contrast ratio between two hex colours. */
+export function contrast(a: string, b: string): number {
+  // ponytail: Math.pow, but only at setup, never per avatar; engines could only
+  // disagree on an exact threshold tie. A fixed sRGB table removes even that.
+  const lum = (hex: string) => {
+    const v = Number.parseInt(hex.slice(1), 16)
+    const lin = (c: number) => {
+      const s = c / 255
+      return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+    }
+    return 0.2126 * lin(v >> 16) + 0.7152 * lin((v >> 8) & 255) + 0.0722 * lin(v & 255)
+  }
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x) as [number, number]
+  return (hi + 0.05) / (lo + 0.05)
+}
+
+function hexes(record: Readonly<Record<string, string>>): [string, string][] {
+  return Object.entries(record).map(([name, hex]) => {
+    const h = hex.toLowerCase()
+    if (!/^#[0-9a-f]{6}$/.test(h)) {
+      throw new RangeError(`nurblings: ${name} must be a 6-digit hex colour, got ${hex}`)
+    }
+    return [name, h]
+  })
+}
+
+/**
+ * The tables a config draws from. Colours are paired by contrast: an accent
+ * must read on light and dark pages and at 3:1 on a shell to be paired with it,
+ * and every shell needs readable eyes and at least two accents.
+ */
+function buildTables(config: NurblingsConfig): Tables {
+  const silhouettes = config.silhouettes ?? SILHOUETTES
+  if (Object.keys(silhouettes).length === 0) {
+    throw new RangeError('nurblings: silhouettes needs at least one design')
+  }
+  const weights = config.silhouettes
+    ? Object.entries(config.silhouettes).map(([name, s]) => [name, s.weight ?? 1] as const)
+    : SILHOUETTE_WEIGHTS
+  if (!config.shells && !config.accents) return { ...DEFAULT_TABLES, silhouettes, weights }
+
+  const accents = hexes(config.accents ?? ACCENTS).filter(
+    ([, hex]) => contrast(hex, LIGHT_GROUND) >= 2.5 && contrast(hex, DARK_GROUND) >= 2.5,
+  )
+  const shells = config.shells
+    ? hexes(config.shells)
+    : Object.entries(SHELLS).map(([name, s]): [string, string] => [name, s.shell])
+  const table: Record<string, ShellEntry> = {}
+  for (const [name, shell] of shells) {
+    if (contrast(EYE, shell) < 4.5) {
+      throw new RangeError(`nurblings: shell ${name} (${shell}) is too dark for the eyes (4.5:1)`)
+    }
+    const paired = accents.filter(([, hex]) => contrast(hex, shell) >= 3).map(([, hex]) => hex)
+    if (paired.length < 2) {
+      throw new RangeError(
+        `nurblings: shell ${name} (${shell}) needs two accents that read on it at 3:1, has ${paired.length}`,
+      )
+    }
+    const builtIn = DEFAULT_TABLES.shells[name]
+    table[name] = {
+      shell,
+      background: builtIn && !config.shells ? builtIn.background : shade(shell, 0.6),
+      accents: paired,
+    }
+  }
+  return { shells: table, silhouettes, weights }
+}
+
+/**
+ * An app-wide configured Nurblings: your palette, your body designs, your drawn
+ * parts, your defaults. The same config and seed always give the same avatar.
+ * Only the default `nurbling()` draws Nurbi for the reserved seeds.
+ */
+export function createNurblings<const C extends NurblingsConfig>(config: C) {
+  const tables = buildTables(config)
+  const merge = (opts: ConfiguredOptions<C>): Pins => ({ ...config.defaults, ...opts })
+  return {
+    traits: (seed: string, opts: ConfiguredOptions<C> = {}): Traits =>
+      resolve(seed, merge(opts), tables),
+    nurbling: (seed: string, opts: ConfiguredOptions<C> = {}): string => {
+      const o = merge(opts)
+      return render(resolve(seed, o, tables), o, config.slots)
+    },
+  }
+}
+
+export type Nurblings<C extends NurblingsConfig = NurblingsConfig> = ReturnType<
+  typeof createNurblings<C>
+>
