@@ -1,0 +1,49 @@
+{
+  "name": "@nurblings/astro",
+  "version": "0.0.0",
+  "description": "Astro component for nurblings: deterministic avatars, any string in, a small curious creature out.",
+  "license": "MIT",
+  "author": "Albert Esparragoza",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/albertesparragoza/nurblings.git",
+    "directory": "packages/astro"
+  },
+  "homepage": "https://github.com/albertesparragoza/nurblings#readme",
+  "bugs": "https://github.com/albertesparragoza/nurblings/issues",
+  "keywords": [
+    "avatar",
+    "identicon",
+    "svg",
+    "deterministic",
+    "generative",
+    "astro"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./Nurbling.astro": "./src/Nurbling.astro",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src/Nurbling.astro",
+    "src/index.ts"
+  ],
+  "scripts": {
+    "build": "echo nothing to build",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "astro": ">=4"
+  },
+  "dependencies": {
+    "nurblings": "workspace:*"
+  },
+  "devDependencies": {
+    "astro": "^7.3.2"
+  }
+}
