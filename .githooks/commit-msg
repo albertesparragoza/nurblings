@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Subject line must be a Conventional Commit. Git's own generated messages
+# (merges, reverts, fixup!/squash!) are left alone.
+set -euo pipefail
+
+subject=$(grep -v '^#' "$1" | sed '/^[[:space:]]*$/d' | head -1)
+
+case "$subject" in
+  "Merge "*|"Revert \""*|"fixup! "*|"squash! "*) exit 0 ;;
+esac
+
+re='^(feat|fix|refactor|chore|docs|style|perf|test|build|ci|revert)(\([a-z0-9][a-z0-9._/-]*\))?!?: [^A-Z[:space:]].*$'
+if ! printf '%s' "$subject" | grep -Eq "$re"; then
+  printf 'commit-msg: "%s" is not a Conventional Commit.\n' "$subject" >&2
+  printf "Use 'type(scope): description', type one of feat|fix|refactor|chore|docs|style|perf|test|build|ci|revert, lower-case.\n" >&2
+  exit 1
+fi
