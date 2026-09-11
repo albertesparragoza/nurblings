@@ -39,5 +39,5 @@ far a deterministic avatar can go.
 
 ## License
 
-Code: [MIT](LICENSE). The names Nurbi, Nurblings and Tangent Node, and the
+Code: [MIT](LICENSE). The names Nurbi and Nurblings, and the
 flagship artwork, are reserved: see [TRADEMARKS.md](TRADEMARKS.md).
