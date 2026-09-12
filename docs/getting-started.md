@@ -9,17 +9,13 @@ repository an avatar without storing anything.
 
 ## Install
 
-Pick the package for your framework. Each one pulls in the core for you.
-
-| You use | Install |
-| --- | --- |
-| Next.js or React | `pnpm add @nurblings/react` |
-| Nuxt or Vue | `pnpm add @nurblings/vue` |
-| Astro | `pnpm add @nurblings/astro` |
-| Anything else, or no framework | `pnpm add nurblings` |
-
-npm, yarn and bun work the same way (`npm install @nurblings/react`, and so
-on).
+```sh
+npm install @nurblings/react    # Next.js, React
+npm install @nurblings/vue      # Nuxt, Vue
+npm install @nurblings/astro    # Astro
+npm install @nurblings/element  # any HTML, Svelte, Angular
+npm install nurblings           # plain JavaScript
+```
 
 ## Your first Nurbling
 
@@ -94,12 +90,9 @@ Attributes mirror the options; see the
 
 ## Alive by default
 
-Every Nurbling breathes, blinks and sways its antennae. It is CSS only, so
-server components still ship no JavaScript, and it stops for reduced motion
-and at 32 px and below. `animate: false` (or `:animate="false"`, or
-`animate="false"` on the element) draws a still avatar;
-[Motion and transitions](motion.md) covers the layers, speed, and moving
-avatars between places.
+Every Nurbling breathes, blinks and sways its antennae, with CSS only. Pass
+`animate: false` for a still avatar; [Motion and transitions](motion.md) has
+the rest.
 
 ## Plain HTML, or an image URL
 

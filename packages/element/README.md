@@ -9,7 +9,7 @@ everywhere.
 ## Install
 
 ```sh
-pnpm add @nurblings/element
+npm install @nurblings/element
 ```
 
 ```ts

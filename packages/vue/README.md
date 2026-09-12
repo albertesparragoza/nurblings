@@ -8,7 +8,7 @@ in Nuxt (including server components) without extra configuration.
 ## Install
 
 ```sh
-pnpm add @nurblings/vue vue
+npm install @nurblings/vue
 ```
 
 ## Usage

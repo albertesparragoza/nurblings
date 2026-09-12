@@ -27,18 +27,13 @@ that turn an intention into a curve. Your handle becomes its handles.
 
 ## Install
 
-Install the package for your framework. Each one brings the zero-dependency
-core with it.
-
 | Framework | Package | Install |
 | --- | --- | --- |
-| Next.js, React | [`@nurblings/react`](packages/react) | `pnpm add @nurblings/react` |
-| Nuxt, Vue | [`@nurblings/vue`](packages/vue) | `pnpm add @nurblings/vue` |
-| Astro | [`@nurblings/astro`](packages/astro) | `pnpm add @nurblings/astro` |
-| Plain HTML, Svelte, Solid, Angular, a CMS | [`@nurblings/element`](packages/element) | `pnpm add @nurblings/element` |
-| JavaScript, no component | [`nurblings`](packages/nurblings) | `pnpm add nurblings` |
-
-npm, yarn and bun work the same way.
+| Next.js, React | [`@nurblings/react`](packages/react) | `npm install @nurblings/react` |
+| Nuxt, Vue | [`@nurblings/vue`](packages/vue) | `npm install @nurblings/vue` |
+| Astro | [`@nurblings/astro`](packages/astro) | `npm install @nurblings/astro` |
+| Any HTML, Svelte, Angular | [`@nurblings/element`](packages/element) | `npm install @nurblings/element` |
+| Plain JavaScript | [`nurblings`](packages/nurblings) | `npm install nurblings` |
 
 ## Quick start
 
