@@ -1,0 +1,136 @@
+/* Near-black canvas, warm ink, one hot accent for UI chrome. The avatars
+   bring their own colour; the page stays neutral around them. */
+:root {
+  --sl-font: "Geist Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sl-font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", monospace;
+  --nb-signature: #ff1557;
+  --nb-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root,
+:root[data-theme="dark"] {
+  --sl-color-accent-low: #3a0716;
+  --sl-color-accent: #ff1557;
+  --sl-color-accent-high: #ffc2d1;
+  --sl-color-white: #f4f1ec;
+  --sl-color-gray-1: #e8e4de;
+  --sl-color-gray-2: #c9c4bd;
+  --sl-color-gray-3: #9d9891;
+  --sl-color-gray-4: #5f5b56;
+  --sl-color-gray-5: #2a2826;
+  --sl-color-gray-6: #141312;
+  --sl-color-black: #080808;
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #ffdbe4;
+  --sl-color-accent: #d10a43;
+  --sl-color-accent-high: #5c0620;
+  --sl-color-white: #141312;
+  --sl-color-gray-1: #2a2826;
+  --sl-color-gray-2: #45423e;
+  --sl-color-gray-3: #6b6761;
+  --sl-color-gray-4: #9d9891;
+  --sl-color-gray-5: #d8d3cc;
+  --sl-color-gray-6: #efebe5;
+  --sl-color-gray-7: #f7f5f1;
+  --sl-color-black: #fcfbf8;
+}
+
+/* Custom pages (home, gallery, brand) share this rhythm. */
+.nb-page {
+  --nb-gap: clamp(1.4rem, 1rem + 1.8vw, 2.6rem);
+  --nb-section: clamp(4rem, 2rem + 8vw, 8rem);
+  display: grid;
+  gap: var(--nb-section);
+  padding-block: clamp(1.5rem, 1rem + 3vw, 3rem) var(--nb-section);
+}
+
+.nb-page h1,
+.nb-page h2 {
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-wrap: balance;
+  color: var(--sl-color-white);
+}
+
+.nb-page h2 {
+  font-size: clamp(1.8rem, 1.2rem + 2.6vw, 3rem);
+  margin-block-end: 0.75rem;
+}
+
+.nb-page p + p {
+  margin-block-start: 1rem;
+}
+
+.nb-page a:not(.nb-button) {
+  color: var(--sl-color-accent);
+}
+
+.nb-lead {
+  font-size: 1.1rem;
+  max-width: 44ch;
+  color: var(--sl-color-gray-2);
+}
+
+.nb-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+}
+
+.nb-cell {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0.5rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 12px;
+  background: var(--sl-color-gray-6);
+}
+
+/* A caption is attached to its figure, never floating above a heading. */
+.nb-caption {
+  font-family: var(--sl-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}
+
+.nb-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 1.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--sl-color-gray-4);
+  color: var(--sl-color-white);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nb-button {
+    transition:
+      border-color 0.2s var(--nb-ease),
+      background 0.2s var(--nb-ease);
+  }
+}
+
+.nb-button:hover {
+  border-color: var(--sl-color-white);
+}
+
+.nb-button[data-primary] {
+  background: var(--sl-color-accent);
+  border-color: var(--sl-color-accent);
+  color: #fff;
+}
+
+.nb-button[data-primary]:hover {
+  background: var(--sl-color-accent-high);
+  border-color: var(--sl-color-accent-high);
+  color: var(--sl-color-black);
+}

@@ -1,0 +1,96 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import { Nurbling } from '@nurblings/astro'
+
+const REPO = 'https://github.com/albertesparragoza/nurblings'
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Nurbi and the brand',
+    description: 'Who Nurbi is, what the licences cover, and how to use the names.',
+    tableOfContents: false,
+  }}
+  hasSidebar={false}
+>
+  <div class="not-content nb-page">
+    <section class="intro">
+      <figure>
+        <Nurbling seed="nurbi" size={280} title="Nurbi" />
+        <figcaption class="nb-caption">Nurbi, the flagship</figcaption>
+      </figure>
+      <div>
+        <h2>Every Nurbling is a relative of Nurbi</h2>
+        <p class="nb-lead">
+          Nurbi's two antennae are bezier control handles: the tools that turn an intention
+          into a curve. Nurblings borrows the idea literally. Your handle becomes its handles.
+        </p>
+        <p class="nb-lead">
+          The family keeps Nurbi's soft lower body and plated crown, then stretches, widens and
+          moves the plates around. Nurbi itself is never generated: a few reserved seeds show the
+          original, and every other seed is kept a clear step away from it.
+        </p>
+      </div>
+    </section>
+
+    <section class="rules">
+      <div>
+        <h2>Free to use</h2>
+        <ul>
+          <li>The library and every avatar it generates, in any project, commercial or not.</li>
+          <li>Generated avatars are public domain under CC0: no attribution needed.</li>
+          <li>Saying your project uses, or is built with, Nurblings.</li>
+          <li>Forking the code under MIT, with a name of your own.</li>
+        </ul>
+      </div>
+      <div>
+        <h2>Ask first</h2>
+        <ul>
+          <li>Publishing a fork, package or service under the Nurblings or Nurbi name.</li>
+          <li>Using Nurbi as a mascot, logo or endorsement.</li>
+        </ul>
+        <p>
+          The full terms are in <a href={`${REPO}/blob/develop/TRADEMARKS.md`}>TRADEMARKS.md</a>.
+          Unsure? <a href={`${REPO}/issues`}>Open an issue</a> and ask.
+        </p>
+      </div>
+    </section>
+  </div>
+</StarlightPage>
+
+<style>
+  .intro {
+    display: grid;
+    gap: var(--nb-gap);
+    align-items: center;
+  }
+
+  .intro figure {
+    display: grid;
+    justify-items: center;
+    gap: 0.75rem;
+    margin: 0;
+  }
+
+  .rules {
+    display: grid;
+    gap: var(--nb-gap);
+  }
+
+  .rules ul {
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.6rem;
+    color: var(--sl-color-gray-2);
+  }
+
+  @media (min-width: 768px) {
+    /* --bp-md */
+    .intro {
+      grid-template-columns: auto 1fr;
+    }
+    .rules {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

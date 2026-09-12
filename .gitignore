@@ -4,6 +4,7 @@ dist/
 build/
 coverage/
 .turbo/
+.astro/
 *.tsbuildinfo
 
 # Secrets. Never commit these; document variables in .env.example instead.
