@@ -24,7 +24,9 @@ credentials*.json
 *.secret
 
 # Editors and OS
-.vscode/
+.vscode/*
+!.vscode/tasks.json
+!.vscode/extensions.json
 .idea/
 *.swp
 .DS_Store
