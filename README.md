@@ -35,7 +35,8 @@ core with it.
 | Next.js, React | [`@nurblings/react`](packages/react) | `pnpm add @nurblings/react` |
 | Nuxt, Vue | [`@nurblings/vue`](packages/vue) | `pnpm add @nurblings/vue` |
 | Astro | [`@nurblings/astro`](packages/astro) | `pnpm add @nurblings/astro` |
-| Anything else | [`nurblings`](packages/nurblings) | `pnpm add nurblings` |
+| Plain HTML, Svelte, Solid, Angular, a CMS | [`@nurblings/element`](packages/element) | `pnpm add @nurblings/element` |
+| JavaScript, no component | [`nurblings`](packages/nurblings) | `pnpm add nurblings` |
 
 npm, yarn and bun work the same way.
 
@@ -68,6 +69,12 @@ import { Nurbling } from '@nurblings/astro'
 <Nurbling seed="ada@example.com" size={48} background="circle" />
 ```
 
+```html
+<!-- Anywhere HTML goes: a custom element -->
+<script type="module">import '@nurblings/element/define'</script>
+<nurbling-avatar seed="ada@example.com" size="48"></nurbling-avatar>
+```
+
 ```ts
 // Plain JavaScript: an SVG string, or a data URI for <img>
 import { nurbling, toDataUri } from 'nurblings'
@@ -89,6 +96,11 @@ option is in the [API reference](docs/api.md).
   the base or nowhere, one or two antennae, eyes, brows, moods, extras and
   paired colours. A few fixed rules keep each one recognisably a Nurbling, even
   at 24 pixels.
+- **Alive.** Every Nurbling breathes, blinks and sways its antennae, with CSS
+  alone. Turn it off with `animate: false`, or keep only the layers you want.
+- **Moves between places.** Give an avatar the same `transition` key in a
+  dialog and a list, wrap the change in `morph()`, and it glides from one to
+  the other: native View Transitions, or a sharp vector FLIP animation.
 - **Server first.** The React and Astro components ship no JavaScript. The
   output is one SVG with no ids, so any number of avatars can share a page.
 - **Accessible.** Every avatar has an accessible name, colours are paired for

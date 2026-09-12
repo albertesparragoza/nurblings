@@ -1,0 +1,98 @@
+import { createNurblings, nurbling } from 'nurblings'
+import { afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { define, NurblingElement, parseAnimate } from '../src/index'
+
+beforeAll(() => define())
+afterEach(() => {
+  document.body.innerHTML = ''
+})
+
+function avatar(attrs: Record<string, string>) {
+  const el = document.createElement('nurbling-avatar')
+  for (const [name, value] of Object.entries(attrs)) el.setAttribute(name, value)
+  document.body.append(el)
+  return el
+}
+
+/** Core output as the DOM serialises it, so the comparison is markup for markup. */
+function parsed(svg: string) {
+  const box = document.createElement('div')
+  box.innerHTML = svg
+  return box.innerHTML
+}
+
+describe('<nurbling-avatar>', () => {
+  it('renders exactly what the core renders', () => {
+    const el = avatar({ seed: 'ada', size: '64', mood: 'curious', background: 'circle' })
+    expect(el).toBeInstanceOf(NurblingElement)
+    expect(el.innerHTML).toBe(
+      parsed(nurbling('ada', { size: 64, mood: 'curious', background: 'circle' })),
+    )
+  })
+
+  it('re-renders when an attribute changes', () => {
+    const el = avatar({ seed: 'ada' })
+    el.setAttribute('seed', 'grace')
+    expect(el.innerHTML).toBe(parsed(nurbling('grace')))
+    el.setAttribute('size', '48')
+    expect(el.innerHTML).toBe(parsed(nurbling('grace', { size: 48 })))
+  })
+
+  it('renders nothing until it has a seed', () => {
+    const el = avatar({ size: '48' })
+    expect(el.innerHTML).toBe('')
+    el.setAttribute('seed', 'ada')
+    expect(el.innerHTML).toContain('<svg')
+    el.removeAttribute('seed')
+    expect(el.innerHTML).toBe('')
+  })
+
+  it('reads animate as off, or as the layers to keep', () => {
+    expect(parseAnimate(null)).toBeUndefined()
+    expect(parseAnimate('')).toBeUndefined()
+    expect(parseAnimate('false')).toBe(false)
+    expect(parseAnimate('blink, hover')).toEqual({
+      breath: false,
+      blink: true,
+      antennae: false,
+      hover: true,
+    })
+    expect(avatar({ seed: 'ada', animate: 'false' }).innerHTML).toBe(
+      parsed(nurbling('ada', { animate: false })),
+    )
+  })
+
+  it('carries the transition key for morph', () => {
+    const el = avatar({ seed: 'ada', transition: 'user-1' })
+    expect(el.querySelector('svg')?.getAttribute('data-nurbling-transition')).toBe('user-1')
+  })
+
+  it('renders with a configured instance', () => {
+    const avatars = createNurblings({
+      shells: { mist: '#e4ebf2', sand: '#f1e4cf' },
+      accents: { ink: '#2c5fd9', coral: '#c94f38', forest: '#2e7d4f' },
+    })
+    const el = avatar({ seed: 'ada' })
+    el.nurblings = avatars
+    expect(el.innerHTML).toBe(parsed(avatars.nurbling('ada')))
+    el.nurblings = undefined
+    expect(el.innerHTML).toBe(parsed(nurbling('ada')))
+  })
+
+  it('sits inline without a baseline gap, unless the page styles it', () => {
+    expect(avatar({ seed: 'ada' }).style.display).toBe('inline-block')
+    const el = document.createElement('nurbling-avatar')
+    el.style.display = 'block'
+    el.setAttribute('seed', 'ada')
+    document.body.append(el)
+    expect(el.style.display).toBe('block')
+  })
+})
+
+describe('define', () => {
+  it('registers under any tag, and is safe to call twice', () => {
+    define('team-avatar')
+    define('team-avatar')
+    expect(document.createElement('team-avatar')).toBeInstanceOf(NurblingElement)
+  })
+})

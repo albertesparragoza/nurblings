@@ -95,6 +95,16 @@ importers:
         specifier: ^7.3.2
         version: 7.3.2(@astrojs/markdown-remark@7.3.1)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.4)(db0@0.3.4)(ioredis@5.11.1)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0)
 
+  packages/element:
+    dependencies:
+      nurblings:
+        specifier: workspace:*
+        version: link:../nurblings
+    devDependencies:
+      happy-dom:
+        specifier: ^20.14.3
+        version: 20.14.3
+
   packages/nurblings: {}
 
   packages/react:
