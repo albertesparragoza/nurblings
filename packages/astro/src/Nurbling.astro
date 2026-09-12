@@ -1,14 +1,16 @@
 ---
-import { type NurblingOptions, nurbling } from 'nurblings'
+import { type NurblingOptions, type NurblingRenderer, nurbling } from 'nurblings'
 
 export interface Props extends NurblingOptions {
   seed: string
   class?: string
   style?: string
+  /** render with an app-wide configuration from `createNurblings` */
+  nurblings?: NurblingRenderer
 }
 
-const { seed, class: className, style, ...opts } = Astro.props
+const { seed, class: className, style, nurblings = { nurbling }, ...opts } = Astro.props
 const wrapperStyle = `display:inline-block;line-height:0${style ? `;${style}` : ''}`
 ---
 
-<span class:list={[className]} style={wrapperStyle} set:html={nurbling(seed, opts)} />
+<span class:list={[className]} style={wrapperStyle} set:html={nurblings.nurbling(seed, opts)} />

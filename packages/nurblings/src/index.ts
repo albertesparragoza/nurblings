@@ -26,6 +26,7 @@ export type {
   Generation,
   Mood,
   Mouth,
+  NurblingRenderer,
   Palette,
   PlateZone,
   RenderOptions,
