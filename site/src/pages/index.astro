@@ -384,6 +384,8 @@ const install = [
 
   /* visible overflow: the avatar flies in from outside the dialog's box */
   dialog {
+    /* the page reset zeroes margins, and auto margins are what centre a modal */
+    margin: auto;
     overflow: visible;
     padding: 2rem;
     border: 1px solid var(--sl-color-gray-5);
