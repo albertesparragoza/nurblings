@@ -1,66 +1,147 @@
+<div align="center">
+
+<img src=".github/assets/family.svg" width="544" alt="Ten Nurblings, one for each body design">
+
 # Nurblings
 
-Any string in, a small curious creature out. The same string always hatches
-the same Nurbling.
+**Any string in, a small curious creature out.**<br>
+Deterministic SVG avatars for React, Next.js, Vue, Nuxt, Astro and plain JavaScript.
 
-Every Nurbling is a relative of **Nurbi**, a pebble-shaped character whose two
-antennae are bezier control handles: the tools that turn an intention into a
-curve. Nurblings borrows the idea literally. Your handle becomes its handles.
+[![npm](https://img.shields.io/npm/v/nurblings?color=ff1557&label=npm)](https://www.npmjs.com/package/nurblings)
+[![bundle size](https://img.shields.io/bundlejs/size/nurblings)](https://bundlejs.com/?q=nurblings)
+[![types](https://img.shields.io/npm/types/nurblings)](packages/nurblings/src/index.ts)
+[![CI](https://github.com/albertesparragoza/nurblings/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/albertesparragoza/nurblings/actions/workflows/ci.yml)
+[![code: MIT](https://img.shields.io/badge/code-MIT-blue)](LICENSE)
+[![avatars: CC0](https://img.shields.io/badge/avatars-CC0-lightgrey)](https://creativecommons.org/publicdomain/zero/1.0/)
 
-> Status: pre-release. The API is settled; the first version is on its way to
-> npm.
+[Getting started](docs/getting-started.md) · [API](docs/api.md) · [Contributing](CONTRIBUTING.md)
+
+</div>
+
+The same string always hatches the same Nurbling. Every one is a relative of
+**Nurbi**, a character whose two antennae are bezier control handles: the tools
+that turn an intention into a curve. Your handle becomes its handles.
+
+> [!NOTE]
+> Pre-release. The API is settled and the first version is on its way to npm.
 
 ## Install
 
-| You use | Install |
-| --- | --- |
-| Next.js or React | `pnpm add @nurblings/react` |
-| Nuxt or Vue | `pnpm add @nurblings/vue` |
-| Astro | `pnpm add @nurblings/astro` |
-| Anything else | `pnpm add nurblings` |
+Install the package for your framework. Each one brings the zero-dependency
+core with it.
 
-## Use
+| Framework | Package | Install |
+| --- | --- | --- |
+| Next.js, React | [`@nurblings/react`](packages/react) | `pnpm add @nurblings/react` |
+| Nuxt, Vue | [`@nurblings/vue`](packages/vue) | `pnpm add @nurblings/vue` |
+| Astro | [`@nurblings/astro`](packages/astro) | `pnpm add @nurblings/astro` |
+| Anything else | [`nurblings`](packages/nurblings) | `pnpm add nurblings` |
 
-```ts
-import { nurbling } from 'nurblings'
+npm, yarn and bun work the same way.
 
-nurbling('ada@example.com')                                  // SVG string
-nurbling('ada@example.com', { size: 48, title: 'Ada Lovelace' })
-```
+## Quick start
 
 ```tsx
+// React and Next.js: a server component, no client JavaScript
 import { Nurbling } from '@nurblings/react'
 
 <Nurbling seed={user.email} size={48} title={user.name} />
 ```
 
-Vue, Nuxt, Astro and plain HTML are in the
-[getting started guide](docs/getting-started.md). Every option is in the
-[API reference](docs/api.md).
+```vue
+<!-- Vue and Nuxt -->
+<script setup>
+import { Nurbling } from '@nurblings/vue'
+</script>
 
-## What you get
+<template>
+  <Nurbling :seed="user.email" :size="48" :title="user.name" />
+</template>
+```
+
+```astro
+---
+// Astro: static SVG, zero client JavaScript
+import { Nurbling } from '@nurblings/astro'
+---
+
+<Nurbling seed="ada@example.com" size={48} background="circle" />
+```
+
+```ts
+// Plain JavaScript: an SVG string, or a data URI for <img>
+import { nurbling, toDataUri } from 'nurblings'
+
+element.innerHTML = nurbling('ada@example.com', { size: 48 })
+image.src = toDataUri(nurbling('ada@example.com'))
+```
+
+Framework guides are in [getting started](docs/getting-started.md); every
+option is in the [API reference](docs/api.md).
+
+## Why Nurblings
 
 - **Deterministic.** A username, email or ID hashes to a fixed set of traits.
   No storage, no uploads, no network, no randomness at render time.
-- **Stable forever.** Traits ship in numbered generations. An avatar that
-  exists today renders byte for byte the same in every future release.
-- **A family, not a template.** Silhouette, antennae, eyes, brow, mouth,
-  colour and extras vary, while a few rules keep every one recognisably a
-  Nurbling, even at 24 pixels.
-- **Server-first.** The React and Astro components render on the server and
-  ship no JavaScript. Output is a plain SVG string with no ids, so any number
-  of avatars can share a page.
-- **Accessible.** Every avatar has an accessible name, colours are chosen for
+- **Stable across releases.** Traits ship in numbered generations, and golden
+  fixtures in CI hold every avatar byte for byte within one.
+- **A family, not a template.** Ten body designs, plates on the crown, a flank,
+  the base or nowhere, one or two antennae, eyes, brows, moods, extras and
+  paired colours. A few fixed rules keep each one recognisably a Nurbling, even
+  at 24 pixels.
+- **Server first.** The React and Astro components ship no JavaScript. The
+  output is one SVG with no ids, so any number of avatars can share a page.
+- **Accessible.** Every avatar has an accessible name, colours are paired for
   contrast on light and dark pages, and motion is opt-in and respects reduced
   motion.
-- **Small.** The core has no dependencies and is about 7 KB brotli; each
-  framework component adds well under 1 KB.
+- **Small.** The core is about 7 KB compressed with no dependencies; each
+  framework component adds well under 1 KB. Size limits run in CI.
+
+## Make it yours
+
+`createNurblings` builds an instance with your palette, body designs, drawn
+parts and defaults. Pass it to a component, or install it once for the whole
+app.
+
+```ts
+import { SILHOUETTES, createNurblings } from 'nurblings'
+
+export const avatars = createNurblings({
+  shells: { mist: '#e4ebf2', sand: '#f1e4cf' },
+  accents: { ink: '#2c5fd9', coral: '#c94f38', forest: '#2e7d4f' },
+  silhouettes: { tall: SILHOUETTES.tall, round: SILHOUETTES.round },
+  slots: { extra: false },
+})
+
+avatars.nurbling('ada@example.com', { shell: 'mist' })
+```
+
+Brand colours are checked for contrast when the instance is created, so a
+palette that would produce unreadable faces fails early. React has a
+`NurblingsProvider`, Vue a `NurblingsPlugin`; see
+[customising](docs/api.md#your-own-palette-designs-and-parts-createnurblingsconfig).
+
+## Repository
+
+| Path | What |
+| --- | --- |
+| [`packages/nurblings`](packages/nurblings) | Core: seed hashing, traits, SVG renderer |
+| [`packages/react`](packages/react), [`vue`](packages/vue), [`astro`](packages/astro) | Framework components |
+| [`examples/`](examples) | Next.js, Nuxt and Astro apps, built in CI |
+| [`docs/`](docs) | Guides and API reference |
+
+```sh
+pnpm install
+pnpm build && pnpm test
+```
+
+Node 22.13 or newer and pnpm 11. Details in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Contributing
 
 Issues and pull requests are welcome. Start with
-[CONTRIBUTING.md](CONTRIBUTING.md); new traits begin as a trait proposal
-issue.
+[CONTRIBUTING.md](CONTRIBUTING.md); new traits begin as a trait proposal issue,
+because a trait added to a released generation would change existing avatars.
 
 ## Credits
 
@@ -70,8 +151,8 @@ far a deterministic avatar can go.
 ## License
 
 - Code: [MIT](LICENSE).
-- Generated avatars: dedicated to the public domain under
+- Generated avatars: public domain under
   [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Use them
   anywhere, no attribution needed.
-- The names Nurbi and Nurblings and the flagship artwork are reserved: see
+- The names Nurbi and Nurblings and the flagship artwork are reserved; see
   [TRADEMARKS.md](TRADEMARKS.md).
