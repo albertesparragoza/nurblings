@@ -126,12 +126,12 @@ const prompt = `npx skills add albertesparragoza/nurblings
   <section class="hero wrap">
     <div class="hero-copy">
       <h1>
-        <span style="--i:0">Every</span> <span style="--i:1">profile</span> <span style="--i:2">picture,</span>
-        <em><span style="--i:3">a</span> <span style="--i:4">little</span> <span style="--i:5">character.</span></em>
+        <span style="--i:0">Any</span> <span style="--i:1">string</span> <span style="--i:2">in,</span>{' '}
+        <em><span style="--i:3">a</span> <span style="--i:4">small</span> <span style="--i:5">creature</span> <span style="--i:6">out</span></em>
       </h1>
       <p class="lead fade" style="--i:6">
-        Deterministic SVG avatars that stay themselves, wear your brand and react. Type anything: the same string
-        always hatches the same Nurbling.
+        Deterministic SVG avatars for React, Vue, Astro and plain HTML. The same id draws the same face every
+        time, with nothing stored.
       </p>
       <label class="seed-field fade" style="--i:7">
         <span class="sr-only">Seed</span>
@@ -172,10 +172,10 @@ const prompt = `npx skills add albertesparragoza/nurblings
 
   <section class="wrap section" id="scene-section" data-reveal>
     <div class="section-head">
-      <h2>They move in and make themselves at home.</h2>
+      <h2>Made to sit inside real products</h2>
       <p>
-        Click a teammate and their Nurbling glides into the profile. Messages land, dots light up, and nobody
-        stops blinking.
+        A member list, a profile, a conversation. Click a teammate and the avatar travels into the profile with
+        <code>morph()</code>.
       </p>
     </div>
     <div class="panel">
@@ -224,8 +224,8 @@ const prompt = `npx skills add albertesparragoza/nurblings
 
   <section class="section family" data-reveal>
     <div class="wrap section-head">
-      <h2>Millions of relatives. Zero twins.</h2>
-      <p>Every seed mixes its own body, plates, antennae, eyes, mood and colours. Your users will spot theirs across the room.</p>
+      <h2>Ten bodies, five moods, one family resemblance</h2>
+      <p>Plates, antennae, eyes, extras and colours all come from the seed, so each person keeps the same face everywhere.</p>
     </div>
     <div class="marquee" aria-hidden="true">
       <div class="track">{[...rowA, ...rowA].map((s) => <Avatar seed={s} size={76} still />)}</div>
@@ -238,7 +238,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
 
   <section class="wrap section" data-reveal>
     <div class="section-head">
-      <h2>Everything a profile picture should have been.</h2>
+      <h2>What ships in 8 KB</h2>
     </div>
     <div class="features">
       <article class="feature">
@@ -247,8 +247,8 @@ const prompt = `npx skills add albertesparragoza/nurblings
           <Avatar seed="hopper" size={64} />
           <Avatar seed="hopper" size={96} />
         </div>
-        <h3>Same string, same creature</h3>
-        <p>Hash a username, email or id. No storage, no uploads, no network, and stable within a generation.</p>
+        <h3>One seed, one face</h3>
+        <p>A username, email or id draws the same avatar on every device. There is nothing to store, upload or fetch.</p>
       </article>
       <article class="feature">
         <div class="feature-art">
@@ -260,7 +260,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
           </div>
         </div>
         <h3>Alive by default</h3>
-        <p>CSS-only breathing, blinking and antenna drift. Turn off a layer, or all of them, with one option.</p>
+        <p>Breath, blink and antenna drift in plain CSS. Each layer turns off on its own, and all of it stops for reduced motion.</p>
       </article>
       <article class="feature">
         <div class="feature-art glide">
@@ -268,31 +268,31 @@ const prompt = `npx skills add albertesparragoza/nurblings
           <svg width="56" height="16" viewBox="0 0 56 16" aria-hidden="true"><path d="M2 8h48m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
           <Avatar seed="turing" size={96} />
         </div>
-        <h3>Glides between places</h3>
-        <p>Give an avatar the same transition key in a list and a dialog, wrap the change in <code>morph()</code>.</p>
+        <h3>Moves between views</h3>
+        <p>Give an avatar the same transition key in two places and wrap the change in <code>morph()</code>.</p>
       </article>
       <article class="feature">
         <div class="feature-art"><ThemePicker /></div>
-        <h3>Wears your brand</h3>
-        <p>Pick a theme or bring your palette with <code>createNurblings</code>; colours are checked for contrast.</p>
+        <h3>Your palette</h3>
+        <p><code>createNurblings</code> takes brand colours and checks them for contrast before anything renders.</p>
       </article>
       <article class="feature">
         <div class="feature-art"><span class="big-num">0 KB</span></div>
-        <h3>Server first</h3>
-        <p>React Server Components and Astro ship no JavaScript. One SVG per avatar, no ids, SSR-safe.</p>
+        <h3>Zero client JavaScript</h3>
+        <p>React Server Components and Astro render the SVG on the server. No ids, so any number of avatars share a page.</p>
       </article>
       <article class="feature">
         <div class="feature-art"><span class="big-num">~8 KB</span></div>
-        <h3>Tiny and typed</h3>
-        <p>Zero dependencies, about 8 KB compressed, full TypeScript types, and a custom element for everything else.</p>
+        <h3>Typed, no dependencies</h3>
+        <p>About 8 KB compressed, full TypeScript types, and a custom element for every other stack.</p>
       </article>
     </div>
   </section>
 
   <section class="wrap section" data-reveal>
     <div class="section-head">
-      <h2>Drops into whatever you ship.</h2>
-      <p>React and Astro render on the server with zero JavaScript. Vue, a custom element and plain JS cover the rest.</p>
+      <h2>Server-rendered wherever your framework allows</h2>
+      <p>Server components in React and Astro, a Vue component, and a custom element for everything else.</p>
     </div>
     <div class="tabs" role="tablist" aria-label="Framework">
       {
@@ -321,11 +321,8 @@ const prompt = `npx skills add albertesparragoza/nurblings
   <section class="wrap section" data-reveal>
     <div class="ai-band">
       <div>
-        <h2>Your coding agent already knows how.</h2>
-        <p>
-          Install the Nurblings skill and just ask for avatars. Claude Code, Cursor and Codex pick the right
-          package, seed with stable ids and wire the motion for you.
-        </p>
+        <h2>Your agent can add them</h2>
+        <p>Install the Nurblings skill once, then ask for avatars in plain words.</p>
         <div class="actions">
           <a class="btn" href="/ai/">Get the skill</a>
         </div>
@@ -341,7 +338,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
   </section>
 
   <section class="wrap section cta" data-reveal>
-    <h2>Everyone gets one. Hatch yours first.</h2>
+    <h2>Start with one seed</h2>
     <div class="actions">
       <a class="btn" href="/docs/getting-started/">Get started</a>
       <a class="btn btn-ghost" href="/playground/">Open the playground</a>
@@ -391,7 +388,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
   })
 
   const MOODS = ['curious', 'pleased', 'thinking', 'sleepy', 'neutral'] as const
-  const LINES = ['oh, hi!', 'hehe', 'hmm...', 'zzz', 'boop!']
+  const LINES = ['hi', 'oh', 'hmm', 'zzz', 'hey']
   let boops = 0
   const bubble = $('bubble')
   heroButton.addEventListener('click', () => {
@@ -490,9 +487,9 @@ const prompt = `npx skills add albertesparragoza/nurblings
 
   const SCRIPT = [
     { seed: 'linus', text: 'Shipping the onboarding flow today.' },
-    { seed: 'ada', text: 'On it. The avatars look so alive now.', me: true },
+    { seed: 'ada', text: 'On it, reviewing after lunch.', me: true },
     { seed: 'margaret', text: 'Research notes are in the doc.' },
-    { seed: 'alan', text: 'Support queue is at zero. Nice work, team.' },
+    { seed: 'alan', text: 'Support queue is clear.' },
     { seed: 'hedy', text: 'Deploy is green.' },
     { seed: 'grace', text: 'Reviewing now.' },
   ]
@@ -581,6 +578,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
 
   .home h1 em {
     display: block;
+    text-wrap: balance;
     font-style: normal;
     color: var(--accent-text);
     transition: color 0.4s var(--ease);
