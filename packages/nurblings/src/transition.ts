@@ -22,17 +22,47 @@ type ViewTransitionDocument = Document & {
 }
 
 /** The `view-transition-name` a key uses: handy for cross-page transitions in your framework. */
-export const transitionName = (key: string) => `nb-${key.replace(/[^\w-]/g, '_')}`
+export const transitionName = (key: string) =>
+  // letters, digits and hyphens pass through; anything else (`_` included)
+  // becomes `_<hex>_`, so two different keys never share a name
+  `nb-${key.replace(/[^A-Za-z0-9-]/g, (c) => `_${c.charCodeAt(0).toString(16)}_`)}`
 
+const VTN = 'view-transition-name'
 const keyOf = (el: Element) => el.getAttribute(ATTR) ?? ''
 const visible = () =>
   [...document.querySelectorAll<Tagged>(`[${ATTR}]`)].filter((el) => el.getClientRects().length > 0)
-const name = (els: Tagged[]) => {
-  for (const el of els) el.style.setProperty('view-transition-name', transitionName(keyOf(el)))
+
+// Elements some transition has named: the page's own value, and how many
+// calls hold the element. The page's value comes back when the last lets go.
+const held = new Map<Tagged, { value: string; count: number }>()
+
+/** Names elements for one call; overlapping calls never undo each other. */
+function namer() {
+  const mine = new Set<Tagged>()
+  return {
+    name(els: Tagged[]) {
+      for (const el of els) {
+        if (!mine.has(el)) {
+          mine.add(el)
+          const h = held.get(el)
+          if (h) h.count++
+          else held.set(el, { value: el.style.getPropertyValue(VTN), count: 1 })
+        }
+        el.style.setProperty(VTN, transitionName(keyOf(el)))
+      }
+    },
+    restore(els: Tagged[] = [...mine]) {
+      for (const el of els) {
+        const h = held.get(el)
+        if (!mine.delete(el) || !h || --h.count > 0) continue
+        held.delete(el)
+        if (h.value) el.style.setProperty(VTN, h.value)
+        else el.style.removeProperty(VTN)
+      }
+    },
+  }
 }
-const unname = (els: Tagged[]) => {
-  for (const el of els) el.style.removeProperty('view-transition-name')
-}
+
 const uniqueKeys = (els: Tagged[]) => new Set(els.map(keyOf)).size === els.length
 
 /**
@@ -50,16 +80,17 @@ export async function morph(update: Update, options: MorphOptions = {}): Promise
   const before = visible()
   const doc = document as ViewTransitionDocument
   if (doc.startViewTransition && uniqueKeys(before)) {
-    name(before)
+    const names = namer()
+    names.name(before)
     const vt = doc.startViewTransition(async () => {
       await update()
-      unname(before)
+      names.restore(before)
       const after = visible()
       // one element per key in the new state: prefer the one that just appeared
       const byKey = new Map<string, Tagged>()
       for (const el of after)
         if (!byKey.has(keyOf(el)) || !before.includes(el)) byKey.set(keyOf(el), el)
-      name([...byKey.values()])
+      names.name([...byKey.values()])
     })
     await vt.ready.then(
       () => {
@@ -70,7 +101,7 @@ export async function morph(update: Update, options: MorphOptions = {}): Promise
       },
       () => {},
     )
-    await vt.finished.finally(() => unname([...document.querySelectorAll<Tagged>(`[${ATTR}]`)]))
+    await vt.finished.finally(() => names.restore())
     return
   }
   const from = new Map(before.map((el) => [el, el.getBoundingClientRect()]))
@@ -95,15 +126,12 @@ export async function morph(update: Update, options: MorphOptions = {}): Promise
     const sy = a.height / b.height
     if (!dx && !dy && sx === 1 && sy === 1) continue
     const start = `translate(${dx}px,${dy}px) scale(${sx},${sy})`
-    moves.push(
-      el.animate(
-        [
-          { transformOrigin: '0 0', transform: start },
-          { transformOrigin: '0 0', transform: 'none' },
-        ],
-        { duration, easing },
-      ).finished,
-    )
+    const frames = [
+      { transformOrigin: '0 0', transform: start },
+      { transformOrigin: '0 0', transform: 'none' },
+    ]
+    // a cancelled animation (the element left mid-flight) is not an error
+    moves.push(el.animate(frames, { duration, easing }).finished.catch(() => {}))
   }
   await Promise.all(moves)
 }
