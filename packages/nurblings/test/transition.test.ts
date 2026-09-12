@@ -88,7 +88,7 @@ describe('morph', () => {
     )
     const ours = {
       effect: {
-        pseudoElement: '::view-transition-group(nb-ada_example_com)',
+        pseudoElement: '::view-transition-group(nb-ada_40_example_2e_com)',
         updateTiming: vi.fn(),
       },
     }
@@ -101,7 +101,7 @@ describe('morph', () => {
       },
       { duration: 600 },
     )
-    expect(seen).toEqual(['nb-ada_example_com', '', 'nb-ada_example_com'])
+    expect(seen).toEqual(['nb-ada_40_example_2e_com', '', 'nb-ada_40_example_2e_com'])
     expect(vtName(header)).toBe('')
     expect(firstFrame(header as SVGSVGElement)).toBeUndefined()
     expect(ours.effect.updateTiming).toHaveBeenCalledWith(
@@ -120,11 +120,76 @@ describe('morph', () => {
     expect(start).not.toHaveBeenCalled()
     expect(firstFrame(inList)).toBeDefined()
   })
+
+  it('opens a dialog from the avatar that stays in the list', async () => {
+    avatar('ada', [10, 500, 48, 48])
+    let opened: SVGSVGElement | undefined
+    await morph(() => {
+      opened = avatar('ada', [100, 100, 240, 240])
+    })
+    expect(firstFrame(opened as SVGSVGElement)).toMatch(
+      /^translate\(-90px,400px\) scale\(0\.2,0\.2\)$/,
+    )
+  })
+
+  it('puts back a name the page set, even when calls overlap', async () => {
+    const el = avatar('ada', [0, 0, 64, 64])
+    const vtName = () => el.style.getPropertyValue('view-transition-name')
+    el.style.setProperty('view-transition-name', 'app-avatar')
+    const finish: Array<() => void> = []
+    ;(document as { startViewTransition?: unknown }).startViewTransition = (
+      cb: () => Promise<void>,
+    ) => ({
+      ready: Promise.resolve(),
+      finished: cb().then(() => new Promise<void>((resolve) => finish.push(resolve))),
+    })
+    ;(document as { getAnimations?: unknown }).getAnimations = () => []
+    const first = morph(() => {})
+    const second = morph(() => {})
+    await vi.waitFor(() => expect(finish).toHaveLength(2))
+    finish[0]?.()
+    await first
+    expect(vtName()).toBe('nb-ada')
+    finish[1]?.()
+    await second
+    expect(vtName()).toBe('app-avatar')
+    delete (document as { getAnimations?: unknown }).getAnimations
+  })
+
+  it('cleans up its names when the update throws, and passes the error on', async () => {
+    const el = avatar('ada', [0, 0, 64, 64])
+    ;(document as { startViewTransition?: unknown }).startViewTransition = (
+      cb: () => Promise<void>,
+    ) => {
+      const done = cb()
+      return { ready: done, finished: done }
+    }
+    await expect(
+      morph(() => {
+        throw new Error('nope')
+      }),
+    ).rejects.toThrow('nope')
+    expect(el.style.getPropertyValue('view-transition-name')).toBe('')
+  })
+
+  it('treats a FLIP animation cancelled mid-flight as done', async () => {
+    const dialog = avatar('ada', [100, 100, 320, 320])
+    const inList = avatar('ada', [10, 500, 48, 48])
+    inList.animate = vi.fn(() => ({
+      finished: Promise.reject(new DOMException('cancelled', 'AbortError')),
+    })) as unknown as typeof inList.animate
+    await expect(morph(() => dialog.remove())).resolves.toBeUndefined()
+  })
 })
 
 describe('transitionName', () => {
   it('turns any key into a valid, prefixed name', () => {
-    expect(transitionName('ada@example.com')).toBe('nb-ada_example_com')
+    expect(transitionName('ada@example.com')).toBe('nb-ada_40_example_2e_com')
     expect(transitionName('user-42')).toBe('nb-user-42')
+  })
+
+  it('never gives two different keys the same name', () => {
+    const names = ['a.b', 'a@b', 'a_b', 'a b', 'a-b', 'ab'].map(transitionName)
+    expect(new Set(names).size).toBe(names.length)
   })
 })
