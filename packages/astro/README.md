@@ -7,7 +7,7 @@ string always hatches the same Nurbling.
 ## Install
 
 ```sh
-pnpm add @nurblings/astro
+npm install @nurblings/astro
 ```
 
 Astro 4 or newer is a peer dependency; the core `nurblings` package comes with

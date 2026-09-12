@@ -269,6 +269,17 @@ describe('render', () => {
     expect(render(TRAITS, { size: 33 })).toContain('<style>')
   })
 
+  it('clips round containers, so antenna tips never poke out', () => {
+    expect(render(TRAITS, { background: 'circle', animate: false })).toContain(
+      'class="nb" style="clip-path:circle(50%)"',
+    )
+    expect(render(TRAITS, { background: 'squircle' })).toMatch(
+      /style="--nb-b:[^"]*;clip-path:inset\(0 round 30%\)"/,
+    )
+    expect(render(TRAITS, { background: 'square' })).not.toContain('clip-path')
+    expect(render(TRAITS)).not.toContain('clip-path')
+  })
+
   it('times each seed its own way, slower when sleepy, scaled by speed', () => {
     const period = (out: string) => Number(out.match(/--nb-b:([\d.]+)s/)?.[1])
     const base = period(svg)

@@ -43,3 +43,10 @@ h1#_top,
 .site-title {
   font-weight: 800;
 }
+
+/* the mobile menu button is a plain icon: no circle behind it */
+:root button.sl-menu-button {
+  background-color: transparent;
+  box-shadow: none;
+  border: 0;
+}

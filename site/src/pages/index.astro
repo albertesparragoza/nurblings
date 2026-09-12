@@ -65,7 +65,7 @@ const frameworks = [
   {
     id: 'react',
     label: 'React and Next.js',
-    install: 'pnpm add @nurblings/react',
+    install: 'npm install @nurblings/react',
     code: `import { Nurbling } from '@nurblings/react'
 
 export function Avatar({ user }) {
@@ -75,7 +75,7 @@ export function Avatar({ user }) {
   {
     id: 'vue',
     label: 'Vue and Nuxt',
-    install: 'pnpm add @nurblings/vue',
+    install: 'npm install @nurblings/vue',
     code: `<script setup>
 import { Nurbling } from '@nurblings/vue'
 defineProps(['user'])
@@ -88,7 +88,7 @@ defineProps(['user'])
   {
     id: 'astro',
     label: 'Astro',
-    install: 'pnpm add @nurblings/astro',
+    install: 'npm install @nurblings/astro',
     code: `${FENCE}
 import { Nurbling } from '@nurblings/astro'
 const { user } = Astro.props
@@ -108,7 +108,7 @@ ${FENCE}
   {
     id: 'js',
     label: 'JavaScript',
-    install: 'pnpm add nurblings',
+    install: 'npm install nurblings',
     code: `import { nurbling, toDataUri } from 'nurblings'
 
 element.innerHTML = nurbling('user-42', { size: 48, title: 'Ada Lovelace' })
@@ -141,8 +141,8 @@ pass their name as the title.`
       <div class="actions fade" style="--i:8">
         <a class="btn" href="/docs/getting-started/">Get started</a>
         <a class="btn btn-ghost" href="/playground/">Open the playground</a>
-        <button class="copy-chip" type="button" data-copy="pnpm add @nurblings/react">
-          <code>pnpm add @nurblings/react</code><span data-copy-label>Copy</span>
+        <button class="copy-chip" type="button" data-copy="npm install @nurblings/react">
+          <code>npm install @nurblings/react</code><span data-copy-label>Copy</span>
         </button>
       </div>
     </div>
@@ -323,8 +323,8 @@ pass their name as the title.`
       <div>
         <h2>Made for AI assistants.</h2>
         <p>
-          Point your coding assistant at docs in formats it reads natively: llms.txt, a single full text file, and
-          Markdown for every page. A Nurblings skill for coding agents is on its way.
+          Docs your assistant reads natively: llms.txt, one full text file, and Markdown for every page. A
+          Nurblings skill is on its way.
         </p>
         <div class="actions">
           <a class="btn" href="/ai/">Use with AI</a>

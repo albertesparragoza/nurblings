@@ -13,7 +13,7 @@ client.
 ## Install
 
 ```sh
-pnpm add @nurblings/react
+npm install @nurblings/react
 ```
 
 React 18 or 19 is required as a peer dependency.

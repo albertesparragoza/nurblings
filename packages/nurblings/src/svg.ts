@@ -594,6 +594,18 @@ export type Slot = false | ((ctx: SlotContext, base: () => string) => string)
 
 export type Slots = Partial<Record<SlotName, Slot>>
 
+/**
+ * Clips the avatar to a round container, so antenna tips never poke past it.
+ * A CSS clip on the root rather than a <clipPath>: no ids, and it follows the
+ * box the avatar is drawn in.
+ */
+export const clipFor = (background: RenderOptions['background']) =>
+  background === 'circle'
+    ? 'clip-path:circle(50%)'
+    : background === 'squircle'
+      ? 'clip-path:inset(0 round 30%)'
+      : ''
+
 export function render(t: Traits, opts: RenderOptions = {}, slots: Slots = {}): string {
   const size = pixelSize(opts.size)
   const small = size <= 32
@@ -624,6 +636,7 @@ export function render(t: Traits, opts: RenderOptions = {}, slots: Slots = {}): 
   })
   const drawn = live ? `<g class="nb-f">${figure.join('')}</g>` : figure.join('')
   const vb = `${n(box.x)} ${n(box.y)} ${n(box.s)} ${n(box.s)}`
-  const root = (live ? `class="nb${live.cls}" style="${live.style}"` : 'class="nb"') + tagFor(opts)
+  const style = [live?.style, clipFor(opts.background)].filter(Boolean).join(';')
+  const root = `class="nb${live?.cls ?? ''}"${style ? ` style="${style}"` : ''}${tagFor(opts)}`
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${n(size)}" height="${n(size)}" role="img" aria-label="${title}" ${root}>${live ? MOTION : ''}<title>${title}</title>${backdropSvg}${drawn}</svg>`
 }
