@@ -65,8 +65,9 @@ for (const el of document.querySelectorAll('nurbling-avatar')) el.nurblings = av
 
 - The avatar renders into the element's light DOM, so `morph` transitions
   from `nurblings/transition` and your page styles reach it.
-- The element is inline-block with no line height by default, through a
-  zero-specificity rule: any rule of your own wins.
+- When nothing styles the element, it becomes inline-block with no line
+  height, so the avatar has no baseline gap. Any `display` you set, in a
+  stylesheet, a layer or a shadow root, is left alone.
 - Importing it on the server is safe; `define()` does nothing there. The
   avatar renders when the browser upgrades the element. For server-rendered
   avatars, use the React, Vue or Astro component or the core `nurbling()`.
