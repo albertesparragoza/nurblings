@@ -36,8 +36,8 @@ const sizes = [24, 32, 48, 64, 96, 128]
 <Site title="Gallery" active="/gallery/" class="gal">
   <div class="wrap">
     <header class="page-head">
-      <h1>Meet the family.</h1>
-      <p class="lead">What every Nurbling is made of, then the colours you can dress them in.</p>
+      <h1>Gallery</h1>
+      <p class="lead">What every Nurbling is made of, and the palettes it can wear.</p>
       <nav class="jump" aria-label="On this page">
         <a href="#family">The family</a>
         <a href="#themes">Colour themes</a>
@@ -46,7 +46,7 @@ const sizes = [24, 32, 48, 64, 96, 128]
 
     <section id="family" class="traits">
       <h2>The family</h2>
-      <p class="lead">Ten body shapes, four ways to wear the plates, five moods. The seed picks the mix.</p>
+      <p class="lead">Ten body shapes, four plate placements and five moods. The seed picks the mix.</p>
 
       <h3>Body shapes</h3>
       <div class="trait-grid">
@@ -107,7 +107,7 @@ const sizes = [24, 32, 48, 64, 96, 128]
 
     <section id="themes" class="section">
       <h2>Colour themes</h2>
-      <p class="lead">Every card shows the same faces. Only the palette changes, so pick the one that feels like your product.</p>
+      <p class="lead">The same faces in every card, so only the palette changes.</p>
       <div class="themes">
         {
           Object.values(THEMES).map((t) => (
@@ -144,7 +144,7 @@ const sizes = [24, 32, 48, 64, 96, 128]
                   <span class="av" set:html={t.render(s, { size: 48, background: 'circle', title: s })} />
                 ))}
               </div>
-              <a class="btn btn-ghost" href={`/playground/#theme=${t.id}`}>Try {t.label} in the playground</a>
+              <a class="btn btn-ghost" href={`/playground/#theme=${t.id}`}>Open in the playground</a>
             </article>
           ))
         }
