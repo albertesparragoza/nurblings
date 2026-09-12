@@ -18,6 +18,23 @@ const TEXT = [
 ] as const
 const NUMBER = ['size', 'gen'] as const
 
+// Attributes that also get a matching property, for frameworks that bind
+// properties. `title` and `animate` are left out: both are built-in element
+// members (the tooltip and the Web Animations method), so they stay attributes.
+const REFLECTED = [
+  'seed',
+  'background',
+  'frame',
+  'mood',
+  'mouth',
+  'extra',
+  'silhouette',
+  'shell',
+  'transition',
+  ...NUMBER,
+] as const
+type Reflected = (typeof REFLECTED)[number]
+
 // Importable on the server: the class only needs HTMLElement once it is defined.
 const Base = (typeof HTMLElement === 'undefined' ? class {} : HTMLElement) as typeof HTMLElement
 
@@ -37,10 +54,26 @@ export function parseAnimate(value: string | null): NurblingOptions['animate'] {
   }
 }
 
+export interface NurblingElement extends Record<Reflected, string | null> {}
+
+// biome-ignore lint/suspicious/noUnsafeDeclarationMerging: the interface types the reflected accessors defined on the prototype below
 export class NurblingElement extends Base {
   static observedAttributes = ['seed', 'animate', ...TEXT, ...NUMBER]
 
   #renderer: NurblingRenderer = { nurbling }
+
+  constructor() {
+    super()
+    // A property set before the element was defined sits on the instance and
+    // would hide the accessor: take it off and set it again through the accessor.
+    const self = this as unknown as Record<string, unknown>
+    for (const name of [...REFLECTED, 'nurblings']) {
+      if (!Object.hasOwn(self, name)) continue
+      const value = self[name]
+      delete self[name]
+      self[name] = value
+    }
+  }
 
   /** A `createNurblings` instance to render with; the built-in family by default. */
   get nurblings(): NurblingRenderer {
@@ -78,15 +111,31 @@ export class NurblingElement extends Base {
     }
     const animate = parseAnimate(this.getAttribute('animate'))
     if (animate !== undefined) opts.animate = animate
-    if (!this.style.display) this.style.display = 'inline-block'
-    if (!this.style.lineHeight) this.style.lineHeight = '0'
     this.innerHTML = this.#renderer.nurbling(seed, opts)
   }
+}
+
+for (const name of REFLECTED) {
+  Object.defineProperty(NurblingElement.prototype, name, {
+    configurable: true,
+    enumerable: true,
+    get(this: HTMLElement) {
+      return this.getAttribute(name)
+    },
+    set(this: HTMLElement, value: unknown) {
+      if (value === null || value === undefined) this.removeAttribute(name)
+      else this.setAttribute(name, String(value))
+    },
+  })
 }
 
 /** Registers the element under `tag`. Safe to call twice, and a no-op on the server. */
 export function define(tag = 'nurbling-avatar'): void {
   if (typeof customElements === 'undefined' || customElements.get(tag)) return
+  // zero specificity through :where(), so any rule the page writes wins
+  const style = document.createElement('style')
+  style.textContent = `:where(${tag}){display:inline-block;line-height:0}`
+  document.head.append(style)
   // a subclass per tag: one constructor cannot be registered under two names
   customElements.define(tag, class extends NurblingElement {})
 }

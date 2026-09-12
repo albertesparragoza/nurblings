@@ -79,13 +79,36 @@ describe('<nurbling-avatar>', () => {
     expect(el.innerHTML).toBe(parsed(nurbling('ada')))
   })
 
-  it('sits inline without a baseline gap, unless the page styles it', () => {
-    expect(avatar({ seed: 'ada' }).style.display).toBe('inline-block')
-    const el = document.createElement('nurbling-avatar')
-    el.style.display = 'block'
-    el.setAttribute('seed', 'ada')
+  it('sits inline through a zero-specificity default, so page styles win', () => {
+    const el = avatar({ seed: 'ada' })
+    expect(el.style.cssText).toBe('')
+    expect(document.head.innerHTML).toContain(
+      ':where(nurbling-avatar){display:inline-block;line-height:0}',
+    )
+  })
+
+  it('reflects properties to attributes, for frameworks that bind properties', () => {
+    const el = avatar({ seed: 'ada' })
+    el.seed = 'grace'
+    expect(el.getAttribute('seed')).toBe('grace')
+    expect(el.innerHTML).toBe(parsed(nurbling('grace')))
+    el.size = '48'
+    expect(el.innerHTML).toBe(parsed(nurbling('grace', { size: 48 })))
+    el.mood = 'sleepy'
+    el.mood = null
+    expect(el.hasAttribute('mood')).toBe(false)
+    expect(typeof el.animate).toBe('function')
+  })
+
+  it('keeps properties set before the element was defined', () => {
+    const el = document.createElement('late-avatar') as HTMLElement & Record<string, unknown>
+    el.seed = 'ada'
+    el.size = 48
     document.body.append(el)
-    expect(el.style.display).toBe('block')
+    define('late-avatar')
+    expect(el).toBeInstanceOf(NurblingElement)
+    expect(el.getAttribute('seed')).toBe('ada')
+    expect(el.innerHTML).toBe(parsed(nurbling('ada', { size: 48 })))
   })
 })
 

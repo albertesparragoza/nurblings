@@ -39,6 +39,9 @@ Without a bundler, load it from a CDN that resolves dependencies:
 Every attribute matches an option of the core `nurbling()` function: `seed`,
 `size`, `background`, `title`, `frame`, `gen`, `mood`, `mouth`, `extra`,
 `silhouette`, `shell` and `transition`. Changing an attribute re-renders.
+Each also has a matching property (`el.seed = 'grace'`), for frameworks that
+bind properties, except `title` and `animate`: those are built-in element
+members, so use the attributes.
 
 Motion is on by default. `animate="false"` draws a still avatar, and a list
 keeps only some layers: `animate="blink hover"`.
@@ -62,7 +65,8 @@ for (const el of document.querySelectorAll('nurbling-avatar')) el.nurblings = av
 
 - The avatar renders into the element's light DOM, so `morph` transitions
   from `nurblings/transition` and your page styles reach it.
-- The element is inline-block with no line height unless you style it.
+- The element is inline-block with no line height by default, through a
+  zero-specificity rule: any rule of your own wins.
 - Importing it on the server is safe; `define()` does nothing there. The
   avatar renders when the browser upgrades the element. For server-rendered
   avatars, use the React, Vue or Astro component or the core `nurbling()`.
