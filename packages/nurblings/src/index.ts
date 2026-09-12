@@ -25,6 +25,7 @@ export type {
   Frame,
   Generation,
   Mood,
+  Motion,
   Mouth,
   NurblingRenderer,
   Palette,

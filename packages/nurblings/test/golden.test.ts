@@ -23,6 +23,7 @@ describe('generation 1 golden fixtures', () => {
 
   it.each(Object.entries(GEN1_GOLDEN))('%s renders exactly as recorded', async (key, expected) => {
     const [seed, size] = JSON.parse(key) as [string, number]
-    expect(await digest(nurbling(seed, { size }))).toBe(expected)
+    // the drawing is the contract; motion is a layer on top, pinned in svg.test.ts
+    expect(await digest(nurbling(seed, { size, animate: false }))).toBe(expected)
   })
 })

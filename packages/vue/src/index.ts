@@ -48,7 +48,11 @@ export const Nurbling = defineComponent({
       default: undefined,
     },
     title: { type: String as PropType<NurblingOptions['title']>, default: undefined },
-    animate: { type: Boolean as PropType<NurblingOptions['animate']>, default: undefined },
+    // default undefined keeps an absent prop from casting to false: motion is on by default
+    animate: {
+      type: [Boolean, Object] as PropType<NurblingOptions['animate']>,
+      default: undefined,
+    },
     gen: { type: Number as PropType<NurblingOptions['gen']>, default: undefined },
     mood: { type: String as PropType<NurblingOptions['mood']>, default: undefined },
     mouth: { type: String as PropType<NurblingOptions['mouth']>, default: undefined },

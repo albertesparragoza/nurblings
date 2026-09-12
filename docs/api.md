@@ -31,7 +31,7 @@ so `Ada Lovelace`, `ada.lovelace` and `ADA_LOVELACE` hatch the same Nurbling.
 | `size` | `number` | `128` | Width and height in pixels, a positive number. At 32 and below, small-size mode drops the mouth and extras so the face still reads. |
 | `background` | `'none' \| 'circle' \| 'squircle' \| 'square'` | `'none'` | A backdrop in a tint of the Nurbling's own shell colour. |
 | `title` | `string` | `'Nurbling'` | The accessible name, used for `aria-label` and `<title>`. Escaped for you. |
-| `animate` | `boolean` | `false` | Antennae sway on hover and keyboard focus. Never moves when the viewer prefers reduced motion. |
+| `animate` | `boolean \| Motion` | `true` | Ambient life: the body breathes, the eyes blink, the antennae drift, and wiggle faster on hover. `false` draws a still avatar; an object picks layers, see [Motion](#motion). Never moves when the viewer prefers reduced motion, nor at 32 px and below. |
 | `frame` | `'auto' \| 'full' \| 'portrait'` | `'auto'` | How the Nurbling sits in its square. `portrait` crops closer on the face, which reads better in small round avatars; `full` shows the whole figure, antennae included. `auto` uses a portrait at 48 px and below and the full figure above. |
 | `gen` | `1` | `1` | The trait generation. Pin it to keep an avatar identical across future releases. |
 | `mood` | `'neutral' \| 'curious' \| 'pleased' \| 'thinking' \| 'sleepy'` | from the seed | Pins the resting mood. |
@@ -50,6 +50,32 @@ throws a `RangeError`, and so does a `size` that is not a positive number.
 
 `traits()` returns a fresh object every time: changing it never affects any
 other avatar.
+
+### Motion
+
+Every Nurbling is alive by default. The motion is CSS inside the SVG: no
+script, no ids, so it works in server components, in an `<img>` and in a
+`data:` URI. Each seed gets its own timing, so a grid never breathes in unison.
+
+```ts
+nurbling(seed)                                       // all layers
+nurbling(seed, { animate: false })                   // a still drawing
+nurbling(seed, { animate: { blink: false } })        // everything but blinking
+nurbling(seed, { animate: { hover: false, speed: 0.5 } }) // calmer, no hover
+```
+
+| Layer | What moves |
+| --- | --- |
+| `breath` | The body squashes and stretches slowly from its base. |
+| `blink` | The eyes blink every few seconds. |
+| `antennae` | Each antenna drifts on its own clock. |
+| `hover` | The antennae wiggle faster while the pointer is over the avatar. |
+
+`speed` multiplies every clock (2 is twice as fast) and must be a positive
+number. Sleepy Nurblings move a little slower. Nothing moves when the viewer
+asks for reduced motion, or at 32 px and below, where motion reads as noise.
+For long lists, `animate: { breath: false, antennae: false }` keeps just the
+blink and the hover.
 
 ## `traits(seed, options?)`
 

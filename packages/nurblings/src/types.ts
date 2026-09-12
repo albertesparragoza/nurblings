@@ -122,14 +122,31 @@ export interface NurblingRenderer {
   ): string
 }
 
+/** Motion layers, each on unless set to `false`. CSS only: no script, no ids. */
+export interface Motion {
+  /** the body slowly squashes and stretches from its base */
+  breath?: boolean
+  /** the eyes blink now and then */
+  blink?: boolean
+  /** the antennae drift, each on its own clock */
+  antennae?: boolean
+  /** the antennae wiggle faster while the pointer is over the avatar */
+  hover?: boolean
+  /** timing multiplier, a positive number; 2 is twice as fast. Defaults to 1. */
+  speed?: number
+}
+
 export interface RenderOptions {
   /** rendered width and height in pixels; <= 32 switches to small-size mode */
   size?: number
   background?: Background
   /** accessible name; defaults to "Nurbling" */
   title?: string
-  /** sway antennae on hover/focus (always off under prefers-reduced-motion) */
-  animate?: boolean
+  /**
+   * Ambient life, on by default: `false` for a still drawing, or pick layers.
+   * Never moves under prefers-reduced-motion, nor at 32 px and below.
+   */
+  animate?: boolean | Motion
   /** framing inside the square; defaults to `auto` */
   frame?: Frame
 }
