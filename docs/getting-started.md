@@ -17,6 +17,9 @@ npm install @nurblings/element  # any HTML, Svelte, Angular
 npm install nurblings           # plain JavaScript
 ```
 
+Using a coding agent? `npx skills add albertesparragoza/nurblings` teaches
+Claude Code, Cursor, Codex and others how to use the library.
+
 ## Your first Nurbling
 
 The core returns an SVG string:

@@ -2,110 +2,90 @@
 import Avatar from '../components/Avatar.astro'
 import Site from '../layouts/Site.astro'
 
-const prompts = [
+const install = 'npx skills add albertesparragoza/nurblings'
+const agents = ['Claude Code', 'Cursor', 'Codex', 'GitHub Copilot', 'Gemini CLI', 'Windsurf']
+
+const asks = [
   {
-    title: 'Add avatars to a Next.js app',
-    text: `Add Nurblings avatars to this Next.js app. Read {origin}/llms.txt first.
-Use @nurblings/react as a server component. Seed every avatar with the user's
-stable id, never their email, and pass their name as the title.
-Use size 40 in lists and 96 on profile pages.`,
+    ask: 'Give every commenter an avatar.',
+    does: 'Installs the right package for your framework, seeds each avatar with the user id and names it for screen readers.',
   },
   {
-    title: 'Glide a Vue avatar into a dialog',
-    text: `Using @nurblings/vue, render a Nurbling for each team member and give it
-transition set to the member id. When a member card opens as a dialog, render the
-same avatar with the same transition key and wrap the change in morph() from
-nurblings/transition so it glides into the dialog. Docs: {origin}/llms-full.txt`,
+    ask: 'Make the avatars match our brand.',
+    does: 'Builds one createNurblings palette, wires it app-wide and fixes any colour that fails contrast.',
   },
   {
-    title: 'Match our brand colours',
-    text: `Create one createNurblings instance with our brand palette (shells and
-accents below) and use it app-wide: NurblingsProvider in React client
-components, the nurblings prop in server components. Keep the contrast errors
-it throws at setup visible, and pick replacement colours if one fails.
-Docs: {origin}/docs/customising.md`,
+    ask: 'Open the profile with the avatar gliding in.',
+    does: 'Adds a transition key in both places and wraps the change in morph(), with flushSync or nextTick where needed.',
+  },
+  {
+    ask: 'The member list feels busy.',
+    does: 'Calms the motion for long lists, keeping the blink, and leaves reduced motion to the library.',
   },
 ]
 ---
 
-<Site title="Use with AI" active="/ai/" class="aip">
+<Site title="AI skill" active="/ai/" class="aip">
   <div class="wrap">
     <section class="ai-hero">
       <div>
-        <h1>Built for AI assistants.</h1>
+        <h1>Ask for avatars. Get them right the first time.</h1>
         <p class="lead">
-          Your coding assistant can read the whole Nurblings documentation in formats made for it, and soon
-          install a skill that knows the library by heart.
+          The Nurblings skill teaches your coding agent the library: which package to install, how to seed, how to
+          theme and how to animate. One command, and every avatar request lands the way the docs intended.
         </p>
-        <div class="actions">
-          <button class="btn" type="button" data-copy-url="/llms-full.txt"><span data-copy-label>Copy all docs for your AI</span></button>
-          <a class="btn btn-ghost" href="/llms.txt">Open llms.txt</a>
+        <div class="install-cmd">
+          <code>{install}</code>
+          <button type="button" data-copy={install}><span data-copy-label>Copy</span></button>
         </div>
+        <p class="agents">Works with {agents.join(', ')} and any agent that reads skills.</p>
       </div>
       <div class="ai-crowd" aria-hidden="true">
-        <Avatar seed="assistant" size={120} />
-        <Avatar seed="copilot-friend" size={88} />
+        <Avatar seed="assistant" size={128} />
+        <Avatar seed="copilot-friend" size={92} />
         <Avatar seed="agent-smol" size={72} />
       </div>
     </section>
 
-    <section class="grid3">
-      <a class="card link-card" href="/llms.txt">
-        <h2>llms.txt</h2>
-        <p>An index of the docs with one line per page, following the llms.txt convention. Point any assistant at it.</p>
-        <code>/llms.txt</code>
-      </a>
-      <a class="card link-card" href="/llms-full.txt">
-        <h2>llms-full.txt</h2>
-        <p>Every docs page in one plain text file, for pasting into a chat or loading as context.</p>
-        <code>/llms-full.txt</code>
-      </a>
-      <a class="card link-card" href="/docs/getting-started.md">
-        <h2>Markdown for every page</h2>
-        <p>Add <code>.md</code> to a docs page for its source, ready for an agent to read without the page around it.</p>
-        <code>/docs/getting-started.md</code>
-      </a>
-    </section>
-
-    <section class="skill card">
-      <span class="badge">Coming soon</span>
-      <h2>The Nurblings skill</h2>
-      <p class="lead">
-        So your assistant adds avatars the way the docs recommend, instead of guessing.
-      </p>
-      <ul>
-        <li>Picks the right package for your framework and installs it.</li>
-        <li>Seeds avatars with stable ids and passes names as accessible titles.</li>
-        <li>Sets up themes and brand palettes with createNurblings, and fixes contrast errors.</li>
-        <li>Wires motion and morph transitions, and respects reduced motion.</li>
-      </ul>
-      <div class="code-card">
-        <div class="code-head"><span>Planned install</span></div>
-        <pre><code>npx skills add albertesparragoza/nurblings</code></pre>
-      </div>
-    </section>
-
-    <section class="section prompts">
+    <section class="section">
       <div class="section-head">
-        <h2>Prompts that work.</h2>
-        <p>Paste one into your assistant. Each points it at the docs first.</p>
+        <h2>You ask. It already knows.</h2>
       </div>
-      <div class="grid3">
+      <div class="asks">
         {
-          prompts.map((p) => (
-            <article class="code-card prompt">
-              <div class="code-head">
-                <span>{p.title}</span>
-                <button type="button" data-copy={p.text}>
-                  <span data-copy-label>Copy</span>
-                </button>
-              </div>
-              <pre data-origin>{p.text}</pre>
+          asks.map((a) => (
+            <article class="card ask">
+              <p class="said">“{a.ask}”</p>
+              <p>{a.does}</p>
             </article>
           ))
         }
       </div>
     </section>
+
+    <section class="skill-file card">
+      <div>
+        <h2>Inside the skill</h2>
+        <ul>
+          <li>The package and import for React, Next.js, Vue, Nuxt, Astro, Svelte, Angular and plain HTML.</li>
+          <li>The rules that matter: stable-id seeds, accessible titles, sizes and containers.</li>
+          <li>Motion, reduced motion and morph transitions, with the React and Vue timing details.</li>
+          <li>Brand palettes, and how to fix a colour the contrast check rejects.</li>
+          <li>The mistakes to avoid, and a checklist to verify the result.</li>
+        </ul>
+        <p class="note">
+          It is plain Markdown in the repository: <a href="https://github.com/albertesparragoza/nurblings/tree/develop/skills/nurblings">skills/nurblings/SKILL.md</a>.
+          Read it, fork it, or copy it into your own agent setup.
+        </p>
+      </div>
+    </section>
+
+    <p class="footnote">
+      Crawlers and AI search get the usual standards too:{' '}
+      <a href="/llms.txt">llms.txt</a>,{' '}
+      <a href="/llms-full.txt">llms-full.txt</a> and a Markdown copy of every docs page, such as{' '}
+      <a href="/docs/getting-started.md">/docs/getting-started.md</a>.
+    </p>
   </div>
 </Site>
 
@@ -115,17 +95,49 @@ Docs: {origin}/docs/customising.md`,
     grid-template-columns: 1.3fr 0.7fr;
     gap: 32px;
     align-items: center;
-    padding-block: clamp(40px, 7vw, 88px) 40px;
+    padding-block: clamp(40px, 7vw, 88px) 0;
   }
 
   .aip h1 {
-    font-size: clamp(44px, 6vw, 84px);
+    font-size: clamp(42px, 5.6vw, 80px);
     font-weight: 800;
     letter-spacing: -0.045em;
+    max-width: 14ch;
   }
 
-  .aip .ai-hero .actions {
-    margin-top: 26px;
+  .aip .install-cmd {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 28px;
+    max-width: 100%;
+    width: fit-content;
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: var(--r-md);
+    padding: 8px 8px 8px 18px;
+  }
+
+  .aip .install-cmd code {
+    font: 15px var(--mono);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .aip .install-cmd button {
+    flex: none;
+    border: 0;
+    background: var(--accent);
+    color: var(--on-accent);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-weight: 700;
+  }
+
+  .aip .agents {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 14px 0 0;
   }
 
   .aip .ai-crowd {
@@ -138,70 +150,66 @@ Docs: {origin}/docs/customising.md`,
     padding: 40px 20px;
   }
 
-  .aip .grid3 {
+  .aip .asks {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
 
-  .aip .link-card {
+  .aip .ask {
     display: grid;
     gap: 10px;
-    text-decoration: none;
-    transition:
-      transform 0.4s var(--spring),
-      border-color 0.3s;
+    align-content: start;
   }
 
-  .aip .link-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--accent);
-  }
-
-  .aip .link-card h2,
-  .aip .skill h2 {
-    font-size: 26px;
-    font-weight: 800;
-  }
-
-  .aip .link-card p {
+  .aip .ask p {
     margin: 0;
     color: var(--muted);
   }
 
-  .aip .link-card > code {
-    font: 14px var(--mono);
-    color: var(--accent-text);
+  .aip .ask .said {
+    font: 700 22px/1.2 var(--display);
+    letter-spacing: -0.02em;
+    color: var(--ink);
   }
 
-  .aip .skill {
-    margin-top: 24px;
-    display: grid;
-    gap: 12px;
+  .aip .skill-file {
     padding: clamp(22px, 3vw, 36px);
   }
 
-  .aip .skill .badge {
-    justify-self: start;
+  .aip .skill-file h2 {
+    font-size: clamp(28px, 3vw, 38px);
+    font-weight: 800;
   }
 
-  .aip .skill ul {
-    margin: 4px 0 8px;
+  .aip .skill-file ul {
+    margin: 16px 0;
     padding-left: 20px;
     display: grid;
-    gap: 6px;
+    gap: 8px;
     color: var(--muted);
   }
 
-  .aip .prompt pre {
-    white-space: pre-wrap;
-    font-size: 13px;
+  .aip .note,
+  .aip .footnote {
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .aip .note a,
+  .aip .footnote a {
+    color: var(--accent-text);
+  }
+
+  .aip .footnote {
+    font-size: 14px;
+    padding-block: 32px 8px;
   }
 
   @media (max-width: 900px) {
     .aip .ai-hero,
-    .aip .grid3 {
-      grid-template-columns: 1fr;
+    .aip .asks {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 </style>

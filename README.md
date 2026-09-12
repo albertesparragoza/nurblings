@@ -81,6 +81,16 @@ image.src = toDataUri(nurbling('ada@example.com'))
 Framework guides are in [getting started](docs/getting-started.md); every
 option is in the [API reference](docs/api.md).
 
+## Use it with your coding agent
+
+```sh
+npx skills add albertesparragoza/nurblings
+```
+
+The [Nurblings skill](skills/nurblings/SKILL.md) teaches Claude Code, Cursor,
+Codex and other agents the library, so "give every commenter an avatar" comes
+back with the right package, stable-id seeds and accessible names.
+
 ## Why Nurblings
 
 - **Deterministic.** A username, email or ID hashes to a fixed set of traits.

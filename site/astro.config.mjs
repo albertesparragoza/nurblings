@@ -47,7 +47,7 @@ export default defineConfig({
             { label: 'Home', link: '/' },
             { label: 'Playground', link: '/playground/' },
             { label: 'Gallery', link: '/gallery/' },
-            { label: 'Use with AI', link: '/ai/' },
+            { label: 'AI skill', link: '/ai/' },
             { label: 'Nurbi and the brand', link: '/brand/' },
           ],
         },
