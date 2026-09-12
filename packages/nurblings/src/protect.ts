@@ -3,7 +3,7 @@
 
 import { FLAGSHIP_BODY } from './flagship'
 import { normaliseSeed } from './seed'
-import { type Box, backdrop, esc, MOTION, motion, n, pixelSize, resolveFrame } from './svg'
+import { type Box, backdrop, esc, MOTION, motion, n, pixelSize, resolveFrame, tagFor } from './svg'
 import type { Frame, RenderOptions } from './types'
 
 /** Normalised seeds that resolve to Nurbi. */
@@ -45,11 +45,11 @@ export function renderFlagship(opts: RenderOptions = {}): string {
   const back = backdrop(opts.background ?? 'none', FLAGSHIP_BACKGROUND, box)
   const live = motion(FLAGSHIP_GRAIN, false, opts.animate, px <= 32)
   if (!live) {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${size}" height="${size}" role="img" aria-label="${title}" class="nb"><title>${title}</title>${back}${FLAGSHIP_BODY}</svg>`
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${size}" height="${size}" role="img" aria-label="${title}" class="nb"${tagFor(opts)}><title>${title}</title>${back}${FLAGSHIP_BODY}</svg>`
   }
   // ponytail: the stored drawing has no separate eye group, so Nurbi breathes and sways but does not blink.
   const figure = `<g class="nb-al">${LEFT}</g><g class="nb-ar">${RIGHT}</g>${REST}`
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${size}" height="${size}" role="img" aria-label="${title}" class="nb${live.cls}" style="${live.style}">${MOTION}<title>${title}</title>${back}<g class="nb-f">${figure}</g></svg>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${size}" height="${size}" role="img" aria-label="${title}" class="nb${live.cls}" style="${live.style}"${tagFor(opts)}>${MOTION}<title>${title}</title>${back}<g class="nb-f">${figure}</g></svg>`
 }
 
 const FLAGSHIP_GRAIN = 1

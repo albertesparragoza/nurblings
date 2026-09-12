@@ -25,6 +25,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./transition": {
+      "types": "./dist/transition.d.ts",
+      "default": "./dist/transition.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
