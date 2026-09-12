@@ -12,6 +12,12 @@
     "limit": "8.75 KB"
   },
   {
+    "name": "nurblings/transition: morph()",
+    "path": "packages/nurblings/dist/transition.js",
+    "import": "{ morph }",
+    "limit": "1 KB"
+  },
+  {
     "name": "@nurblings/vue",
     "path": "packages/vue/dist/index.js",
     "import": "*",
