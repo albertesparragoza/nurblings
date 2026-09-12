@@ -116,10 +116,10 @@ image.src = toDataUri(nurbling('user-42'))`,
   },
 ]
 
-const prompt = `Add Nurblings avatars to this app.
-Read {origin}/llms.txt first.
-Seed every avatar with the user's stable id and
-pass their name as the title.`
+const prompt = `npx skills add albertesparragoza/nurblings
+
+# then, in your agent
+> Give every commenter an avatar.`
 ---
 
 <Site class="home">
@@ -172,10 +172,10 @@ pass their name as the title.`
 
   <section class="wrap section" id="scene-section" data-reveal>
     <div class="section-head">
-      <h2>Alive inside your product.</h2>
+      <h2>They move in and make themselves at home.</h2>
       <p>
-        Click a teammate: their avatar glides into the profile. Messages arrive, dots come online, and every
-        Nurbling keeps breathing and blinking.
+        Click a teammate and their Nurbling glides into the profile. Messages land, dots light up, and nobody
+        stops blinking.
       </p>
     </div>
     <div class="panel">
@@ -224,8 +224,8 @@ pass their name as the title.`
 
   <section class="section family" data-reveal>
     <div class="wrap section-head">
-      <h2>A family, not a template.</h2>
-      <p>Ten body designs, plates on the crown, a flank, the base or nowhere, moods, extras and colours paired for contrast.</p>
+      <h2>Millions of relatives. Zero twins.</h2>
+      <p>Every seed mixes its own body, plates, antennae, eyes, mood and colours. Your users will spot theirs across the room.</p>
     </div>
     <div class="marquee" aria-hidden="true">
       <div class="track">{[...rowA, ...rowA].map((s) => <Avatar seed={s} size={76} still />)}</div>
@@ -238,7 +238,7 @@ pass their name as the title.`
 
   <section class="wrap section" data-reveal>
     <div class="section-head">
-      <h2>Small library, a lot of personality.</h2>
+      <h2>Everything a profile picture should have been.</h2>
     </div>
     <div class="features">
       <article class="feature">
@@ -291,8 +291,8 @@ pass their name as the title.`
 
   <section class="wrap section" data-reveal>
     <div class="section-head">
-      <h2>One component, every framework.</h2>
-      <p>Server components in React and Astro, a Vue component, a custom element for everything else.</p>
+      <h2>Drops into whatever you ship.</h2>
+      <p>React and Astro render on the server with zero JavaScript. Vue, a custom element and plain JS cover the rest.</p>
     </div>
     <div class="tabs" role="tablist" aria-label="Framework">
       {
@@ -321,19 +321,18 @@ pass their name as the title.`
   <section class="wrap section" data-reveal>
     <div class="ai-band">
       <div>
-        <h2>Made for AI assistants.</h2>
+        <h2>Your coding agent already knows how.</h2>
         <p>
-          Docs your assistant reads natively: llms.txt, one full text file, and Markdown for every page. A
-          Nurblings skill is on its way.
+          Install the Nurblings skill and just ask for avatars. Claude Code, Cursor and Codex pick the right
+          package, seed with stable ids and wire the motion for you.
         </p>
         <div class="actions">
-          <a class="btn" href="/ai/">Use with AI</a>
-          <a class="btn btn-ghost" href="/llms.txt">llms.txt</a>
+          <a class="btn" href="/ai/">Get the skill</a>
         </div>
       </div>
       <div class="ai-prompt">
         <div class="code-head">
-          <span>Prompt</span>
+          <span>Terminal</span>
           <button type="button" data-copy={prompt}><span data-copy-label>Copy</span></button>
         </div>
         <pre data-origin>{prompt}</pre>
@@ -342,7 +341,7 @@ pass their name as the title.`
   </section>
 
   <section class="wrap section cta" data-reveal>
-    <h2>Hatch your first Nurbling.</h2>
+    <h2>Everyone gets one. Hatch yours first.</h2>
     <div class="actions">
       <a class="btn" href="/docs/getting-started/">Get started</a>
       <a class="btn btn-ghost" href="/playground/">Open the playground</a>
