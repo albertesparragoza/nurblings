@@ -149,4 +149,9 @@ export interface RenderOptions {
   animate?: boolean | Motion
   /** framing inside the square; defaults to `auto` */
   frame?: Frame
+  /**
+   * A key for `morph` from `nurblings/transition`: when the same key appears
+   * in two places, the avatar moves between them instead of jumping.
+   */
+  transition?: string
 }

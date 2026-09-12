@@ -506,6 +506,10 @@ export const MOTION =
 
 const LAYERS = { mb: 'breath', mk: 'blink', ma: 'antennae', mh: 'hover' } as const
 
+/** The root attribute `morph` looks for; nothing when no key is set. */
+export const tagFor = (opts: RenderOptions) =>
+  opts.transition ? ` data-nurbling-transition="${esc(opts.transition)}"` : ''
+
 /**
  * The root classes and timing for an animated avatar, or nothing for a still
  * one. Periods come from the seed's grain, so a grid never breathes in unison
@@ -620,6 +624,6 @@ export function render(t: Traits, opts: RenderOptions = {}, slots: Slots = {}): 
   })
   const drawn = live ? `<g class="nb-f">${figure.join('')}</g>` : figure.join('')
   const vb = `${n(box.x)} ${n(box.y)} ${n(box.s)} ${n(box.s)}`
-  const root = live ? `class="nb${live.cls}" style="${live.style}"` : 'class="nb"'
+  const root = (live ? `class="nb${live.cls}" style="${live.style}"` : 'class="nb"') + tagFor(opts)
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${n(size)}" height="${n(size)}" role="img" aria-label="${title}" ${root}>${live ? MOTION : ''}<title>${title}</title>${backdropSvg}${drawn}</svg>`
 }
