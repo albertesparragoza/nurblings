@@ -1,0 +1,116 @@
+---
+import '@fontsource-variable/bricolage-grotesque'
+import '@fontsource-variable/dm-sans'
+import '@fontsource-variable/geist-mono'
+import '../styles/tokens.css'
+import '../styles/site.css'
+// Nurbi is the flagship: always the default renderer, never repainted by a theme
+import { nurbling } from 'nurblings'
+
+interface Props {
+  title?: string
+  description?: string
+  /** path of the active nav item */
+  active?: string
+  class?: string
+}
+
+const {
+  title,
+  description = 'Deterministic SVG avatars that stay themselves, wear your brand and react. React, Vue, Astro and any HTML.',
+  active,
+  class: className,
+} = Astro.props
+const pageTitle = title
+  ? `${title} · Nurblings Avatars`
+  : 'Nurblings Avatars · Every profile picture, a little character'
+const REPO = 'https://github.com/albertesparragoza/nurblings'
+const nav = [
+  ['Playground', '/playground/'],
+  ['Gallery', '/gallery/'],
+  ['Docs', '/docs/getting-started/'],
+  ['AI', '/ai/'],
+] as const
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="Nurblings docs for AI assistants" />
+    <script is:inline>
+      // same key as the docs, so light/dark follows the visitor across the site
+      ;(() => {
+        const root = document.documentElement
+        root.classList.add('js')
+        try {
+          const saved = localStorage.getItem('starlight-theme')
+          root.dataset.theme =
+            saved === 'light' || saved === 'dark'
+              ? saved
+              : matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+        } catch {
+          root.dataset.theme = 'light'
+        }
+      })()
+    </script>
+  </head>
+  <body class={className}>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="/" aria-label="Nurblings Avatars, home">
+          <span class="av" set:html={nurbling('nurbi', { size: 38, frame: 'portrait', title: 'Nurbi' })} />
+          <b>nurblings</b><small>avatars</small>
+        </a>
+        <nav class="site-nav" aria-label="Main">
+          {
+            nav.map(([label, href]) => (
+              <a href={href} class:list={{ 'hide-sm': label !== 'Docs' }} aria-current={active === href ? 'page' : undefined}>
+                {label}
+              </a>
+            ))
+          }
+          <a class="hide-sm" href={REPO}>GitHub</a>
+          <button class="icon-btn" id="mode-toggle" type="button" aria-label="Switch light and dark">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"></path></svg>
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>
+          Code under MIT. Generated avatars are public domain (CC0). The names Nurbi and Nurblings and the
+          flagship artwork are reserved.
+        </p>
+        <nav aria-label="Footer">
+          <a href="/docs/getting-started/">Getting started</a>
+          <a href="/docs/api/">API</a>
+          <a href="/playground/">Playground</a>
+          <a href="/gallery/">Gallery</a>
+          <a href="/ai/">Use with AI</a>
+          <a href="/brand/">Nurbi and the brand</a>
+          <a href={REPO}>GitHub</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script>
+      import { boot } from '../lib/client'
+      boot()
+    </script>
+  </body>
+</html>

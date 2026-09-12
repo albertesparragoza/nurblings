@@ -1,0 +1,31 @@
+---
+// The avatar theme switcher: each chip is a tiny Nurbling in that theme.
+import { THEMES, themeIds } from '../lib/themes'
+
+const groups = [
+  ['Default', ['default']],
+  ['Themes', themeIds('pastel')],
+  ['Bold', themeIds('bold')],
+] as const
+---
+
+<div class="picker" role="group" aria-label="Avatar theme">
+  {
+    groups.map(([label, ids]) => (
+      <Fragment>
+        <span>{label}</span>
+        {ids.map((id) => (
+          <button
+            type="button"
+            class="chip"
+            data-theme-chip={id}
+            aria-pressed={String(id === 'default')}
+            aria-label={THEMES[id]?.label}
+            title={THEMES[id]?.label}
+            set:html={THEMES[id]?.render('nurbling', { size: 30, background: 'circle', animate: false })}
+          />
+        ))}
+      </Fragment>
+    ))
+  }
+</div>

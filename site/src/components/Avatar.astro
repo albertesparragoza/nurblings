@@ -1,0 +1,56 @@
+---
+// An avatar placeholder: rendered on the server in the default family, and
+// repainted in the browser when the visitor picks another theme.
+import { THEMES } from '../lib/themes'
+
+interface Props {
+  seed: string
+  size?: number
+  background?: 'none' | 'circle' | 'squircle' | 'square'
+  transition?: string
+  title?: string
+  mood?: 'neutral' | 'curious' | 'pleased' | 'thinking' | 'sleepy'
+  frame?: 'auto' | 'full' | 'portrait'
+  still?: boolean
+  class?: string
+  id?: string
+}
+
+const {
+  seed,
+  size = 64,
+  background = 'circle',
+  transition,
+  title = seed,
+  mood,
+  frame,
+  still = false,
+  class: className,
+  id,
+} = Astro.props
+
+const svg = THEMES.default?.render(seed, {
+  size,
+  background,
+  title,
+  ...(transition ? { transition } : {}),
+  ...(mood ? { mood } : {}),
+  ...(frame ? { frame } : {}),
+  ...(still ? { animate: false } : {}),
+})
+---
+
+<span
+  class:list={['av', className]}
+  id={id}
+  data-av
+  data-seed={seed}
+  data-size={size}
+  data-bg={background}
+  data-title={title}
+  data-transition={transition}
+  data-mood={mood}
+  data-frame={frame}
+  data-still={still ? '' : undefined}
+  set:html={svg}
+/>

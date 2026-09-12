@@ -1,0 +1,45 @@
+/* The docs wear the same identity as the marketing pages: Bricolage headings,
+   DM Sans text, warm paper and plum. Dark values first, light overrides after,
+   the order Starlight itself uses. */
+:root {
+  --sl-font: var(--text);
+  --sl-font-mono: var(--mono);
+  --sl-color-accent-low: #33245e;
+  --sl-color-accent: #a58cff;
+  --sl-color-accent-high: #e6ddff;
+  --sl-color-white: #f7f1ff;
+  --sl-color-gray-1: #e8dff7;
+  --sl-color-gray-2: #cbbfe0;
+  --sl-color-gray-3: #9d91b5;
+  --sl-color-gray-4: #675d80;
+  --sl-color-gray-5: #3a3056;
+  --sl-color-gray-6: #292141;
+  --sl-color-black: #1e1830;
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #ebe4ff;
+  --sl-color-accent: #6a4bd6;
+  --sl-color-accent-high: #2d1a78;
+  --sl-color-white: #2a2140;
+  --sl-color-gray-1: #3a3050;
+  --sl-color-gray-2: #4e4466;
+  --sl-color-gray-3: #665b7a;
+  --sl-color-gray-4: #a097b2;
+  --sl-color-gray-5: #e5dacb;
+  --sl-color-gray-6: #f7eee2;
+  --sl-color-gray-7: #fbf4ea;
+  --sl-color-black: #fff8ee;
+}
+
+.sl-markdown-content :is(h1, h2, h3, h4),
+h1#_top,
+.site-title {
+  font-family: var(--display);
+  letter-spacing: -0.02em;
+}
+
+h1#_top,
+.site-title {
+  font-weight: 800;
+}
