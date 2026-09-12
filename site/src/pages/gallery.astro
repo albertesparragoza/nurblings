@@ -11,14 +11,18 @@ const people = [
   ['alan', 'Alan Reyes'],
 ] as const
 const crowd = ['radia', 'ken', 'frances', 'dennis', 'barbara', 'joan', 'tim', 'hedy']
-const kinds = { default: 'The family', pastel: 'Theme', bold: 'Bold, preview' }
+const kinds = {
+  default: 'The default colours',
+  pastel: 'Colour theme',
+  bold: 'Bold colour theme, preview',
+}
 
 const designs = Object.entries(SILHOUETTES)
 const zones = [
-  ['crown', 'Crown'],
-  ['side', 'Flank'],
-  ['base', 'Base'],
-  ['none', 'Smooth'],
+  ['crown', 'On the crown'],
+  ['side', 'Down one side'],
+  ['base', 'Around the base'],
+  ['none', 'No plates'],
 ] as const
 const byZone = zones.map(([zone, label]) => ({
   label,
@@ -32,59 +36,19 @@ const sizes = [24, 32, 48, 64, 96, 128]
 <Site title="Gallery" active="/gallery/" class="gal">
   <div class="wrap">
     <header class="page-head">
-      <h1>Gallery</h1>
-      <p class="lead">Every theme inside a real interface, then every trait the family is made of.</p>
+      <h1>Meet the family.</h1>
+      <p class="lead">What every Nurbling is made of, then the colours you can dress them in.</p>
+      <nav class="jump" aria-label="On this page">
+        <a href="#family">The family</a>
+        <a href="#themes">Colour themes</a>
+      </nav>
     </header>
 
-    <section class="themes">
-      {
-        Object.values(THEMES).map((t) => (
-          <article class="theme-card card" style={`--accent:${t.accent}`}>
-            <header>
-              <div>
-                <h2>{t.label}</h2>
-                <small>{kinds[t.kind]}</small>
-              </div>
-              <div class="swatches">
-                {t.colors.map((c) => (
-                  <i style={`background:${c}`} title={c} />
-                ))}
-              </div>
-            </header>
-            <div class="mini">
-              <div class="mini-profile">
-                <span class="av" set:html={t.render('grace', { size: 84, background: 'circle', title: 'Grace Liu' })} />
-                <b>Grace Liu</b>
-                <small>Engineer · online</small>
-                <span class="mini-btn">Message</span>
-              </div>
-              <div class="mini-list">
-                {people.map(([seed, name]) => (
-                  <div class="mini-row">
-                    <span class="av" set:html={t.render(seed, { size: 36, background: 'circle', title: name })} />
-                    <span>{name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div class="theme-crowd">
-              {crowd.map((s) => (
-                <span class="av" set:html={t.render(s, { size: 48, background: 'circle', title: s })} />
-              ))}
-            </div>
-            <a class="btn btn-ghost" href={`/playground/#theme=${t.id}`}>Open in the playground</a>
-          </article>
-        ))
-      }
-    </section>
+    <section id="family" class="traits">
+      <h2>The family</h2>
+      <p class="lead">Ten body shapes, four ways to wear the plates, five moods. The seed picks the mix.</p>
 
-    <section class="traits section">
-      <div class="section-head">
-        <h2>The family, trait by trait.</h2>
-        <p>What every theme is built from: ten body designs, four plate placements, calm moods and any container.</p>
-      </div>
-
-      <h3>Body designs</h3>
+      <h3>Body shapes</h3>
       <div class="trait-grid">
         {
           designs.map(([name]) => (
@@ -96,7 +60,7 @@ const sizes = [24, 32, 48, 64, 96, 128]
         }
       </div>
 
-      <h3>Where the plates sit</h3>
+      <h3>Plates</h3>
       <div class="zone-grid">
         {
           byZone.map(({ label, names }) => (
@@ -106,9 +70,7 @@ const sizes = [24, 32, 48, 64, 96, 128]
                   <Nurbling seed={`plates-${name}`} silhouette={name as keyof typeof SILHOUETTES} size={80} title={name} />
                 ))}
               </div>
-              <figcaption>
-                {label}: {names.join(', ')}
-              </figcaption>
+              <figcaption>{label}</figcaption>
             </figure>
           ))
         }
@@ -126,8 +88,7 @@ const sizes = [24, 32, 48, 64, 96, 128]
         }
       </div>
 
-      <h3>Containers and sizes</h3>
-      <p class="note">At 48 px and below the frame crops to a portrait; at 32 px and below the mouth and extras step aside and motion stops.</p>
+      <h3>Any container, any size</h3>
       <div class="zone-grid">
         {
           containers.map((background) => (
@@ -143,14 +104,95 @@ const sizes = [24, 32, 48, 64, 96, 128]
         }
       </div>
     </section>
+
+    <section id="themes" class="section">
+      <h2>Colour themes</h2>
+      <p class="lead">Every card shows the same faces. Only the palette changes, so pick the one that feels like your product.</p>
+      <div class="themes">
+        {
+          Object.values(THEMES).map((t) => (
+            <article class="theme-card card" style={`--accent:${t.accent}`}>
+              <header>
+                <div>
+                  <h3>{t.label}</h3>
+                  <small>{kinds[t.kind]}</small>
+                </div>
+                <div class="swatches" aria-label={`Palette: ${t.colors.join(', ')}`}>
+                  {t.colors.map((c) => (
+                    <i style={`background:${c}`} title={c} />
+                  ))}
+                </div>
+              </header>
+              <div class="mini">
+                <div class="mini-profile">
+                  <span class="av" set:html={t.render('grace', { size: 84, background: 'circle', title: 'Grace Liu' })} />
+                  <b>Grace Liu</b>
+                  <small>Engineer · online</small>
+                  <span class="mini-btn">Message</span>
+                </div>
+                <div class="mini-list">
+                  {people.map(([seed, name]) => (
+                    <div class="mini-row">
+                      <span class="av" set:html={t.render(seed, { size: 36, background: 'circle', title: name })} />
+                      <span>{name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div class="theme-crowd">
+                {crowd.map((s) => (
+                  <span class="av" set:html={t.render(s, { size: 48, background: 'circle', title: s })} />
+                ))}
+              </div>
+              <a class="btn btn-ghost" href={`/playground/#theme=${t.id}`}>Try {t.label} in the playground</a>
+            </article>
+          ))
+        }
+      </div>
+    </section>
   </div>
 </Site>
 
 <style is:global>
+  .gal .jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 22px;
+  }
+
+  .gal .jump a {
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 8px 16px;
+  }
+
+  .gal .jump a:hover {
+    border-color: var(--accent);
+  }
+
+  .gal section > h2 {
+    font-size: clamp(34px, 4vw, 52px);
+    font-weight: 800;
+    scroll-margin-top: 84px;
+  }
+
+  .gal section[id] {
+    scroll-margin-top: 84px;
+  }
+
+  .gal section > .lead {
+    margin-bottom: 8px;
+  }
+
   .gal .themes {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
+    margin-top: 28px;
   }
 
   .gal .theme-card {
@@ -166,7 +208,7 @@ const sizes = [24, 32, 48, 64, 96, 128]
     gap: 12px;
   }
 
-  .gal .theme-card h2 {
+  .gal .theme-card h3 {
     font-size: 26px;
     font-weight: 800;
   }
@@ -304,15 +346,10 @@ const sizes = [24, 32, 48, 64, 96, 128]
     align-items: flex-end;
   }
 
-  .gal .note {
-    color: var(--muted);
-    margin: -6px 0 14px;
-  }
-
   @media (max-width: 900px) {
     .gal .themes,
     .gal .mini {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 </style>
