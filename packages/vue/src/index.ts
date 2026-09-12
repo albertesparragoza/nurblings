@@ -24,6 +24,7 @@ const OPTION_KEYS = [
   'silhouette',
   'shell',
   'frame',
+  'transition',
 ] as const satisfies readonly (keyof NurblingOptions)[]
 
 /** Where `NurblingsPlugin` provides the app-wide configuration. */
@@ -63,6 +64,10 @@ export const Nurbling = defineComponent({
     },
     shell: { type: String as PropType<NurblingOptions['shell']>, default: undefined },
     frame: { type: String as PropType<NurblingOptions['frame']>, default: undefined },
+    transition: {
+      type: String as PropType<NurblingOptions['transition']>,
+      default: undefined,
+    },
     nurblings: { type: Object as PropType<NurblingRenderer>, default: undefined },
   },
   setup(props) {
