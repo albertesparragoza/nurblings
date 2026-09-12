@@ -79,8 +79,13 @@ export async function morph(update: Update, options: MorphOptions = {}): Promise
   const moves: Promise<unknown>[] = []
   for (const el of after) {
     const key = keyOf(el)
+    // where it came from: a twin that just left, its own old box, or a twin
+    // still on screen (a dialog opening over the list it came from)
+    const twins = before.filter((b) => keyOf(b) === key)
     const source =
-      before.find((b) => keyOf(b) === key && !after.includes(b)) ?? (from.has(el) ? el : undefined)
+      twins.find((b) => !after.includes(b)) ??
+      (from.has(el) ? el : undefined) ??
+      twins.find((b) => b !== el)
     const a = source && from.get(source)
     const b = el.getBoundingClientRect()
     if (!a || !b.width || !b.height) continue

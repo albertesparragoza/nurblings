@@ -120,6 +120,17 @@ describe('morph', () => {
     expect(start).not.toHaveBeenCalled()
     expect(firstFrame(inList)).toBeDefined()
   })
+
+  it('opens a dialog from the avatar that stays in the list', async () => {
+    avatar('ada', [10, 500, 48, 48])
+    let opened: SVGSVGElement | undefined
+    await morph(() => {
+      opened = avatar('ada', [100, 100, 240, 240])
+    })
+    expect(firstFrame(opened as SVGSVGElement)).toMatch(
+      /^translate\(-90px,400px\) scale\(0\.2,0\.2\)$/,
+    )
+  })
 })
 
 describe('transitionName', () => {
