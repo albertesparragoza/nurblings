@@ -57,6 +57,18 @@ markup on the server and the client.
 For an app-wide configuration, make an instance with `createNurblings` and
 pass it as `nurblings`, or wrap the component once in your own `Avatar.astro`:
 
+```ts
+// src/avatars.ts
+import { createNurblings } from 'nurblings'
+
+export const avatars = createNurblings({
+  shells: { mist: '#e4ebf2', sand: '#f1e4cf' },
+  accents: { ink: '#2c5fd9', coral: '#c94f38', forest: '#2e7d4f' },
+})
+```
+
+`src/components/Avatar.astro`:
+
 ```astro
 ---
 import { Nurbling } from '@nurblings/astro'
