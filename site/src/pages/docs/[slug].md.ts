@@ -1,6 +1,6 @@
 // Markdown source for every docs page (/docs/<page>.md), for AI assistants.
 import type { APIRoute, GetStaticPaths } from 'astro'
-import { docsInOrder, text } from '../../lib/docs'
+import { absoluteLinks, docsInOrder, text } from '../../lib/docs'
 
 export const getStaticPaths = (async () => {
   const docs = await docsInOrder()
@@ -11,4 +11,4 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths
 
 export const GET: APIRoute = ({ props }) =>
-  text(`# ${props.title}\n\n${String(props.body).trim()}\n`, 'text/markdown')
+  text(`# ${props.title}\n\n${absoluteLinks(String(props.body).trim())}\n`, 'text/markdown')
