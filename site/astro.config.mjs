@@ -25,23 +25,29 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Nurblings',
-      description: 'Deterministic SVG avatars: any string in, a small curious creature out.',
+      description: 'Deterministic SVG avatars that stay themselves, wear your brand and react.',
+      logo: { src: './src/assets/nurbi.svg', alt: 'Nurbi' },
       favicon: '/favicon.svg',
       social: [{ icon: 'github', label: 'GitHub', href: REPO }],
       editLink: { baseUrl: `${REPO}/edit/develop/` },
       customCss: [
-        '@fontsource-variable/geist',
+        '@fontsource-variable/bricolage-grotesque',
+        '@fontsource-variable/dm-sans',
         '@fontsource-variable/geist-mono',
-        './src/styles/theme.css',
+        './src/styles/tokens.css',
+        './src/styles/starlight.css',
       ],
       sidebar: [
         { label: 'Start here', items: [{ slug: 'docs/getting-started' }] },
+        { label: 'Guides', items: [{ slug: 'docs/motion' }, { slug: 'docs/customising' }] },
         { label: 'Reference', items: [{ slug: 'docs/api' }] },
         {
-          label: 'Explore',
+          label: 'More',
           items: [
-            { label: 'Playground', link: '/#playground' },
+            { label: 'Home', link: '/' },
+            { label: 'Playground', link: '/playground/' },
             { label: 'Gallery', link: '/gallery/' },
+            { label: 'Use with AI', link: '/ai/' },
             { label: 'Nurbi and the brand', link: '/brand/' },
           ],
         },

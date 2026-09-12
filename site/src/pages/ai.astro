@@ -1,0 +1,208 @@
+---
+import Avatar from '../components/Avatar.astro'
+import Site from '../layouts/Site.astro'
+
+const prompts = [
+  {
+    title: 'Add avatars to a Next.js app',
+    text: `Add Nurblings avatars to this Next.js app. Read {origin}/llms.txt first.
+Use @nurblings/react as a server component. Seed every avatar with the user's
+stable id, never their email, and pass their name as the title.
+Use size 40 in lists and 96 on profile pages.`,
+  },
+  {
+    title: 'Glide a Vue avatar into a dialog',
+    text: `Using @nurblings/vue, render a Nurbling for each team member and give it
+transition set to the member id. When a member card opens as a dialog, render the
+same avatar with the same transition key and wrap the change in morph() from
+nurblings/transition so it glides into the dialog. Docs: {origin}/llms-full.txt`,
+  },
+  {
+    title: 'Match our brand colours',
+    text: `Create one createNurblings instance with our brand palette (shells and
+accents below) and use it app-wide: NurblingsProvider in React client
+components, the nurblings prop in server components. Keep the contrast errors
+it throws at setup visible, and pick replacement colours if one fails.
+Docs: {origin}/docs/customising.md`,
+  },
+]
+---
+
+<Site title="Use with AI" active="/ai/" class="aip">
+  <div class="wrap">
+    <section class="ai-hero">
+      <div>
+        <h1>Built for AI assistants.</h1>
+        <p class="lead">
+          Your coding assistant can read the whole Nurblings documentation in formats made for it, and soon
+          install a skill that knows the library by heart.
+        </p>
+        <div class="actions">
+          <button class="btn" type="button" data-copy-url="/llms-full.txt"><span data-copy-label>Copy all docs for your AI</span></button>
+          <a class="btn btn-ghost" href="/llms.txt">Open llms.txt</a>
+        </div>
+      </div>
+      <div class="ai-crowd" aria-hidden="true">
+        <Avatar seed="assistant" size={120} />
+        <Avatar seed="copilot-friend" size={88} />
+        <Avatar seed="agent-smol" size={72} />
+      </div>
+    </section>
+
+    <section class="grid3">
+      <a class="card link-card" href="/llms.txt">
+        <h2>llms.txt</h2>
+        <p>An index of the docs with one line per page, following the llms.txt convention. Point any assistant at it.</p>
+        <code>/llms.txt</code>
+      </a>
+      <a class="card link-card" href="/llms-full.txt">
+        <h2>llms-full.txt</h2>
+        <p>Every docs page in one plain text file, for pasting into a chat or loading as context.</p>
+        <code>/llms-full.txt</code>
+      </a>
+      <a class="card link-card" href="/docs/getting-started.md">
+        <h2>Markdown for every page</h2>
+        <p>Add <code>.md</code> to a docs page for its source, ready for an agent to read without the page around it.</p>
+        <code>/docs/getting-started.md</code>
+      </a>
+    </section>
+
+    <section class="skill card">
+      <span class="badge">Coming soon</span>
+      <h2>The Nurblings skill</h2>
+      <p class="lead">
+        A skill for coding agents that knows the library by heart, so an assistant adds avatars the way the docs
+        recommend instead of guessing.
+      </p>
+      <ul>
+        <li>Picks the right package for your framework and installs it.</li>
+        <li>Seeds avatars with stable ids and passes names as accessible titles.</li>
+        <li>Sets up themes and brand palettes with createNurblings, and fixes contrast errors.</li>
+        <li>Wires motion and morph transitions, and respects reduced motion.</li>
+      </ul>
+      <div class="code-card">
+        <div class="code-head"><span>Planned install</span></div>
+        <pre><code>npx skills add albertesparragoza/nurblings</code></pre>
+      </div>
+    </section>
+
+    <section class="section prompts">
+      <div class="section-head">
+        <h2>Prompts that work.</h2>
+        <p>Paste one into your assistant. Each points it at the docs first.</p>
+      </div>
+      <div class="grid3">
+        {
+          prompts.map((p) => (
+            <article class="code-card prompt">
+              <div class="code-head">
+                <span>{p.title}</span>
+                <button type="button" data-copy={p.text}>
+                  <span data-copy-label>Copy</span>
+                </button>
+              </div>
+              <pre data-origin>{p.text}</pre>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+  </div>
+</Site>
+
+<style is:global>
+  .aip .ai-hero {
+    display: grid;
+    grid-template-columns: 1.3fr 0.7fr;
+    gap: 32px;
+    align-items: center;
+    padding-block: clamp(40px, 7vw, 88px) 40px;
+  }
+
+  .aip h1 {
+    font-size: clamp(44px, 6vw, 84px);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+  }
+
+  .aip .ai-hero .actions {
+    margin-top: 26px;
+  }
+
+  .aip .ai-crowd {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 10px;
+    background: var(--tint);
+    border-radius: var(--r-xl);
+    padding: 40px 20px;
+  }
+
+  .aip .grid3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .aip .link-card {
+    display: grid;
+    gap: 10px;
+    text-decoration: none;
+    transition:
+      transform 0.4s var(--spring),
+      border-color 0.3s;
+  }
+
+  .aip .link-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+  }
+
+  .aip .link-card h2,
+  .aip .skill h2 {
+    font-size: 26px;
+    font-weight: 800;
+  }
+
+  .aip .link-card p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .aip .link-card > code {
+    font: 14px var(--mono);
+    color: var(--accent-text);
+  }
+
+  .aip .skill {
+    margin-top: 24px;
+    display: grid;
+    gap: 12px;
+    padding: clamp(22px, 3vw, 36px);
+  }
+
+  .aip .skill .badge {
+    justify-self: start;
+  }
+
+  .aip .skill ul {
+    margin: 4px 0 8px;
+    padding-left: 20px;
+    display: grid;
+    gap: 6px;
+    color: var(--muted);
+  }
+
+  .aip .prompt pre {
+    white-space: pre-wrap;
+    font-size: 13px;
+  }
+
+  @media (max-width: 900px) {
+    .aip .ai-hero,
+    .aip .grid3 {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,14 +1,27 @@
 ---
-import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
 import { Nurbling } from '@nurblings/astro'
-import { type Background, type Mood, SHELLS, SILHOUETTES } from 'nurblings'
+import { type Background, type Mood, SILHOUETTES } from 'nurblings'
+import Site from '../layouts/Site.astro'
+import { THEMES } from '../lib/themes'
 
-const SEED = 'gallery'
+const people = [
+  ['ada', 'Ada Park'],
+  ['linus', 'Linus Ortega'],
+  ['margaret', 'Margaret Oduya'],
+  ['alan', 'Alan Reyes'],
+] as const
+const crowd = ['radia', 'ken', 'frances', 'dennis', 'barbara', 'joan', 'tim', 'hedy']
+const kinds = { default: 'The family', pastel: 'Theme', bold: 'Bold, preview' }
+
 const designs = Object.entries(SILHOUETTES)
-const zones = ['crown', 'side', 'base', 'none'] as const
-const zoneNames = { crown: 'Crown', side: 'Flank', base: 'Base', none: 'Smooth' }
-const byZone = zones.map((zone) => ({
-  zone,
+const zones = [
+  ['crown', 'Crown'],
+  ['side', 'Flank'],
+  ['base', 'Base'],
+  ['none', 'Smooth'],
+] as const
+const byZone = zones.map(([zone, label]) => ({
+  label,
   names: designs.filter(([, s]) => (s.plates ?? 'crown') === zone).map(([name]) => name),
 }))
 const moods: Mood[] = ['neutral', 'curious', 'pleased', 'thinking', 'sleepy']
@@ -16,105 +29,290 @@ const containers: Background[] = ['circle', 'squircle', 'square', 'none']
 const sizes = [24, 32, 48, 64, 96, 128]
 ---
 
-<StarlightPage
-  frontmatter={{
-    title: 'Gallery',
-    description: 'Every body design, plate placement, colour, mood and container in the first generation.',
-    tableOfContents: false,
-  }}
-  hasSidebar={false}
->
-  <div class="not-content nb-page">
-    <section>
-      <h2>Body designs</h2>
-      <p class="nb-lead">Ten designs, each varied slightly by the seed. Pin one with <code>silhouette</code>.</p>
-      <div class="nb-grid">
-        {designs.map(([name]) => (
-          <figure class="nb-cell">
-            <Nurbling seed={name} silhouette={name as keyof typeof SILHOUETTES} size={112} title={name} />
-            <figcaption class="nb-caption">{name}</figcaption>
-          </figure>
-        ))}
-      </div>
-    </section>
+<Site title="Gallery" active="/gallery/" class="gal">
+  <div class="wrap">
+    <header class="page-head">
+      <h1>Gallery</h1>
+      <p class="lead">Every theme inside a real interface, then every trait the family is made of.</p>
+    </header>
 
-    <section>
-      <h2>Where the plates sit</h2>
-      <p class="nb-lead">Flat low-poly plates on the crown, down one flank, around the base, or nowhere at all.</p>
-      <div class="zones">
-        {byZone.map(({ zone, names }) => (
-          <figure class="nb-cell">
-            <div class="row">
-              {names.map((name) => (
-                <Nurbling seed={`${SEED}-${name}`} silhouette={name as keyof typeof SILHOUETTES} size={88} title={name} />
+    <section class="themes">
+      {
+        Object.values(THEMES).map((t) => (
+          <article class="theme-card card" style={`--accent:${t.accent}`}>
+            <header>
+              <div>
+                <h2>{t.label}</h2>
+                <small>{kinds[t.kind]}</small>
+              </div>
+              <div class="swatches">
+                {t.colors.map((c) => (
+                  <i style={`background:${c}`} title={c} />
+                ))}
+              </div>
+            </header>
+            <div class="mini">
+              <div class="mini-profile">
+                <span class="av" set:html={t.render('grace', { size: 84, background: 'circle', title: 'Grace Liu' })} />
+                <b>Grace Liu</b>
+                <small>Engineer · online</small>
+                <span class="mini-btn">Message</span>
+              </div>
+              <div class="mini-list">
+                {people.map(([seed, name]) => (
+                  <div class="mini-row">
+                    <span class="av" set:html={t.render(seed, { size: 36, background: 'circle', title: name })} />
+                    <span>{name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div class="theme-crowd">
+              {crowd.map((s) => (
+                <span class="av" set:html={t.render(s, { size: 48, background: 'circle', title: s })} />
               ))}
             </div>
-            <figcaption class="nb-caption">{zoneNames[zone]}: {names.join(', ')}</figcaption>
-          </figure>
-        ))}
-      </div>
+            <a class="btn btn-ghost" href={`/playground/#theme=${t.id}`}>Open in the playground</a>
+          </article>
+        ))
+      }
     </section>
 
-    <section>
-      <h2>Colours</h2>
-      <p class="nb-lead">Nine shells, each paired only with accents that read on it and on light and dark pages.</p>
-      <div class="nb-grid">
-        {Object.keys(SHELLS).map((shell) => (
-          <figure class="nb-cell">
-            <Nurbling seed={SEED} shell={shell as keyof typeof SHELLS} size={96} background="circle" title={shell} />
-            <figcaption class="nb-caption">{shell}</figcaption>
-          </figure>
-        ))}
+    <section class="traits section">
+      <div class="section-head">
+        <h2>The family, trait by trait.</h2>
+        <p>What every theme is built from: ten body designs, four plate placements, calm moods and any container.</p>
       </div>
-    </section>
 
-    <section>
-      <h2>Moods</h2>
-      <p class="nb-lead">Calm resting moods, drawn from the seed or pinned with <code>mood</code>.</p>
-      <div class="nb-grid">
-        {moods.map((mood) => (
-          <figure class="nb-cell">
-            <Nurbling seed="ada" mood={mood} size={112} title={mood} />
-            <figcaption class="nb-caption">{mood}</figcaption>
-          </figure>
-        ))}
+      <h3>Body designs</h3>
+      <div class="trait-grid">
+        {
+          designs.map(([name]) => (
+            <figure>
+              <Nurbling seed={name} silhouette={name as keyof typeof SILHOUETTES} size={104} title={name} />
+              <figcaption>{name}</figcaption>
+            </figure>
+          ))
+        }
       </div>
-    </section>
 
-    <section>
-      <h2>Containers and sizes</h2>
-      <p class="nb-lead">
-        At 48 px and below the frame crops to a portrait; at 32 px and below the mouth and extras step aside.
-      </p>
-      <div class="zones">
-        {containers.map((background) => (
-          <figure class="nb-cell">
-            <div class="row sized">
-              {sizes.map((size) => <Nurbling seed="grace" size={size} background={background} />)}
-            </div>
-            <figcaption class="nb-caption">{background}</figcaption>
-          </figure>
-        ))}
+      <h3>Where the plates sit</h3>
+      <div class="zone-grid">
+        {
+          byZone.map(({ label, names }) => (
+            <figure>
+              <div>
+                {names.map((name) => (
+                  <Nurbling seed={`plates-${name}`} silhouette={name as keyof typeof SILHOUETTES} size={80} title={name} />
+                ))}
+              </div>
+              <figcaption>
+                {label}: {names.join(', ')}
+              </figcaption>
+            </figure>
+          ))
+        }
+      </div>
+
+      <h3>Moods</h3>
+      <div class="trait-grid">
+        {
+          moods.map((mood) => (
+            <figure>
+              <Nurbling seed="ada" mood={mood} size={104} title={mood} />
+              <figcaption>{mood}</figcaption>
+            </figure>
+          ))
+        }
+      </div>
+
+      <h3>Containers and sizes</h3>
+      <p class="note">At 48 px and below the frame crops to a portrait; at 32 px and below the mouth and extras step aside and motion stops.</p>
+      <div class="zone-grid">
+        {
+          containers.map((background) => (
+            <figure>
+              <div class="sized">
+                {sizes.map((size) => (
+                  <Nurbling seed="grace" size={size} background={background} />
+                ))}
+              </div>
+              <figcaption>{background}</figcaption>
+            </figure>
+          ))
+        }
       </div>
     </section>
   </div>
-</StarlightPage>
+</Site>
 
-<style>
-  .zones {
+<style is:global>
+  .gal .themes {
     display: grid;
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
   }
 
-  .row {
+  .gal .theme-card {
+    display: grid;
+    gap: 16px;
+    padding: 22px;
+  }
+
+  .gal .theme-card header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .gal .theme-card h2 {
+    font-size: 26px;
+    font-weight: 800;
+  }
+
+  .gal .theme-card header small {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .gal .swatches {
+    display: flex;
+    gap: 4px;
+  }
+
+  .gal .swatches i {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+  }
+
+  .gal .mini {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 12px;
+    background: color-mix(in srgb, var(--accent) 10%, var(--paper));
+    border-radius: var(--r-md);
+    padding: 12px;
+  }
+
+  .gal .mini-profile {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 2px;
+    background: linear-gradient(color-mix(in srgb, var(--accent) 22%, var(--surface)) 0 38%, var(--surface) 38%);
+    border-radius: 14px;
+    padding: 14px 10px;
+    line-height: 1.2;
+  }
+
+  .gal .mini-profile .av {
+    margin-bottom: 6px;
+  }
+
+  .gal .mini-profile small {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .gal .mini-btn {
+    margin-top: 8px;
+    background: var(--accent);
+    color: #ffffff;
+    border-radius: 9px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .gal .mini-list {
+    display: grid;
+    align-content: center;
+    gap: 6px;
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 12px;
+  }
+
+  .gal .mini-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .gal .theme-crowd {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.75rem;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .gal .theme-card .btn {
+    justify-self: start;
+  }
+
+  .gal .traits h3 {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 36px 0 14px;
+  }
+
+  .gal .trait-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .gal figure {
+    margin: 0;
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 16px 10px;
     line-height: 0;
   }
 
-  .sized {
-    align-items: end;
+  .gal figcaption {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    line-height: 1.3;
+    text-transform: capitalize;
+  }
+
+  .gal .zone-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .gal .zone-grid figure > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .gal .zone-grid .sized {
+    align-items: flex-end;
+  }
+
+  .gal .note {
+    color: var(--muted);
+    margin: -6px 0 14px;
+  }
+
+  @media (max-width: 900px) {
+    .gal .themes,
+    .gal .mini {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

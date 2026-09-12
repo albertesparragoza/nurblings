@@ -14,7 +14,7 @@ Deterministic SVG avatars for React, Next.js, Vue, Nuxt, Astro and plain JavaScr
 [![code: MIT](https://img.shields.io/badge/code-MIT-blue)](LICENSE)
 [![avatars: CC0](https://img.shields.io/badge/avatars-CC0-lightgrey)](https://creativecommons.org/publicdomain/zero/1.0/)
 
-[Getting started](docs/getting-started.md) · [API](docs/api.md) · [Contributing](CONTRIBUTING.md)
+[Getting started](docs/getting-started.md) · [Motion](docs/motion.md) · [Customising](docs/customising.md) · [API](docs/api.md) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -131,7 +131,7 @@ avatars.nurbling('ada@example.com', { shell: 'mist' })
 Brand colours are checked for contrast when the instance is created, so a
 palette that would produce unreadable faces fails early. React has a
 `NurblingsProvider`, Vue a `NurblingsPlugin`; see
-[customising](docs/api.md#your-own-palette-designs-and-parts-createnurblingsconfig).
+[customising](docs/customising.md).
 
 ## Repository
 

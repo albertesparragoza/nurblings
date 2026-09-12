@@ -1,40 +1,33 @@
 ---
-import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
-import { Nurbling } from '@nurblings/astro'
+import { nurbling } from 'nurblings'
+import Site from '../layouts/Site.astro'
 
 const REPO = 'https://github.com/albertesparragoza/nurblings'
 ---
 
-<StarlightPage
-  frontmatter={{
-    title: 'Nurbi and the brand',
-    description: 'Who Nurbi is, what the licences cover, and how to use the names.',
-    tableOfContents: false,
-  }}
-  hasSidebar={false}
->
-  <div class="not-content nb-page">
-    <section class="intro">
+<Site title="Nurbi and the brand" active="/brand/" class="brandp">
+  <div class="wrap">
+    <section class="brand-hero">
       <figure>
-        <Nurbling seed="nurbi" size={280} title="Nurbi" />
-        <figcaption class="nb-caption">Nurbi, the flagship</figcaption>
+        <span class="av" set:html={nurbling('nurbi', { size: 300, title: 'Nurbi' })} />
+        <figcaption>Nurbi, the flagship</figcaption>
       </figure>
       <div>
-        <h2>Every Nurbling is a relative of Nurbi</h2>
-        <p class="nb-lead">
-          Nurbi's two antennae are bezier control handles: the tools that turn an intention
-          into a curve. Nurblings borrows the idea literally. Your handle becomes its handles.
+        <h1>Every Nurbling is a relative of Nurbi.</h1>
+        <p class="lead">
+          Nurbi's two antennae are bezier control handles: the tools that turn an intention into a curve.
+          Nurblings borrows the idea literally. Your handle becomes its handles.
         </p>
-        <p class="nb-lead">
-          The family keeps Nurbi's soft lower body and plated crown, then stretches, widens and
-          moves the plates around. Nurbi itself is never generated: a few reserved seeds show the
-          original, and every other seed is kept a clear step away from it.
+        <p class="lead">
+          The family keeps Nurbi's soft lower body and plated crown, then stretches, widens and moves the plates
+          around. Nurbi itself is never generated: a few reserved seeds show the original, and every other seed is
+          kept a clear step away from it.
         </p>
       </div>
     </section>
 
     <section class="rules">
-      <div>
+      <div class="card">
         <h2>Free to use</h2>
         <ul>
           <li>The library and every avatar it generates, in any project, commercial or not.</li>
@@ -43,54 +36,80 @@ const REPO = 'https://github.com/albertesparragoza/nurblings'
           <li>Forking the code under MIT, with a name of your own.</li>
         </ul>
       </div>
-      <div>
+      <div class="card">
         <h2>Ask first</h2>
         <ul>
           <li>Publishing a fork, package or service under the Nurblings or Nurbi name.</li>
           <li>Using Nurbi as a mascot, logo or endorsement.</li>
         </ul>
         <p>
-          The full terms are in <a href={`${REPO}/blob/develop/TRADEMARKS.md`}>TRADEMARKS.md</a>.
-          Unsure? <a href={`${REPO}/issues`}>Open an issue</a> and ask.
+          The full terms are in <a href={`${REPO}/blob/develop/TRADEMARKS.md`}>TRADEMARKS.md</a>. Unsure?
+          <a href={`${REPO}/issues`}>Open an issue</a> and ask.
         </p>
       </div>
     </section>
   </div>
-</StarlightPage>
+</Site>
 
-<style>
-  .intro {
+<style is:global>
+  .brandp .brand-hero {
     display: grid;
-    gap: var(--nb-gap);
+    grid-template-columns: auto 1fr;
+    gap: clamp(24px, 5vw, 64px);
     align-items: center;
+    padding-block: clamp(40px, 7vw, 88px);
   }
 
-  .intro figure {
+  .brandp figure {
+    margin: 0;
     display: grid;
     justify-items: center;
-    gap: 0.75rem;
-    margin: 0;
+    gap: 12px;
+    background: var(--tint);
+    border-radius: var(--r-xl);
+    padding: 32px;
   }
 
-  .rules {
+  .brandp figcaption {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .brandp h1 {
+    font-size: clamp(40px, 5vw, 68px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    max-width: 14ch;
+  }
+
+  .brandp .rules {
     display: grid;
-    gap: var(--nb-gap);
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding-bottom: 40px;
   }
 
-  .rules ul {
-    padding-left: 1.1rem;
+  .brandp .rules h2 {
+    font-size: 30px;
+    font-weight: 800;
+  }
+
+  .brandp .rules ul {
+    padding-left: 20px;
     display: grid;
-    gap: 0.6rem;
-    color: var(--sl-color-gray-2);
+    gap: 8px;
+    color: var(--muted);
   }
 
-  @media (min-width: 768px) {
-    /* --bp-md */
-    .intro {
-      grid-template-columns: auto 1fr;
-    }
-    .rules {
-      grid-template-columns: 1fr 1fr;
+  .brandp .rules a {
+    color: var(--accent-text);
+  }
+
+  @media (max-width: 900px) {
+    .brandp .brand-hero,
+    .brandp .rules {
+      grid-template-columns: 1fr;
     }
   }
 </style>
