@@ -18,6 +18,13 @@
     "limit": "1 KB"
   },
   {
+    "name": "@nurblings/element",
+    "path": "packages/element/dist/index.js",
+    "import": "*",
+    "limit": "1 KB",
+    "ignore": ["nurblings"]
+  },
+  {
     "name": "@nurblings/vue",
     "path": "packages/vue/dist/index.js",
     "import": "*",
