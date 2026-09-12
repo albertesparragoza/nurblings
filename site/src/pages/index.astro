@@ -31,11 +31,14 @@ const crowd = [
   'niklaus',
 ]
 
+const team = ['ada', 'grace', 'linus', 'margaret', 'alan', 'hedy']
+
 const install = [
   ['Next.js, React', '@nurblings/react'],
   ['Nuxt, Vue', '@nurblings/vue'],
   ['Astro', '@nurblings/astro'],
-  ['Anything else', 'nurblings'],
+  ['HTML, Svelte, Angular', '@nurblings/element'],
+  ['JavaScript', 'nurblings'],
 ]
 ---
 
@@ -81,6 +84,14 @@ const install = [
               <option>sleepy</option>
             </select>
           </label>
+          <label>
+            <span class="nb-caption">Motion</span>
+            <select id="motion">
+              <option value="">Alive</option>
+              <option value="calm">Blink and hover</option>
+              <option value="still">Still</option>
+            </select>
+          </label>
         </fieldset>
       </div>
       <figure class="stage">
@@ -93,6 +104,28 @@ const install = [
         <figcaption class="nb-caption">24, 32, 48 and 64 px. Portrait framing at 48 and below.</figcaption>
       </figure>
       <pre class="snippet"><code id="snippet">{`<Nurbling seed="${START}" background="squircle" />`}</code></pre>
+    </section>
+
+    <section>
+      <h2>From a dialog to its place</h2>
+      <p class="nb-lead">
+        Give an avatar the same <code>transition</code> key in both places and wrap the change
+        in <code>morph()</code>. Open one, then close it.
+      </p>
+      <ul class="team">
+        {team.map((name) => (
+          <li>
+            <button type="button" class="pick" data-seed={name} aria-label={`Open ${name}`}>
+              <Nurbling seed={name} size={64} background="circle" transition={name} title={name} />
+            </button>
+          </li>
+        ))}
+      </ul>
+      <dialog id="profile" aria-labelledby="profile-name">
+        <div id="profile-avatar"></div>
+        <p id="profile-name" class="nb-caption"></p>
+        <button type="button" class="nb-button" id="profile-close">Close</button>
+      </dialog>
     </section>
 
     <section>
@@ -150,18 +183,26 @@ const install = [
 </StarlightPage>
 
 <script>
-  import { nurbling, type NurblingOptions } from 'nurblings'
+  import { type NurblingOptions, nurbling } from 'nurblings'
+  import { morph } from 'nurblings/transition'
 
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
   const seed = $<HTMLInputElement>('seed')
   const background = $<HTMLSelectElement>('background')
   const mood = $<HTMLSelectElement>('mood')
+  const motion = $<HTMLSelectElement>('motion')
+  const MOTION = {
+    calm: { value: { breath: false, antennae: false }, prop: 'animate={{ breath: false, antennae: false }}' },
+    still: { value: false, prop: 'animate={false}' },
+  } as const
 
   function update() {
     const s = seed.value || ' '
+    const m = MOTION[motion.value as keyof typeof MOTION]
     const opts: NurblingOptions = {
       background: background.value as NurblingOptions['background'],
       ...(mood.value && { mood: mood.value as NurblingOptions['mood'] }),
+      ...(m && { animate: m.value }),
     }
     $('avatar').innerHTML = nurbling(s, { ...opts, size: 320, title: s })
     for (const el of document.querySelectorAll<HTMLElement>('[data-size]')) {
@@ -169,10 +210,35 @@ const install = [
     }
     const props = [`seed=${JSON.stringify(s)}`, `background="${opts.background}"`]
     if (opts.mood) props.push(`mood="${opts.mood}"`)
+    if (m) props.push(m.prop)
     $('snippet').textContent = `<Nurbling ${props.join(' ')} />`
   }
 
-  for (const el of [seed, background, mood]) el.addEventListener('input', update)
+  for (const el of [seed, background, mood, motion]) el.addEventListener('input', update)
+
+  // the same `transition` key in the list and the dialog links the two
+  const dialog = $<HTMLDialogElement>('profile')
+  for (const pick of document.querySelectorAll<HTMLButtonElement>('.pick')) {
+    pick.addEventListener('click', () => {
+      const name = pick.dataset.seed as string
+      morph(() => {
+        $('profile-avatar').innerHTML = nurbling(name, {
+          size: 240,
+          background: 'circle',
+          transition: name,
+          title: name,
+        })
+        $('profile-name').textContent = name
+        dialog.showModal()
+      })
+    })
+  }
+  const close = () => morph(() => dialog.close())
+  $('profile-close').addEventListener('click', close)
+  dialog.addEventListener('cancel', (event) => {
+    event.preventDefault()
+    close()
+  })
 </script>
 
 <style is:global>
@@ -292,6 +358,52 @@ const install = [
     overflow-x: auto;
     font-family: var(--sl-font-mono);
     font-size: 0.9rem;
+  }
+
+  .team {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .pick {
+    all: unset;
+    display: inline-block;
+    line-height: 0;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .pick:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+  }
+
+  /* visible overflow: the avatar flies in from outside the dialog's box */
+  dialog {
+    overflow: visible;
+    padding: 2rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 16px;
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+  }
+
+  dialog[open] {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+  }
+
+  dialog::backdrop {
+    background: rgb(8 8 8 / 0.6);
+  }
+
+  #profile-avatar {
+    line-height: 0;
   }
 
   .crowd {
