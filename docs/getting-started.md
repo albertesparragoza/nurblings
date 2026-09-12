@@ -98,7 +98,8 @@ Every Nurbling breathes, blinks and sways its antennae. It is CSS only, so
 server components still ship no JavaScript, and it stops for reduced motion
 and at 32 px and below. `animate: false` (or `:animate="false"`, or
 `animate="false"` on the element) draws a still avatar;
-[Motion](api.md#motion) lists the layers.
+[Motion and transitions](motion.md) covers the layers, speed, and moving
+avatars between places.
 
 ## Plain HTML, or an image URL
 
@@ -112,5 +113,7 @@ img.src = toDataUri(nurbling('ada@example.com', { size: 64 }))
 
 ## Next steps
 
+- Tune the motion, or glide avatars between places: [Motion and transitions](motion.md)
+- Your palette, designs and parts: [Customising](customising.md)
 - Every option, and how pinning works: [API reference](api.md)
 - Why an avatar never changes: [Generations and stability](api.md#generations-and-stability)
