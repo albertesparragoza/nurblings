@@ -77,6 +77,11 @@ asks for reduced motion, or at 32 px and below, where motion reads as noise.
 For long lists, `animate: { breath: false, antennae: false }` keeps just the
 blink and the hover.
 
+Each animated avatar carries its own small style block, under 1 KB before
+compression and the same text in every avatar, because styles cannot be
+shared between SVGs without ids. For hundreds of avatars on one page,
+`animate: false` is the lighter choice.
+
 ## Moving between places: `morph(update, options?)`
 
 A Nurbling can glide from a dialog into a list, or from a hero into a header,
@@ -204,7 +209,8 @@ or extras arrive as a new generation, and you opt in by passing `gen`.
   with the person's name, for example `title: 'Ada Lovelace'`.
 - Colours are chosen for contrast: the accent clears 3:1 on the body, and the
   antennae read on both light and dark pages.
-- Motion is opt-in and respects `prefers-reduced-motion`.
+- Motion is on by default, stops completely under `prefers-reduced-motion`,
+  and turns off with `animate: false`.
 
 ## Licence of generated avatars
 

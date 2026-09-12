@@ -70,8 +70,8 @@ import { Nurbling } from '@nurblings/astro'
 ```
 
 ```html
-<!-- Anywhere HTML goes: a custom element -->
-<script type="module">import '@nurblings/element/define'</script>
+<!-- Anywhere HTML goes: a custom element (or import '@nurblings/element/define' with a bundler) -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/@nurblings/element/dist/define.js/+esm"></script>
 <nurbling-avatar seed="ada@example.com" size="48"></nurbling-avatar>
 ```
 
@@ -104,8 +104,8 @@ option is in the [API reference](docs/api.md).
 - **Server first.** The React and Astro components ship no JavaScript. The
   output is one SVG with no ids, so any number of avatars can share a page.
 - **Accessible.** Every avatar has an accessible name, colours are paired for
-  contrast on light and dark pages, and motion is opt-in and respects reduced
-  motion.
+  contrast on light and dark pages, and all motion stops for anyone who asks
+  for reduced motion.
 - **Small.** The core is about 7 KB compressed with no dependencies; each
   framework component adds well under 1 KB. Size limits run in CI.
 
