@@ -1,0 +1,584 @@
+---
+import { SHELLS, SILHOUETTES } from 'nurblings'
+import ThemePicker from '../components/ThemePicker.astro'
+import Site from '../layouts/Site.astro'
+
+const selects = [
+  ['mood', ['neutral', 'curious', 'pleased', 'thinking', 'sleepy']],
+  ['mouth', ['none', 'dot', 'line', 'smile']],
+  ['extra', ['none', 'scarf', 'pin', 'hat', 'collar']],
+  ['silhouette', Object.keys(SILHOUETTES)],
+  ['shell', Object.keys(SHELLS)],
+] as const
+const frameworks = [
+  ['react', 'React'],
+  ['vue', 'Vue'],
+  ['astro', 'Astro'],
+  ['html', 'HTML'],
+  ['js', 'JavaScript'],
+] as const
+---
+
+<Site title="Playground" active="/playground/" class="pg">
+  <div class="wrap">
+    <header class="page-head">
+      <h1>Playground</h1>
+      <p class="lead">Try every option, then copy the code for your framework. Your settings live in the link, so you can share them.</p>
+    </header>
+
+    <div class="pg-grid">
+      <form class="card controls" id="controls">
+        <label class="field">
+          <span>Seed</span>
+          <div class="row">
+            <input id="seed" data-key="seed" autocomplete="off" spellcheck="false" />
+            <button class="btn btn-ghost" id="shuffle" type="button">Shuffle</button>
+          </div>
+        </label>
+
+        <div class="field">
+          <span>Theme</span>
+          <ThemePicker />
+        </div>
+
+        <div class="field">
+          <span>Container</span>
+          <div class="seg">
+            {['none', 'circle', 'squircle', 'square'].map((v) => (
+              <label><input type="radio" name="background" value={v} data-key="background" /><b>{v}</b></label>
+            ))}
+          </div>
+        </div>
+
+        <label class="field">
+          <span>Size <output id="size-out"></output></span>
+          <input type="range" min="24" max="320" step="4" data-key="size" />
+        </label>
+
+        <div class="field">
+          <span>Framing</span>
+          <div class="seg">
+            {['auto', 'full', 'portrait'].map((v) => (
+              <label><input type="radio" name="frame" value={v} data-key="frame" /><b>{v}</b></label>
+            ))}
+          </div>
+        </div>
+
+        <div class="grid2">
+          {
+            selects.map(([key, values]) => (
+              <label class="field">
+                <span>{key}</span>
+                <select data-key={key} id={`select-${key}`}>
+                  <option value="">From the seed</option>
+                  {values.map((v) => (
+                    <option>{v}</option>
+                  ))}
+                </select>
+              </label>
+            ))
+          }
+        </div>
+
+        <fieldset class="field">
+          <legend>Motion</legend>
+          <div class="checks">
+            {['breath', 'blink', 'antennae', 'hover'].map((k) => (
+              <label><input type="checkbox" data-key={k} /> {k}</label>
+            ))}
+          </div>
+          <label class="field">
+            <span>Speed <output id="speed-out"></output></span>
+            <input type="range" min="0.25" max="3" step="0.25" data-key="speed" />
+          </label>
+        </fieldset>
+
+        <button class="btn btn-ghost" id="reset" type="button">Reset to defaults</button>
+      </form>
+
+      <div class="pg-out">
+        <div class="panel preview">
+          <div class="preview-main" id="preview"></div>
+          <div class="tiles">
+            <div class="tile light" id="tile-light"></div>
+            <div class="tile dark" id="tile-dark"></div>
+          </div>
+          <div class="sizes" id="sizes"></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="dl-svg" type="button">Download SVG</button>
+          <button class="btn btn-ghost" id="dl-png" type="button">Download PNG</button>
+          <button class="btn btn-ghost" id="share" type="button"><span data-copy-label>Copy share link</span></button>
+        </div>
+
+        <div>
+          <div class="tabs" role="tablist" aria-label="Framework" id="fw-tabs">
+            {frameworks.map(([id, label], i) => (
+              <button type="button" role="tab" data-fw={id} aria-selected={String(i === 0)}>{label}</button>
+            ))}
+          </div>
+          <div class="code-card">
+            <div class="code-head"><span id="fw-note"></span><button type="button" id="copy-code"><span data-copy-label>Copy</span></button></div>
+            <pre><code id="code"></code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Site>
+
+<script>
+  import { applyTheme, currentTheme } from '../lib/client'
+  import { type RenderOptions, THEMES } from '../lib/themes'
+
+  interface State {
+    seed: string
+    theme: string
+    size: number
+    background: string
+    frame: string
+    mood: string
+    mouth: string
+    extra: string
+    silhouette: string
+    shell: string
+    breath: boolean
+    blink: boolean
+    antennae: boolean
+    hover: boolean
+    speed: number
+  }
+  const DEFAULTS: State = {
+    seed: 'ada@example.com',
+    theme: 'default',
+    size: 192,
+    background: 'squircle',
+    frame: 'auto',
+    mood: '',
+    mouth: '',
+    extra: '',
+    silhouette: '',
+    shell: '',
+    breath: true,
+    blink: true,
+    antennae: true,
+    hover: true,
+    speed: 1,
+  }
+  const NAMES = ['grace', 'linus', 'katherine', 'margaret', 'dennis', 'radia', 'barbara', 'frances', 'hedy', 'alan', 'joan', 'tim', 'guido']
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T
+  const form = $<HTMLFormElement>('controls')
+  let fw = 'react'
+
+  const fromHash = (): Partial<State> => {
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of new URLSearchParams(location.hash.slice(1))) {
+      if (!(k in DEFAULTS)) continue
+      const d = DEFAULTS[k as keyof State]
+      out[k] = typeof d === 'number' ? Number(v) : typeof d === 'boolean' ? v === '1' : v
+    }
+    return out as Partial<State>
+  }
+  const toHash = () => {
+    const p = new URLSearchParams()
+    for (const k of Object.keys(DEFAULTS) as (keyof State)[]) {
+      const v = state[k]
+      if (v !== DEFAULTS[k]) p.set(k, typeof v === 'boolean' ? (v ? '1' : '0') : String(v))
+    }
+    return p.toString()
+  }
+
+  const hashed = fromHash()
+  const state: State = { ...DEFAULTS, theme: currentTheme(), ...hashed }
+  if (state.theme !== currentTheme()) applyTheme(state.theme)
+
+  const themed = () => THEMES[state.theme] ?? THEMES.default
+  const animate = (): RenderOptions['animate'] => {
+    const { breath, blink, antennae, hover, speed } = state
+    if (breath && blink && antennae && hover && speed === 1) return undefined
+    if (!breath && !blink && !antennae && !hover) return false
+    return {
+      ...(breath ? {} : { breath: false }),
+      ...(blink ? {} : { blink: false }),
+      ...(antennae ? {} : { antennae: false }),
+      ...(hover ? {} : { hover: false }),
+      ...(speed === 1 ? {} : { speed }),
+    }
+  }
+  const traits = () => {
+    const out: Record<string, string> = {}
+    for (const k of ['mood', 'mouth', 'extra', 'silhouette'] as const) if (state[k]) out[k] = state[k]
+    if (state.shell && state.theme === 'default') out.shell = state.shell
+    return out
+  }
+  const draw = (size: number, extra: RenderOptions = {}) => {
+    const a = animate()
+    return (themed()?.render ?? THEMES.default?.render)?.(state.seed || ' ', {
+      size,
+      background: state.background as RenderOptions['background'],
+      frame: state.frame as RenderOptions['frame'],
+      title: state.seed || 'Nurbling',
+      ...traits(),
+      ...(a !== undefined ? { animate: a } : {}),
+      ...extra,
+    } as RenderOptions) ?? ''
+  }
+
+  // code for the chosen framework
+  const js = (v: unknown): string => {
+    if (typeof v === 'string') return `'${v.replaceAll("'", "\\'")}'`
+    if (v && typeof v === 'object') return `{ ${Object.entries(v).map(([k, x]) => `${k}: ${js(x)}`).join(', ')} }`
+    return String(v)
+  }
+  const props = (): [string, unknown][] => {
+    const a = animate()
+    return [
+      ['seed', state.seed],
+      ['size', state.size],
+      ...(state.background !== 'none' ? [['background', state.background] as [string, unknown]] : []),
+      ...(state.frame !== 'auto' ? [['frame', state.frame] as [string, unknown]] : []),
+      ...Object.entries(traits()),
+      ...(a !== undefined ? [['animate', a] as [string, unknown]] : []),
+    ]
+  }
+  const code = () => {
+    const t = themed()
+    const pastel = t?.kind === 'pastel'
+    const list = props()
+    const setup = pastel
+      ? `import { createNurblings } from 'nurblings'\n\n// Theme presets are planned; until then, pass the palette yourself.\nconst avatars = createNurblings({\n  shells: ${js(t?.shells)},\n  accents: ${js(t?.accents)},\n})\n`
+      : ''
+    const note = t?.kind === 'bold' ? `${t.label} is a preview of a planned bold mode: this code renders the default family.` : ''
+    const esc = (s: string) => s.replaceAll('"', '&quot;')
+    const jsx = list.map(([k, v]) => (typeof v === 'string' ? `${k}="${esc(v)}"` : `${k}={${js(v)}}`))
+    if (pastel) jsx.push('nurblings={avatars}')
+    $('fw-note').textContent = note || (pastel ? `Theme: ${t?.label}` : 'Default family')
+    switch (fw) {
+      case 'react':
+        return `import { Nurbling } from '@nurblings/react'\n${setup}\n<Nurbling ${jsx.join(' ')} />`
+      case 'astro':
+        return `---\nimport { Nurbling } from '@nurblings/astro'\n${setup}---\n\n<Nurbling ${jsx.join(' ')} />`
+      case 'vue': {
+        const attrs = list.map(([k, v]) => (typeof v === 'string' ? `${k}="${esc(v)}"` : `:${k}="${js(v)}"`))
+        if (pastel) attrs.push(':nurblings="avatars"')
+        return `<script setup>\nimport { Nurbling } from '@nurblings/vue'\n${setup}<\/script>\n\n<template>\n  <Nurbling ${attrs.join(' ')} />\n</template>`
+      }
+      case 'html': {
+        const a = animate()
+        const layers = a === false ? 'false' : a ? (['breath', 'blink', 'antennae', 'hover'] as const).filter((k) => state[k]).join(' ') : ''
+        const attrs = list
+          .filter(([k]) => k !== 'animate')
+          .map(([k, v]) => `${k}="${esc(String(v))}"`)
+        if (layers) attrs.push(`animate="${layers}"`)
+        const theme = pastel ? `\n<!-- for ${t?.label}, set el.nurblings = createNurblings({ ... }) -->` : ''
+        return `<script type="module" src="https://cdn.jsdelivr.net/npm/@nurblings/element/dist/define.js/+esm"><\/script>\n\n<nurbling-avatar ${attrs.join(' ')}></nurbling-avatar>${theme}`
+      }
+      default: {
+        const opts = Object.fromEntries(list.filter(([k]) => k !== 'seed'))
+        return `import { nurbling } from 'nurblings'\n${setup}\n${pastel ? 'avatars.nurbling' : 'nurbling'}(${js(state.seed)}, ${js(opts)})`
+      }
+    }
+  }
+
+  const render = () => {
+    $('preview').innerHTML = draw(state.size)
+    $('tile-light').innerHTML = draw(96)
+    $('tile-dark').innerHTML = draw(96)
+    $('sizes').innerHTML = [24, 32, 48, 64]
+      .map((s) => `<span>${draw(s)}<small>${s}</small></span>`)
+      .join('')
+    $('size-out').textContent = `${state.size} px`
+    $('speed-out').textContent = `${state.speed}x`
+    $('code').textContent = code()
+    const shell = $<HTMLSelectElement>('select-shell')
+    shell.disabled = state.theme !== 'default'
+    history.replaceState(null, '', `${location.pathname}#${toHash()}`)
+  }
+
+  const sync = () => {
+    for (const el of form.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-key]')) {
+      const v = state[el.dataset.key as keyof State]
+      if (el instanceof HTMLInputElement && el.type === 'checkbox') el.checked = Boolean(v)
+      else if (el instanceof HTMLInputElement && el.type === 'radio') el.checked = el.value === v
+      else el.value = String(v)
+    }
+  }
+
+  form.addEventListener('submit', (e) => e.preventDefault())
+  form.addEventListener('input', (e) => {
+    const el = e.target as HTMLInputElement
+    const key = el.dataset.key as keyof State | undefined
+    if (!key) return
+    const d = DEFAULTS[key]
+    ;(state as unknown as Record<string, unknown>)[key] =
+      el.type === 'checkbox' ? el.checked : typeof d === 'number' ? Number(el.value) : el.value
+    render()
+  })
+  document.addEventListener('nb-theme', (e) => {
+    state.theme = (e as CustomEvent<string>).detail
+    render()
+  })
+  $('shuffle').addEventListener('click', () => {
+    state.seed = NAMES[Math.floor(Math.random() * NAMES.length)] ?? 'grace'
+    sync()
+    render()
+  })
+  $('reset').addEventListener('click', () => {
+    Object.assign(state, { ...DEFAULTS, theme: state.theme })
+    sync()
+    render()
+  })
+  $('fw-tabs').addEventListener('click', (e) => {
+    const tab = (e.target as Element).closest<HTMLElement>('[data-fw]')
+    if (!tab) return
+    fw = tab.dataset.fw ?? 'react'
+    for (const t of document.querySelectorAll('[data-fw]')) t.setAttribute('aria-selected', String(t === tab))
+    render()
+  })
+
+  const flash = (button: HTMLElement, text: string) => {
+    const label = button.querySelector<HTMLElement>('[data-copy-label]') ?? button
+    const was = label.textContent
+    label.textContent = text
+    setTimeout(() => {
+      label.textContent = was
+    }, 1400)
+  }
+  $('copy-code').addEventListener('click', async (e) => {
+    await navigator.clipboard.writeText(code())
+    flash(e.currentTarget as HTMLElement, 'Copied')
+  })
+  $('share').addEventListener('click', async (e) => {
+    await navigator.clipboard.writeText(location.href)
+    flash(e.currentTarget as HTMLElement, 'Link copied')
+  })
+
+  const slug = () => (state.seed || 'nurbling').replace(/[^\w-]+/g, '-').toLowerCase()
+  const download = (blob: Blob, name: string) => {
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = name
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+  }
+  $('dl-svg').addEventListener('click', () => download(new Blob([draw(state.size)], { type: 'image/svg+xml' }), `${slug()}.svg`))
+  $('dl-png').addEventListener('click', () => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 512
+      canvas.height = 512
+      canvas.getContext('2d')?.drawImage(img, 0, 0, 512, 512)
+      canvas.toBlob((blob) => blob && download(blob, `${slug()}.png`))
+    }
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(draw(512, { animate: false }))}`
+  })
+
+  sync()
+  render()
+</script>
+
+<style is:global>
+  .pg .pg-grid {
+    display: grid;
+    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+    padding-bottom: 40px;
+  }
+
+  .pg .controls {
+    position: sticky;
+    top: 84px;
+    display: grid;
+    gap: 18px;
+  }
+
+  .pg .field {
+    display: grid;
+    gap: 8px;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .pg .field > span,
+  .pg legend {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: capitalize;
+    padding: 0;
+  }
+
+  .pg output {
+    font-weight: 500;
+    margin-left: 6px;
+  }
+
+  .pg .row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .pg input:not([type]),
+  .pg select {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    border-radius: 12px;
+    padding: 0 12px;
+  }
+
+  .pg select:disabled {
+    opacity: 0.5;
+  }
+
+  .pg input[type='range'] {
+    accent-color: var(--accent);
+  }
+
+  .pg .picker {
+    border-radius: var(--r-md);
+    justify-content: flex-start;
+  }
+
+  .pg .seg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 4px;
+  }
+
+  .pg .seg label {
+    flex: 1;
+    position: relative;
+  }
+
+  .pg .seg input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .pg .seg b {
+    display: block;
+    text-align: center;
+    padding: 7px 8px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  .pg .seg input:checked + b {
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  }
+
+  .pg .seg input:focus-visible + b {
+    outline: 2px solid var(--accent);
+  }
+
+  .pg .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .pg .checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    text-transform: capitalize;
+  }
+
+  .pg .checks input {
+    accent-color: var(--accent);
+  }
+
+  .pg .pg-out {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .pg .preview {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .pg .preview-main {
+    display: grid;
+    place-items: center;
+    min-height: 360px;
+    line-height: 0;
+  }
+
+  .pg .tiles {
+    display: grid;
+    gap: 12px;
+  }
+
+  .pg .tile {
+    display: grid;
+    place-items: center;
+    width: 132px;
+    height: 132px;
+    border-radius: var(--r-md);
+    line-height: 0;
+  }
+
+  .pg .tile.light {
+    background: #ffffff;
+  }
+
+  .pg .tile.dark {
+    background: #16131f;
+  }
+
+  .pg .sizes {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .pg .sizes span {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    line-height: 0;
+  }
+
+  .pg .sizes small {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1;
+  }
+
+  @media (max-width: 900px) {
+    .pg .pg-grid,
+    .pg .preview {
+      grid-template-columns: 1fr;
+    }
+    .pg .controls {
+      position: static;
+    }
+    .pg .tiles {
+      grid-template-columns: 1fr 1fr;
+      justify-items: center;
+    }
+  }
+</style>
