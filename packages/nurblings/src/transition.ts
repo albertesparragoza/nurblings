@@ -34,7 +34,7 @@ const visible = () =>
 
 // Elements some transition has named: the page's own value, and how many
 // calls hold the element. The page's value comes back when the last lets go.
-const held = new Map<Tagged, { value: string; count: number }>()
+const held = new Map<Tagged, { value: string; priority: string; count: number }>()
 
 /** Names elements for one call; overlapping calls never undo each other. */
 function namer() {
@@ -46,7 +46,12 @@ function namer() {
           mine.add(el)
           const h = held.get(el)
           if (h) h.count++
-          else held.set(el, { value: el.style.getPropertyValue(VTN), count: 1 })
+          else
+            held.set(el, {
+              value: el.style.getPropertyValue(VTN),
+              priority: el.style.getPropertyPriority(VTN),
+              count: 1,
+            })
         }
         el.style.setProperty(VTN, transitionName(keyOf(el)))
       }
@@ -56,7 +61,7 @@ function namer() {
         const h = held.get(el)
         if (!mine.delete(el) || !h || --h.count > 0) continue
         held.delete(el)
-        if (h.value) el.style.setProperty(VTN, h.value)
+        if (h.value) el.style.setProperty(VTN, h.value, h.priority)
         else el.style.removeProperty(VTN)
       }
     },
