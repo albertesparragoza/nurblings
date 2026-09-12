@@ -356,9 +356,11 @@ pass their name as the title.`
 <script>
   import { morph } from 'nurblings/transition'
   import { reducedMotion, repaint } from '../lib/client'
+  import { tabs } from '../lib/tabs'
 
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T
-  const reduce = reducedMotion()
+  // read live: the preference can change while the page is open
+  const reduce = reducedMotion
   const NAMES = ['ada@example.com', 'grace', 'linus', 'katherine', 'margaret', 'dennis', 'radia', 'barbara', 'frances', 'hedy', 'alan', 'joan', 'tim', 'guido', 'sophie', 'anders', 'yukihiro']
   const pick = <T,>(list: readonly T[]) => list[Math.floor(Math.random() * list.length)] as T
   const spring = 'cubic-bezier(.34,1.56,.64,1)'
@@ -372,7 +374,7 @@ pass their name as the title.`
   const hero = $('hero-avatar')
   const heroButton = $('hero-av')
   const pop = (el: Element | null) =>
-    !reduce &&
+    !reduce() &&
     el?.animate(
       [{ transform: 'scale(1)' }, { transform: 'scale(.9,1.08)' }, { transform: 'scale(1.05,.96)' }, { transform: 'scale(1)' }],
       { duration: 560, easing: spring },
@@ -408,7 +410,7 @@ pass their name as the title.`
   // the stage leans toward the pointer; satellites drift at their own depth
   const stage = $('stage')
   io.observe(stage)
-  if (!reduce) {
+  {
     let tx = 0
     let ty = 0
     let x = 0
@@ -424,6 +426,7 @@ pass their name as the title.`
     addEventListener(
       'pointermove',
       (e) => {
+        if (reduce()) return
         tx = e.clientX / innerWidth - 0.5
         ty = e.clientY / innerHeight - 0.5
         if (!raf) raf = requestAnimationFrame(tick)
@@ -431,11 +434,21 @@ pass their name as the title.`
       { passive: true },
     )
 
+    // switching reduced motion on mid-visit stops the scripted motion too;
+    // the CSS animations already stop through the stylesheet
+    matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+      if (!e.matches) return
+      tx = ty = x = y = 0
+      stage.style.setProperty('--px', '0')
+      stage.style.setProperty('--py', '0')
+      for (const a of document.getAnimations()) if (a.constructor === Animation) a.cancel()
+    })
+
     // satellites keep hatching new faces
     const sats = [...document.querySelectorAll<HTMLElement>('.sat [data-av]')]
     let next = 0
     setInterval(() => {
-      if (document.hidden || !inView.has(stage) || sats.length === 0) return
+      if (reduce() || document.hidden || !inView.has(stage) || sats.length === 0) return
       const el = sats[next++ % sats.length] as HTMLElement
       el.dataset.seed = `${pick(NAMES)}-${Math.floor(Math.random() * 1000)}`
       repaint(el)
@@ -511,10 +524,10 @@ pass their name as the title.`
   say(false)
   say(false)
 
-  if (!reduce) {
+  {
     let beat = 0
     setInterval(() => {
-      if (document.hidden || !inView.has(scene) || Date.now() - lastTouch < 8000) return
+      if (reduce() || document.hidden || !inView.has(scene) || Date.now() - lastTouch < 8000) return
       beat++
       say(true)
       const dots = members.querySelectorAll('.dot')
@@ -542,9 +555,9 @@ pass their name as the title.`
   })
 
   // framework tabs
-  for (const tab of document.querySelectorAll<HTMLElement>('[data-tab]')) {
-    tab.addEventListener('click', () => {
-      for (const t of document.querySelectorAll('[data-tab]')) t.setAttribute('aria-selected', String(t === tab))
+  const tablist = document.querySelector<HTMLElement>('.home [role="tablist"]')
+  if (tablist) {
+    tabs(tablist, (tab) => {
       for (const p of document.querySelectorAll<HTMLElement>('[data-panel]')) p.hidden = p.dataset.panel !== tab.dataset.tab
     })
   }
