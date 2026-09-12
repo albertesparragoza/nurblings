@@ -76,6 +76,30 @@ import { Nurbling } from '@nurblings/astro'
 
 The component renders static SVG and adds no client JavaScript.
 
+## Any other framework: a custom element
+
+`@nurblings/element` works in plain HTML, Svelte, Solid, Angular, Lit or a
+CMS template:
+
+```ts
+import '@nurblings/element/define'
+```
+
+```html
+<nurbling-avatar seed="ada@example.com" size="48" title="Ada Lovelace"></nurbling-avatar>
+```
+
+Attributes mirror the options; see the
+[package README](https://github.com/albertesparragoza/nurblings/tree/develop/packages/element).
+
+## Alive by default
+
+Every Nurbling breathes, blinks and sways its antennae. It is CSS only, so
+server components still ship no JavaScript, and it stops for reduced motion
+and at 32 px and below. `animate: false` (or `:animate="false"`, or
+`animate="false"` on the element) draws a still avatar;
+[Motion](api.md#motion) lists the layers.
+
 ## Plain HTML, or an image URL
 
 Use a data URI anywhere an image goes:
