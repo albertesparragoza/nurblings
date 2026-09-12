@@ -1,0 +1,120 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import { Nurbling } from '@nurblings/astro'
+import { type Background, type Mood, SHELLS, SILHOUETTES } from 'nurblings'
+
+const SEED = 'gallery'
+const designs = Object.entries(SILHOUETTES)
+const zones = ['crown', 'side', 'base', 'none'] as const
+const zoneNames = { crown: 'Crown', side: 'Flank', base: 'Base', none: 'Smooth' }
+const byZone = zones.map((zone) => ({
+  zone,
+  names: designs.filter(([, s]) => (s.plates ?? 'crown') === zone).map(([name]) => name),
+}))
+const moods: Mood[] = ['neutral', 'curious', 'pleased', 'thinking', 'sleepy']
+const containers: Background[] = ['circle', 'squircle', 'square', 'none']
+const sizes = [24, 32, 48, 64, 96, 128]
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Gallery',
+    description: 'Every body design, plate placement, colour, mood and container in the first generation.',
+    tableOfContents: false,
+  }}
+  hasSidebar={false}
+>
+  <div class="not-content nb-page">
+    <section>
+      <h2>Body designs</h2>
+      <p class="nb-lead">Ten designs, each varied slightly by the seed. Pin one with <code>silhouette</code>.</p>
+      <div class="nb-grid">
+        {designs.map(([name]) => (
+          <figure class="nb-cell">
+            <Nurbling seed={name} silhouette={name as keyof typeof SILHOUETTES} size={112} title={name} />
+            <figcaption class="nb-caption">{name}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2>Where the plates sit</h2>
+      <p class="nb-lead">Flat low-poly plates on the crown, down one flank, around the base, or nowhere at all.</p>
+      <div class="zones">
+        {byZone.map(({ zone, names }) => (
+          <figure class="nb-cell">
+            <div class="row">
+              {names.map((name) => (
+                <Nurbling seed={`${SEED}-${name}`} silhouette={name as keyof typeof SILHOUETTES} size={88} title={name} />
+              ))}
+            </div>
+            <figcaption class="nb-caption">{zoneNames[zone]}: {names.join(', ')}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2>Colours</h2>
+      <p class="nb-lead">Nine shells, each paired only with accents that read on it and on light and dark pages.</p>
+      <div class="nb-grid">
+        {Object.keys(SHELLS).map((shell) => (
+          <figure class="nb-cell">
+            <Nurbling seed={SEED} shell={shell as keyof typeof SHELLS} size={96} background="circle" title={shell} />
+            <figcaption class="nb-caption">{shell}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2>Moods</h2>
+      <p class="nb-lead">Calm resting moods, drawn from the seed or pinned with <code>mood</code>.</p>
+      <div class="nb-grid">
+        {moods.map((mood) => (
+          <figure class="nb-cell">
+            <Nurbling seed="ada" mood={mood} size={112} title={mood} />
+            <figcaption class="nb-caption">{mood}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2>Containers and sizes</h2>
+      <p class="nb-lead">
+        At 48 px and below the frame crops to a portrait; at 32 px and below the mouth and extras step aside.
+      </p>
+      <div class="zones">
+        {containers.map((background) => (
+          <figure class="nb-cell">
+            <div class="row sized">
+              {sizes.map((size) => <Nurbling seed="grace" size={size} background={background} />)}
+            </div>
+            <figcaption class="nb-caption">{background}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  </div>
+</StarlightPage>
+
+<style>
+  .zones {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    line-height: 0;
+  }
+
+  .sized {
+    align-items: end;
+  }
+</style>

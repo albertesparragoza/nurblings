@@ -78,6 +78,8 @@ jobs:
         run: pnpm --filter example-nuxt generate
       - name: Astro example
         run: pnpm --filter example-astro build
+      - name: Website
+        run: pnpm --filter site build
       - name: Every example renders avatars into its HTML
         run: |
           grep -rlq '<svg' examples/next-app/.next/server/app

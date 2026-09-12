@@ -1,0 +1,349 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import { Nurbling } from '@nurblings/astro'
+import { nurbling } from 'nurblings'
+
+const START = 'ada@example.com'
+const crowd = [
+  'grace',
+  'linus',
+  'margaret',
+  'alan',
+  'barbara',
+  'dennis',
+  'frances',
+  'ken',
+  'radia',
+  'edsger',
+  'katherine',
+  'tim',
+  'hedy',
+  'john',
+  'sophie',
+  'guido',
+  'yukihiro',
+  'brendan',
+  'anders',
+  'rich',
+  'joan',
+  'bjarne',
+  'evelyn',
+  'niklaus',
+]
+
+const install = [
+  ['Next.js, React', '@nurblings/react'],
+  ['Nuxt, Vue', '@nurblings/vue'],
+  ['Astro', '@nurblings/astro'],
+  ['Anything else', 'nurblings'],
+]
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Nurblings',
+    description: 'Deterministic SVG avatars for React, Next.js, Vue, Nuxt, Astro and plain JavaScript.',
+    template: 'splash',
+  }}
+  hasSidebar={false}
+>
+  <div class="not-content nb-page">
+    <section class="hero" id="playground">
+      <div class="hero-copy">
+        <h1>Any string in, <span>a small curious creature out.</span></h1>
+        <p class="nb-lead">
+          Deterministic SVG avatars. The same string always hatches the same Nurbling:
+          no storage, no uploads, no network.
+        </p>
+        <label class="seed">
+          <span class="nb-caption">Type a name, an email, anything</span>
+          <input id="seed" type="text" value={START} autocomplete="off" spellcheck="false" />
+        </label>
+        <fieldset class="controls">
+          <legend class="sr-only">Options</legend>
+          <label>
+            <span class="nb-caption">Container</span>
+            <select id="background">
+              <option value="squircle">Squircle</option>
+              <option value="circle">Circle</option>
+              <option value="square">Square</option>
+              <option value="none">None</option>
+            </select>
+          </label>
+          <label>
+            <span class="nb-caption">Mood</span>
+            <select id="mood">
+              <option value="">From the seed</option>
+              <option>neutral</option>
+              <option>curious</option>
+              <option>pleased</option>
+              <option>thinking</option>
+              <option>sleepy</option>
+            </select>
+          </label>
+        </fieldset>
+      </div>
+      <figure class="stage">
+        <div id="avatar" set:html={nurbling(START, { size: 320, background: 'squircle', title: START })} />
+        <div class="sizes" aria-hidden="true">
+          {[24, 32, 48, 64].map((size) => (
+            <span data-size={size} set:html={nurbling(START, { size, background: 'squircle' })} />
+          ))}
+        </div>
+        <figcaption class="nb-caption">24, 32, 48 and 64 px. Portrait framing at 48 and below.</figcaption>
+      </figure>
+      <pre class="snippet"><code id="snippet">{`<Nurbling seed="${START}" background="squircle" />`}</code></pre>
+    </section>
+
+    <section>
+      <h2>A family, not a template</h2>
+      <p class="nb-lead">
+        Ten body designs, plates on the crown, a flank, the base or nowhere, one or two
+        antennae, eyes, brows, moods, extras and colours paired for contrast.
+      </p>
+      <ul class="crowd">
+        {crowd.map((name) => (
+          <li><Nurbling seed={name} size={72} background="circle" title={name} /></li>
+        ))}
+      </ul>
+      <p><a class="nb-button" href="/gallery/">See the whole family</a></p>
+    </section>
+
+    <section class="split">
+      <div>
+        <h2>One component, every framework</h2>
+        <p class="nb-lead">
+          React and Astro render on the server and ship no JavaScript. The core has no
+          dependencies and weighs about 7 KB compressed.
+        </p>
+        <p class="actions">
+          <a class="nb-button" data-primary href="/docs/getting-started/">Get started</a>
+          <a class="nb-button" href="/docs/api/">API reference</a>
+        </p>
+      </div>
+      <table class="install">
+        <tbody>
+          {install.map(([who, pkg]) => (
+            <tr><th scope="row">{who}</th><td><code>pnpm add {pkg}</code></td></tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="split">
+      <div>
+        <h2>Stable across releases</h2>
+        <p class="nb-lead">
+          Traits ship in numbered generations. Within one, a seed renders the same SVG byte
+          for byte, on every engine, forever. New looks arrive as a new generation you opt into.
+        </p>
+      </div>
+      <div>
+        <h2>Yours to shape</h2>
+        <p class="nb-lead">
+          <code>createNurblings</code> takes your brand palette, your body designs and your
+          own drawn parts, and checks the colours for contrast before a single avatar renders.
+        </p>
+      </div>
+    </section>
+  </div>
+</StarlightPage>
+
+<script>
+  import { nurbling, type NurblingOptions } from 'nurblings'
+
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
+  const seed = $<HTMLInputElement>('seed')
+  const background = $<HTMLSelectElement>('background')
+  const mood = $<HTMLSelectElement>('mood')
+
+  function update() {
+    const s = seed.value || ' '
+    const opts: NurblingOptions = {
+      background: background.value as NurblingOptions['background'],
+      ...(mood.value && { mood: mood.value as NurblingOptions['mood'] }),
+    }
+    $('avatar').innerHTML = nurbling(s, { ...opts, size: 320, title: s })
+    for (const el of document.querySelectorAll<HTMLElement>('[data-size]')) {
+      el.innerHTML = nurbling(s, { ...opts, size: Number(el.dataset.size) })
+    }
+    const props = [`seed=${JSON.stringify(s)}`, `background="${opts.background}"`]
+    if (opts.mood) props.push(`mood="${opts.mood}"`)
+    $('snippet').textContent = `<Nurbling ${props.join(' ')} />`
+  }
+
+  for (const el of [seed, background, mood]) el.addEventListener('input', update)
+</script>
+
+<style is:global>
+  /* The hero carries the one heading; Starlight's title band would repeat it. */
+  .content-panel:has(#_top) {
+    display: none;
+  }
+</style>
+
+<style>
+  .hero {
+    display: grid;
+    gap: var(--nb-gap);
+    align-items: center;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: calc(100svh - var(--sl-nav-height) - 6rem);
+  }
+
+  @media (min-width: 768px) {
+    /* --bp-md */
+    .hero {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    }
+    .snippet {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.4rem, 1.2rem + 5vw, 4.5rem);
+    max-width: 12ch;
+    margin: 0 0 1.25rem;
+  }
+
+  .hero h1 span {
+    display: block;
+    color: var(--sl-color-accent);
+  }
+
+  .hero-copy {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .seed,
+  .controls label {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .seed input {
+    font: inherit;
+    font-size: 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--sl-color-gray-4);
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+    max-width: 28rem;
+  }
+
+  .seed input:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  select {
+    font: inherit;
+    min-height: 44px;
+    padding-inline: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--sl-color-gray-4);
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+  }
+
+  .stage {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    margin: 0;
+  }
+
+  #avatar {
+    width: min(320px, 70vw);
+    line-height: 0;
+  }
+
+  #avatar :global(svg) {
+    width: 100%;
+    height: auto;
+  }
+
+  .sizes {
+    display: flex;
+    align-items: end;
+    gap: 1rem;
+    line-height: 0;
+  }
+
+  .snippet {
+    margin: 0;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    background: var(--sl-color-gray-6);
+    border: 1px solid var(--sl-color-gray-5);
+    overflow-x: auto;
+    font-family: var(--sl-font-mono);
+    font-size: 0.9rem;
+  }
+
+  .crowd {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    justify-items: center;
+    line-height: 0;
+  }
+
+  .split {
+    display: grid;
+    gap: var(--nb-gap);
+    align-items: start;
+  }
+
+  @media (min-width: 768px) {
+    /* --bp-md */
+    .split {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .install {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .install th,
+  .install td {
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--sl-color-gray-5);
+    text-align: left;
+  }
+
+  .install th {
+    font-weight: 400;
+    color: var(--sl-color-gray-2);
+    padding-right: 1rem;
+  }
+
+  .install code {
+    font-family: var(--sl-font-mono);
+    color: var(--sl-color-white);
+  }
+</style>

@@ -1,4 +1,7 @@
-# API reference
+---
+title: API reference
+description: Every function, option and type the nurblings package exports.
+---
 
 Everything below is exported from the `nurblings` package. It has no runtime
 dependencies and runs anywhere JavaScript does: browsers, Node, Deno, Bun,

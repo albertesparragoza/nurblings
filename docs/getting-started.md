@@ -1,4 +1,7 @@
-# Getting started
+---
+title: Getting started
+description: Install Nurblings and render your first avatar in Next.js, Nuxt, Astro or plain JavaScript.
+---
 
 Nurblings turns any string into a small, curious creature. The same string
 always hatches the same Nurbling, so you can give every user, team or
