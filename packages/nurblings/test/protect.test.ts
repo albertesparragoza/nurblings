@@ -38,4 +38,14 @@ describe('flagship', () => {
     expect(out).not.toMatch(/\sid=/)
     expect(out).not.toContain('url(#')
   })
+
+  it('breathes and sways like the family, and stays still when asked', () => {
+    const live = renderFlagship()
+    expect(live).toContain('class="nb nb-mb nb-mk nb-ma nb-mh"')
+    expect(live.match(/class="nb-a[lr]"/g)).toHaveLength(2)
+    expect(live).toContain('<g class="nb-f">')
+    const still = renderFlagship({ animate: false })
+    expect(still).not.toMatch(/<style>|nb-f|nb-a[lr]/)
+    expect(renderFlagship({ size: 32 })).toBe(renderFlagship({ size: 32, animate: false }))
+  })
 })

@@ -497,8 +497,43 @@ export const esc = (s: string) =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string,
   )
 
-const SWAY =
-  '<style>@media (prefers-reduced-motion:no-preference){.nb:hover .nb-al,.nb:focus-visible .nb-al{animation:nb-l 2.4s ease-in-out infinite}.nb:hover .nb-ar,.nb:focus-visible .nb-ar{animation:nb-r 2.4s ease-in-out infinite}.nb-al,.nb-ar{transform-box:fill-box;transform-origin:50% 100%}@keyframes nb-l{50%{transform:rotate(-4deg)}}@keyframes nb-r{50%{transform:rotate(3deg)}}}</style>'
+// Inline SVG styles apply to the whole page, so every rule is scoped by a layer
+// class on the avatar's own root: animated and still avatars can share a page,
+// and this text is identical in every avatar. Timing comes from per-avatar
+// custom properties on the root.
+export const MOTION =
+  '<style>@media (prefers-reduced-motion:no-preference){.nb-f,.nb-e,.nb-al,.nb-ar{transform-box:fill-box;transform-origin:50% 100%}.nb-e{transform-origin:50% 50%}.nb-mb .nb-f{animation:nb-b var(--nb-b) ease-in-out var(--nb-o) infinite}.nb-ma .nb-al{animation:nb-l var(--nb-l) ease-in-out var(--nb-o) infinite}.nb-ma .nb-ar{animation:nb-r var(--nb-r) ease-in-out var(--nb-o) infinite}.nb-mk .nb-e{animation:nb-k var(--nb-k) linear var(--nb-o) infinite}.nb-mh:hover .nb-al{animation:nb-l .9s ease-in-out infinite}.nb-mh:hover .nb-ar{animation:nb-r .9s ease-in-out infinite}@keyframes nb-b{50%{transform:scale(.98,1.03)}}@keyframes nb-l{50%{transform:rotate(-4deg)}}@keyframes nb-r{50%{transform:rotate(4deg)}}@keyframes nb-k{0%,95%,100%{transform:none}97.5%{transform:scaleY(.1)}}}</style>'
+
+const LAYERS = { mb: 'breath', mk: 'blink', ma: 'antennae', mh: 'hover' } as const
+
+/**
+ * The root classes and timing for an animated avatar, or nothing for a still
+ * one. Periods come from the seed's grain, so a grid never breathes in unison
+ * and a seed always moves the same way.
+ */
+export function motion(
+  grain: number,
+  sleepy: boolean,
+  animate: RenderOptions['animate'],
+  small: boolean,
+): { cls: string; style: string } | undefined {
+  // ponytail: nothing moves at 32 px and below; blink alone could come back if asked.
+  if (animate === false || small) return
+  const m = typeof animate === 'object' ? animate : {}
+  const speed = m.speed ?? 1
+  if (!Number.isFinite(speed) || speed <= 0) {
+    throw new RangeError(`nurblings: animate.speed must be a positive number, got ${String(speed)}`)
+  }
+  let cls = ''
+  for (const [k, layer] of Object.entries(LAYERS)) if (m[layer] !== false) cls += ` nb-${k}`
+  if (!cls) return
+  const r = jitterSeq(grain + 7)
+  r() // the first value barely depends on a small seed; skip it
+  const slow = (sleepy ? 1.4 : 1) / speed
+  const sec = (base: number, spread: number) => `${n((base + r() * spread) * slow)}s`
+  const style = `--nb-b:${sec(3.8, 1.2)};--nb-l:${sec(5.5, 3)};--nb-r:${sec(5.5, 3)};--nb-k:${sec(4.75, 2.5)};--nb-o:${sec(-1.5, 3)}`
+  return { cls, style }
+}
 
 /** Largest size, in pixels, that `auto` framing draws as a portrait. */
 export const PORTRAIT_UP_TO = 48
@@ -576,15 +611,15 @@ export function render(t: Traits, opts: RenderOptions = {}, slots: Slots = {}): 
     mouth: () => (small ? '' : mouth(t, face.y, g)),
   }
   const ctx: SlotContext = { traits: t, geometry: g, size, small }
-  const parts = [
-    opts.animate ? SWAY : '',
-    `<title>${title}</title>`,
-    ...SLOTS.map((name) => {
-      const slot = slots[name]
-      if (slot === false) return ''
-      return slot ? slot(ctx, built[name]) : built[name]()
-    }),
-  ]
+  const live = motion(t.silhouette.grain, t.mood === 'sleepy', opts.animate, small)
+  const [backdropSvg, ...figure] = SLOTS.map((name) => {
+    const slot = slots[name]
+    if (slot === false) return ''
+    const out = slot ? slot(ctx, built[name]) : built[name]()
+    return live && name === 'eyes' && out ? `<g class="nb-e">${out}</g>` : out
+  })
+  const drawn = live ? `<g class="nb-f">${figure.join('')}</g>` : figure.join('')
   const vb = `${n(box.x)} ${n(box.y)} ${n(box.s)} ${n(box.s)}`
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${n(size)}" height="${n(size)}" role="img" aria-label="${title}" class="nb">${parts.join('')}</svg>`
+  const root = live ? `class="nb${live.cls}" style="${live.style}"` : 'class="nb"'
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${n(size)}" height="${n(size)}" role="img" aria-label="${title}" ${root}>${live ? MOTION : ''}<title>${title}</title>${backdropSvg}${drawn}</svg>`
 }

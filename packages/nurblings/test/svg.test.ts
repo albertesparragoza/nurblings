@@ -239,10 +239,48 @@ describe('render', () => {
     }
   })
 
-  it('only moves when asked, and only without reduced motion', () => {
-    expect(svg).not.toContain('<style>')
-    const moving = render(TRAITS, { animate: true })
-    expect(moving).toContain('@media (prefers-reduced-motion:no-preference)')
+  it('moves by default, only without reduced motion, and can be turned off', () => {
+    const style = svg.match(/<style>.*<\/style>/)?.[0] ?? ''
+    expect(style).toMatch(/^<style>@media \(prefers-reduced-motion:no-preference\)\{.*\}<\/style>$/)
+    expect(svg).toContain('class="nb nb-mb nb-mk nb-ma nb-mh"')
+    expect(render(TRAITS, { size: 256, animate: true })).toBe(svg)
+    const still = render(TRAITS, { size: 256, animate: false })
+    expect(still).not.toMatch(/<style>|nb-f|nb-e|--nb-/)
+  })
+
+  it('scopes every rule to a layer class, so still avatars on the same page stay still', () => {
+    const rules = (svg.match(/\{(.*)\}<\/style>/)?.[1] ?? '').split('}')
+    for (const rule of rules.filter((r) => r.includes('animation:'))) {
+      expect(rule).toMatch(/^\.nb-m[bkah]/)
+    }
+  })
+
+  it('turns layers on and off one by one', () => {
+    expect(render(TRAITS, { animate: { blink: false } })).toContain('class="nb nb-mb nb-ma nb-mh"')
+    expect(render(TRAITS, { animate: { breath: false, hover: false } })).toContain(
+      'class="nb nb-mk nb-ma"',
+    )
+    const none = { breath: false, blink: false, antennae: false, hover: false }
+    expect(render(TRAITS, { animate: none })).toBe(render(TRAITS, { animate: false }))
+  })
+
+  it('stays still at 32 px and below', () => {
+    expect(render(TRAITS, { size: 32 })).toBe(render(TRAITS, { size: 32, animate: false }))
+    expect(render(TRAITS, { size: 33 })).toContain('<style>')
+  })
+
+  it('times each seed its own way, slower when sleepy, scaled by speed', () => {
+    const period = (out: string) => Number(out.match(/--nb-b:([\d.]+)s/)?.[1])
+    const base = period(svg)
+    expect(base).toBeGreaterThanOrEqual(3.2)
+    expect(base).toBeLessThanOrEqual(4.4)
+    const other = render({ ...TRAITS, silhouette: { ...TRAITS.silhouette, grain: 99 } })
+    expect(period(other)).not.toBe(base)
+    expect(period(render({ ...TRAITS, mood: 'sleepy' }, { size: 256 }))).toBeCloseTo(base * 1.4, 1)
+    expect(period(render(TRAITS, { size: 256, animate: { speed: 2 } }))).toBeCloseTo(base / 2, 1)
+    for (const speed of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(() => render(TRAITS, { animate: { speed } })).toThrow(RangeError)
+    }
   })
 
   it('draws a backdrop only when asked', () => {
