@@ -77,6 +77,48 @@ asks for reduced motion, or at 32 px and below, where motion reads as noise.
 For long lists, `animate: { breath: false, antennae: false }` keeps just the
 blink and the hover.
 
+## Moving between places: `morph(update, options?)`
+
+A Nurbling can glide from a dialog into a list, or from a hero into a header,
+instead of jumping. Give the avatar the same `transition` key in both places,
+then make the change inside `morph`:
+
+```ts
+import { morph } from 'nurblings/transition'
+
+// the same key in the list and in the dialog links the two
+nurbling(user.id, { size: 48, transition: user.id })
+nurbling(user.id, { size: 320, transition: user.id })
+
+await morph(() => dialog.close())
+```
+
+`update` must change the page before it returns, or return a promise that
+resolves once it has:
+
+```tsx
+// React
+morph(() => flushSync(() => setOpen(false)))
+```
+
+```ts
+// Vue
+morph(async () => {
+  open.value = false
+  await nextTick()
+})
+```
+
+- Browsers with View Transitions use them when each key is on screen once.
+  Otherwise, and in every other browser, the avatar is animated from its old
+  box to its new one with a transform, which keeps the vector sharp.
+- `duration` (milliseconds, default 450) and `easing` (any CSS easing) tune the
+  move. Under reduced motion the change simply happens.
+- The helper is its own entry, about 1 KB: pages that never import it pay
+  nothing.
+- For moves across page navigations, use your framework's view transitions
+  with `transitionName(key)` as the `view-transition-name`.
+
 ## `traits(seed, options?)`
 
 Returns the resolved traits a seed hatches, without rendering: silhouette,
