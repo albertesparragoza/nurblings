@@ -29,7 +29,7 @@ const nav = [
   ['Playground', '/playground/'],
   ['Gallery', '/gallery/'],
   ['Docs', '/docs/getting-started/'],
-  ['AI', '/ai/'],
+  ['AI skill', '/ai/'],
 ] as const
 ---
 
@@ -67,7 +67,7 @@ const nav = [
     <header class="site-header">
       <div class="wrap">
         <a class="brand" href="/" aria-label="Nurblings Avatars, home">
-          <span class="av" set:html={nurbling('nurbi', { size: 38, frame: 'portrait', title: 'Nurbi' })} />
+          <span class="av" set:html={nurbling('nurbi', { size: 40, frame: 'full', title: 'Nurbi' })} />
           <b>nurblings</b><small>avatars</small>
         </a>
         <nav class="site-nav" id="site-nav" aria-label="Main">
@@ -106,7 +106,7 @@ const nav = [
           <a href="/docs/api/">API</a>
           <a href="/playground/">Playground</a>
           <a href="/gallery/">Gallery</a>
-          <a href="/ai/">Use with AI</a>
+          <a href="/ai/">AI skill</a>
           <a href="/brand/">Nurbi and the brand</a>
           <a href={REPO}>GitHub</a>
         </nav>
