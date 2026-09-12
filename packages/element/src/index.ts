@@ -86,6 +86,14 @@ export class NurblingElement extends Base {
   }
 
   connectedCallback() {
+    // Default to inline-block with no line height (no baseline gap under the
+    // avatar) only while nothing styles the element, so any display set by a
+    // stylesheet, a layer or a shadow root wins.
+    // ponytail: checked once on connect; CSS that arrives later and wants inline back must say so inline.
+    if (getComputedStyle(this).display === 'inline') {
+      this.style.display = 'inline-block'
+      this.style.lineHeight = '0'
+    }
     this.#render()
   }
 
@@ -132,10 +140,6 @@ for (const name of REFLECTED) {
 /** Registers the element under `tag`. Safe to call twice, and a no-op on the server. */
 export function define(tag = 'nurbling-avatar'): void {
   if (typeof customElements === 'undefined' || customElements.get(tag)) return
-  // zero specificity through :where(), so any rule the page writes wins
-  const style = document.createElement('style')
-  style.textContent = `:where(${tag}){display:inline-block;line-height:0}`
-  document.head.append(style)
   // a subclass per tag: one constructor cannot be registered under two names
   customElements.define(tag, class extends NurblingElement {})
 }

@@ -1,10 +1,11 @@
 import { createNurblings, nurbling } from 'nurblings'
-import { afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { define, NurblingElement, parseAnimate } from '../src/index'
 
 beforeAll(() => define())
 afterEach(() => {
   document.body.innerHTML = ''
+  vi.restoreAllMocks()
 })
 
 function avatar(attrs: Record<string, string>) {
@@ -79,12 +80,24 @@ describe('<nurbling-avatar>', () => {
     expect(el.innerHTML).toBe(parsed(nurbling('ada')))
   })
 
-  it('sits inline through a zero-specificity default, so page styles win', () => {
+  it('sits inline-block with no baseline gap when nothing styles it', () => {
+    // browsers compute an unstyled custom element as inline; happy-dom does not
+    vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+      display: 'inline',
+    } as CSSStyleDeclaration)
     const el = avatar({ seed: 'ada' })
-    expect(el.style.cssText).toBe('')
-    expect(document.head.innerHTML).toContain(
-      ':where(nurbling-avatar){display:inline-block;line-height:0}',
-    )
+    expect(el.style.display).toBe('inline-block')
+    expect(el.style.lineHeight).toBe('0')
+  })
+
+  it('leaves the display alone when a stylesheet sets one', () => {
+    const style = document.createElement('style')
+    style.textContent = 'nurbling-avatar.card { display: block }'
+    document.head.append(style)
+    const el = avatar({ seed: 'ada', class: 'card' })
+    expect(el.style.display).toBe('')
+    expect(getComputedStyle(el).display).toBe('block')
+    style.remove()
   })
 
   it('reflects properties to attributes, for frameworks that bind properties', () => {

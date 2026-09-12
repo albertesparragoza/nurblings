@@ -135,7 +135,7 @@ describe('morph', () => {
   it('puts back a name the page set, even when calls overlap', async () => {
     const el = avatar('ada', [0, 0, 64, 64])
     const vtName = () => el.style.getPropertyValue('view-transition-name')
-    el.style.setProperty('view-transition-name', 'app-avatar')
+    el.style.setProperty('view-transition-name', 'app-avatar', 'important')
     const finish: Array<() => void> = []
     ;(document as { startViewTransition?: unknown }).startViewTransition = (
       cb: () => Promise<void>,
@@ -153,6 +153,7 @@ describe('morph', () => {
     finish[1]?.()
     await second
     expect(vtName()).toBe('app-avatar')
+    expect(el.style.getPropertyPriority('view-transition-name')).toBe('important')
     delete (document as { getAnimations?: unknown }).getAnimations
   })
 
