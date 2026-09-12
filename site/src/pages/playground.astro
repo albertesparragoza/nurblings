@@ -521,8 +521,10 @@ const frameworks = [
     accent-color: var(--accent);
   }
 
+  /* an explicit track: an implicit one grows to the widest line of code */
   .pg .pg-out {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
     min-width: 0;
   }
@@ -587,7 +589,7 @@ const frameworks = [
   @media (max-width: 900px) {
     .pg .pg-grid,
     .pg .preview {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     .pg .controls {
       position: static;
