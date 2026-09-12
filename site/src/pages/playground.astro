@@ -115,10 +115,10 @@ const frameworks = [
         <div>
           <div class="tabs" role="tablist" aria-label="Framework" id="fw-tabs">
             {frameworks.map(([id, label], i) => (
-              <button type="button" role="tab" data-fw={id} aria-selected={String(i === 0)}>{label}</button>
+              <button type="button" role="tab" data-fw={id} aria-selected={String(i === 0)} aria-controls="fw-panel">{label}</button>
             ))}
           </div>
-          <div class="code-card">
+          <div class="code-card" role="tabpanel" id="fw-panel" aria-label="Code">
             <div class="code-head"><span id="fw-note"></span><button type="button" id="copy-code"><span data-copy-label>Copy</span></button></div>
             <pre><code id="code"></code></pre>
           </div>
@@ -130,6 +130,7 @@ const frameworks = [
 
 <script>
   import { applyTheme, currentTheme } from '../lib/client'
+  import { tabs } from '../lib/tabs'
   import { type RenderOptions, THEMES } from '../lib/themes'
 
   interface State {
@@ -184,7 +185,8 @@ const frameworks = [
     const p = new URLSearchParams()
     for (const k of Object.keys(DEFAULTS) as (keyof State)[]) {
       const v = state[k]
-      if (v !== DEFAULTS[k]) p.set(k, typeof v === 'boolean' ? (v ? '1' : '0') : String(v))
+      // the theme always travels with the link, so it never falls back to the reader's own
+      if (v !== DEFAULTS[k] || k === 'theme') p.set(k, typeof v === 'boolean' ? (v ? '1' : '0') : String(v))
     }
     return p.toString()
   }
@@ -226,11 +228,20 @@ const frameworks = [
   }
 
   // code for the chosen framework
+  // JSON.stringify quotes and escapes any seed safely
   const js = (v: unknown): string => {
-    if (typeof v === 'string') return `'${v.replaceAll("'", "\\'")}'`
+    if (typeof v === 'string') return JSON.stringify(v)
+    if (Array.isArray(v)) return `[${v.map(js).join(', ')}]`
     if (v && typeof v === 'object') return `{ ${Object.entries(v).map(([k, x]) => `${k}: ${js(x)}`).join(', ')} }`
     return String(v)
   }
+  const attr = (s: string) => s.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;')
+  // a plain JSX string attribute only when nothing in it needs escaping
+  const jsxProp = (k: string, v: unknown) =>
+    typeof v === 'string' && /^[^"&<>{}\\]*$/.test(v) ? `${k}="${v}"` : `${k}={${js(v)}}`
+  // the same palette and palette-coloured backdrop the preview uses
+  const setupFor = (t: NonNullable<ReturnType<typeof themed>>, from = 'nurblings') =>
+    `import { createNurblings } from '${from}'\n\n// Theme presets are planned; until then, pass the palette yourself.\nconst colours = ${js(t.colors)}\nconst avatars = createNurblings({\n  shells: ${js(t.shells)},\n  accents: ${js(t.accents)},\n  // paint the backdrop in a palette colour, as on this site\n  slots: {\n    backdrop: (ctx, base) => {\n      const pool = colours.filter((c) => c !== ctx.traits.palette.shell.toLowerCase())\n      return base().replace(/fill="#[0-9a-f]{6}"/i, \`fill="\${pool[ctx.traits.silhouette.grain % pool.length]}"\`)\n    },\n  },\n})\n`
   const props = (): [string, unknown][] => {
     const a = animate()
     return [
@@ -246,12 +257,9 @@ const frameworks = [
     const t = themed()
     const pastel = t?.kind === 'pastel'
     const list = props()
-    const setup = pastel
-      ? `import { createNurblings } from 'nurblings'\n\n// Theme presets are planned; until then, pass the palette yourself.\nconst avatars = createNurblings({\n  shells: ${js(t?.shells)},\n  accents: ${js(t?.accents)},\n})\n`
-      : ''
+    const setup = pastel && t ? setupFor(t) : ''
     const note = t?.kind === 'bold' ? `${t.label} is a preview of a planned bold mode: this code renders the default family.` : ''
-    const esc = (s: string) => s.replaceAll('"', '&quot;')
-    const jsx = list.map(([k, v]) => (typeof v === 'string' ? `${k}="${esc(v)}"` : `${k}={${js(v)}}`))
+    const jsx = list.map(([k, v]) => jsxProp(k, v))
     if (pastel) jsx.push('nurblings={avatars}')
     $('fw-note').textContent = note || (pastel ? `Theme: ${t?.label}` : 'Default family')
     switch (fw) {
@@ -260,7 +268,7 @@ const frameworks = [
       case 'astro':
         return `---\nimport { Nurbling } from '@nurblings/astro'\n${setup}---\n\n<Nurbling ${jsx.join(' ')} />`
       case 'vue': {
-        const attrs = list.map(([k, v]) => (typeof v === 'string' ? `${k}="${esc(v)}"` : `:${k}="${js(v)}"`))
+        const attrs = list.map(([k, v]) => (typeof v === 'string' ? `${k}="${attr(v)}"` : `:${k}="${attr(js(v))}"`))
         if (pastel) attrs.push(':nurblings="avatars"')
         return `<script setup>\nimport { Nurbling } from '@nurblings/vue'\n${setup}<\/script>\n\n<template>\n  <Nurbling ${attrs.join(' ')} />\n</template>`
       }
@@ -269,10 +277,14 @@ const frameworks = [
         const layers = a === false ? 'false' : a ? (['breath', 'blink', 'antennae', 'hover'] as const).filter((k) => state[k]).join(' ') : ''
         const attrs = list
           .filter(([k]) => k !== 'animate')
-          .map(([k, v]) => `${k}="${esc(String(v))}"`)
+          .map(([k, v]) => `${k}="${attr(String(v))}"`)
         if (layers) attrs.push(`animate="${layers}"`)
-        const theme = pastel ? `\n<!-- for ${t?.label}, set el.nurblings = createNurblings({ ... }) -->` : ''
-        return `<script type="module" src="https://cdn.jsdelivr.net/npm/@nurblings/element/dist/define.js/+esm"><\/script>\n\n<nurbling-avatar ${attrs.join(' ')}></nurbling-avatar>${theme}`
+        const element = `<nurbling-avatar ${attrs.join(' ')}></nurbling-avatar>`
+        const speed = state.speed === 1 ? '' : '\n<!-- speed has no attribute: use the JavaScript tab to set it -->'
+        const define = 'https://cdn.jsdelivr.net/npm/@nurblings/element/dist/define.js/+esm'
+        if (!pastel || !t) return `<script type="module" src="${define}"><\/script>\n\n${element}${speed}`
+        const body = setupFor(t, 'https://cdn.jsdelivr.net/npm/nurblings/+esm').trimEnd().replaceAll('\n', '\n  ')
+        return `<script type="module">\n  import '${define}'\n  ${body}\n  for (const el of document.querySelectorAll('nurbling-avatar')) el.nurblings = avatars\n<\/script>\n\n${element}${speed}`
       }
       default: {
         const opts = Object.fromEntries(list.filter(([k]) => k !== 'seed'))
@@ -329,11 +341,8 @@ const frameworks = [
     sync()
     render()
   })
-  $('fw-tabs').addEventListener('click', (e) => {
-    const tab = (e.target as Element).closest<HTMLElement>('[data-fw]')
-    if (!tab) return
+  tabs($('fw-tabs'), (tab) => {
     fw = tab.dataset.fw ?? 'react'
-    for (const t of document.querySelectorAll('[data-fw]')) t.setAttribute('aria-selected', String(t === tab))
     render()
   })
 
@@ -345,14 +354,19 @@ const frameworks = [
       label.textContent = was
     }, 1400)
   }
-  $('copy-code').addEventListener('click', async (e) => {
-    await navigator.clipboard.writeText(code())
-    flash(e.currentTarget as HTMLElement, 'Copied')
-  })
-  $('share').addEventListener('click', async (e) => {
-    await navigator.clipboard.writeText(location.href)
-    flash(e.currentTarget as HTMLElement, 'Link copied')
-  })
+  // the button is read before the await: currentTarget is gone once the event has finished
+  const copy = async (button: HTMLElement, text: string, done: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      flash(button, done)
+    } catch {
+      flash(button, 'Copy failed')
+    }
+  }
+  $('copy-code').addEventListener('click', (e) => copy(e.currentTarget as HTMLElement, code(), 'Copied'))
+  $('share').addEventListener('click', (e) =>
+    copy(e.currentTarget as HTMLElement, location.href, 'Link copied'),
+  )
 
   const slug = () => (state.seed || 'nurbling').replace(/[^\w-]+/g, '-').toLowerCase()
   const download = (blob: Blob, name: string) => {
@@ -372,7 +386,9 @@ const frameworks = [
       canvas.getContext('2d')?.drawImage(img, 0, 0, 512, 512)
       canvas.toBlob((blob) => blob && download(blob, `${slug()}.png`))
     }
-    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(draw(512, { animate: false }))}`
+    // keep the chosen size's framing and small-size rules; only scale the picture up
+    const svg = draw(state.size, { animate: false }).replace(/width="[^"]*" height="[^"]*"/, 'width="512" height="512"')
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
   })
 
   sync()
