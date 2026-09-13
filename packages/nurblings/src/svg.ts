@@ -428,13 +428,6 @@ function extra(g: BodyGeometry, t: Traits): string {
     case 'hat':
       // open at the top and stopping below the antenna roots: antennae own the crown
       return band(g, 0.66, 0.84, p.wear) + band(g, 0.64, 0.68, p.accent, -0.01 * u)
-    case 'badge': {
-      // a diamond, like the antenna tips turned on end: worn, never a mark on the skin
-      const x = CX - 0.17 * u
-      const y = BASE_Y - 0.28 * g.height
-      const s = 0.075 * u
-      return `<rect x="${n(x - s / 2)}" y="${n(y - s / 2)}" width="${n(s)}" height="${n(s)}" rx="${n(0.012 * u)}" transform="rotate(45 ${n(x)} ${n(y)})" fill="${p.wear}" stroke="${p.accent}" stroke-width="${n(0.016 * u)}"/>`
-    }
     default:
       return ''
   }

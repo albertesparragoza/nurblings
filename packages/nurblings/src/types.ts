@@ -70,7 +70,7 @@ export interface Brow {
 }
 
 export type Mouth = 'none' | 'dot' | 'line' | 'smile'
-export type Extra = 'none' | 'scarf' | 'badge' | 'hat' | 'collar'
+export type Extra = 'none' | 'scarf' | 'hat' | 'collar'
 export type Mood = 'neutral' | 'curious' | 'pleased' | 'thinking' | 'sleepy'
 
 export interface Palette {
@@ -78,7 +78,7 @@ export interface Palette {
   accent: string
   eye: string
   catchlight: string
-  /** extra fabric colour (scarf, badge, hat, collar) */
+  /** extra fabric colour (scarf, hat, collar) */
   wear: string
   /** container colour on light pages */
   background: string

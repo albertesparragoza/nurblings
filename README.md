@@ -72,10 +72,10 @@ import { Nurbling } from '@nurblings/astro'
 
 ```ts
 // Plain JavaScript: an SVG string, or a data URI for <img>
-import { nurbling, toDataUri } from 'nurblings'
+import { nurbling, nurblingSrc } from 'nurblings'
 
 element.innerHTML = nurbling('ada@example.com', { size: 48 })
-image.src = toDataUri(nurbling('ada@example.com'))
+image.src = nurblingSrc('ada@example.com')
 ```
 
 Framework guides are in [getting started](docs/getting-started.md); every

@@ -1,7 +1,7 @@
 ---
-import '@fontsource-variable/bricolage-grotesque'
-import '@fontsource-variable/dm-sans'
-import '@fontsource-variable/geist-mono'
+import displayFont from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url'
+import textFont from '@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url'
+import '../styles/fonts.css'
 import '../styles/tokens.css'
 import '../styles/site.css'
 // Nurbi is the flagship: always the default renderer, never repainted by a theme
@@ -43,6 +43,8 @@ const nav = [
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={textFont} as="font" type="font/woff2" crossorigin />
     <link rel="alternate" type="text/plain" href="/llms.txt" title="Nurblings docs for AI assistants" />
     <script is:inline>
       // same key as the docs, so light/dark follows the visitor across the site
@@ -62,6 +64,7 @@ const nav = [
         }
       })()
     </script>
+    <slot name="head" />
   </head>
   <body class={className}>
     <header class="site-header">

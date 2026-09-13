@@ -2,11 +2,12 @@
 import { SHELLS, SILHOUETTES } from 'nurblings'
 import ThemePicker from '../components/ThemePicker.astro'
 import Site from '../layouts/Site.astro'
+import { THEMES } from '../lib/themes'
 
 const selects = [
   ['mood', ['neutral', 'curious', 'pleased', 'thinking', 'sleepy']],
   ['mouth', ['none', 'dot', 'line', 'smile']],
-  ['extra', ['none', 'scarf', 'badge', 'hat', 'collar']],
+  ['extra', ['none', 'scarf', 'hat', 'collar']],
   ['silhouette', Object.keys(SILHOUETTES)],
   ['shell', Object.keys(SHELLS)],
 ] as const
@@ -17,9 +18,15 @@ const frameworks = [
   ['html', 'HTML'],
   ['js', 'JavaScript'],
 ] as const
+const accents = Object.fromEntries(Object.values(THEMES).map((t) => [t.id, t.accent]))
 ---
 
 <Site title="Playground" active="/playground/" class="pg">
+  <script is:inline slot="head" define:vars={{ accents }}>
+    // a shared link's theme colours the page before it paints
+    const linked = new URLSearchParams(location.hash.slice(1)).get('theme')
+    if (linked && accents[linked]) document.documentElement.style.setProperty('--accent', accents[linked])
+  </script>
   <div class="wrap">
     <header class="page-head">
       <h1>Playground</h1>
@@ -37,8 +44,8 @@ const frameworks = [
         </label>
 
         <div class="field">
-          <span>Theme</span>
-          <ThemePicker />
+          <span>Theme <output data-theme-name>Original</output></span>
+          <ThemePicker layout="rows" />
         </div>
 
         <div class="field">
@@ -387,6 +394,8 @@ const frameworks = [
 
   sync()
   render()
+  // the output fades in once it is drawn in the linked theme, so nothing flips on load
+  $('preview').closest('.pg-out')?.classList.add('ready')
 </script>
 
 <style is:global>
@@ -449,6 +458,16 @@ const frameworks = [
 
   .pg input[type='range'] {
     accent-color: var(--accent);
+  }
+
+  /* drawn by the script in the linked theme, then faded in */
+  .js .pg-out {
+    opacity: 0;
+    transition: opacity 0.25s var(--ease);
+  }
+
+  .js .pg-out.ready {
+    opacity: 1;
   }
 
   .pg .picker {

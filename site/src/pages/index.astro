@@ -109,10 +109,10 @@ ${FENCE}
     id: 'js',
     label: 'JavaScript',
     install: 'npm install nurblings',
-    code: `import { nurbling, toDataUri } from 'nurblings'
+    code: `import { nurbling, nurblingSrc } from 'nurblings'
 
 element.innerHTML = nurbling('user-42', { size: 48, title: 'Ada Lovelace' })
-image.src = toDataUri(nurbling('user-42'))`,
+image.src = nurblingSrc('user-42')`,
   },
 ]
 
@@ -204,7 +204,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
           <div id="profile-av"><Avatar seed="grace" size={120} transition="grace" title="Grace Liu" /></div>
           <h4 id="profile-name">Grace Liu</h4>
           <small id="profile-role">Engineer · online</small>
-          <button class="btn" type="button">Message</button>
+          <span class="btn" aria-hidden="true">Message</span>
         </div>
         <div class="card chat">
           <h3>#launch</h3>
@@ -579,12 +579,13 @@ const prompt = `npx skills add albertesparragoza/nurblings
     grid-template-columns: 1.05fr 0.95fr;
     gap: clamp(24px, 4vw, 56px);
     align-items: center;
-    min-height: calc(100svh - 68px - 96px);
-    padding-block: 24px;
+    /* the hero and the colour picker share the first screen, header included */
+    min-height: calc(100svh - 68px - 72px);
+    padding-block: 16px;
   }
 
   .home h1 {
-    font-size: clamp(48px, 6.6vw, 96px);
+    font-size: clamp(44px, min(6.6vw, 9.5svh), 96px);
     font-weight: 800;
     letter-spacing: -0.045em;
     line-height: 0.95;
@@ -645,7 +646,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
     position: relative;
     aspect-ratio: 1;
     width: 100%;
-    max-width: 560px;
+    max-width: min(560px, 66svh);
     justify-self: center;
   }
 
@@ -681,7 +682,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
   }
 
   .hero-av svg {
-    width: min(320px, 60vw);
+    width: min(320px, 60vw, 40svh);
     height: auto;
   }
 
@@ -757,8 +758,6 @@ const prompt = `npx skills add albertesparragoza/nurblings
     display: flex;
     justify-content: center;
     padding: 10px var(--gutter);
-    background: color-mix(in srgb, var(--paper) 84%, transparent);
-    backdrop-filter: blur(14px);
   }
 
   @media (max-width: 720px) {

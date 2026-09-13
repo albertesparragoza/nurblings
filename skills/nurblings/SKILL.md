@@ -25,7 +25,7 @@ https://github.com/albertesparragoza/nurblings/tree/develop/docs
 | Nuxt or Vue | `npm install @nurblings/vue` | `<Nurbling :seed="user.id" :title="user.name" />` |
 | Astro | `npm install @nurblings/astro` | `<Nurbling seed={user.id} title={user.name} />` |
 | Svelte, Angular, Solid, plain HTML, a CMS | `npm install @nurblings/element` | `import '@nurblings/element/define'`, then `<nurbling-avatar seed="…" title="…">` |
-| No framework, or an `<img>` / email | `npm install nurblings` | `nurbling(seed, opts)` returns an SVG string; `toDataUri(svg)` for `src` |
+| No framework, or an `<img>` / email | `npm install nurblings` | `nurbling(seed, opts)` returns an SVG string; `nurblingSrc(seed, opts)` for an `<img src>` |
 
 Use the project's package manager (check the lockfile). Imports:
 `import { Nurbling } from '@nurblings/react'` (likewise `/vue`, `/astro`),

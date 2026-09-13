@@ -364,9 +364,40 @@ h3 {
 .picker-name {
   font-size: 13px;
   font-weight: 700;
-  min-width: 8ch;
+  /* a fixed width, so the pill keeps its size whatever the theme is called */
+  width: 14ch;
   padding: 0 6px 0 8px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* stacked: one group per row, for narrow panels */
+.picker-rows {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+}
+
+.picker-group {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.picker-group > span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.picker-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .picker > span {
