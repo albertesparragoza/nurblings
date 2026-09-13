@@ -1,6 +1,5 @@
 ---
-import { Nurbling } from '@nurblings/astro'
-import { type Background, type Mood, SILHOUETTES } from 'nurblings'
+import { nurbling, SHELLS, SILHOUETTES } from 'nurblings'
 import Site from '../layouts/Site.astro'
 import { THEMES } from '../lib/themes'
 
@@ -19,153 +18,335 @@ const kinds = {
 const snippet = (id: string) =>
   id === 'default' ? '<Nurbling seed={user.id} />' : `<Nurbling seed={user.id} theme="${id}" />`
 
-const designs = Object.entries(SILHOUETTES)
-const zones = [
-  ['crown', 'On the crown'],
-  ['side', 'Down one side'],
-  ['base', 'Around the base'],
-  ['none', 'No plates'],
-] as const
-const byZone = zones.map(([zone, label]) => ({
-  label,
-  names: designs.filter(([, s]) => (s.plates ?? 'crown') === zone).map(([name]) => name),
-}))
-const moods: Mood[] = ['neutral', 'curious', 'pleased', 'thinking', 'sleepy']
-const containers: Background[] = ['circle', 'squircle', 'square', 'none']
-const sizes = [24, 32, 48, 64, 96, 128]
+// every discrete choice a seed makes; the smooth variations come on top
+const colourPairs = Object.values(SHELLS).reduce(
+  (sum, s) => sum + s.accents.length * (s.accents.length - 1),
+  0,
+)
+const combinations =
+  Object.keys(SILHOUETTES).length *
+  colourPairs *
+  5 * // moods
+  3 * // mouths
+  4 * // extras
+  4 * // eye shapes
+  4 * // brows
+  13 * // brow tilts
+  2 // one or two antennae
+const millions = Math.floor(combinations / 1_000_000)
+
+const tiny = (seed: string, opts: Parameters<typeof nurbling>[1]) =>
+  nurbling(seed, { size: 30, background: 'circle', animate: false, frame: 'portrait', ...opts })
+const filters = [
+  {
+    key: 'silhouette',
+    label: 'Body',
+    options: Object.keys(SILHOUETTES).map((name) => ({
+      value: name,
+      text: name,
+      art: tiny(`body-${name}`, { silhouette: name as keyof typeof SILHOUETTES, frame: 'full' }),
+    })),
+  },
+  {
+    key: 'mood',
+    label: 'Mood',
+    options: (['neutral', 'curious', 'pleased', 'thinking', 'sleepy'] as const).map((mood) => ({
+      value: mood,
+      text: mood,
+      art: tiny('mood-grace', { mood }),
+    })),
+  },
+  {
+    key: 'extra',
+    label: 'Wearing',
+    options: (['none', 'scarf', 'hat', 'collar'] as const).map((extra) => ({
+      value: extra,
+      text: extra === 'none' ? 'nothing' : extra,
+      art: tiny('wear-linus', { extra, frame: 'full' }),
+    })),
+  },
+  {
+    key: 'theme',
+    label: 'Colours',
+    options: Object.values(THEMES)
+      .filter((t) => t.id !== 'default')
+      .map((t) => ({
+        value: t.id,
+        text: t.label,
+        art: t.render('nurbling', { size: 30, background: 'circle', animate: false }),
+      })),
+  },
+]
 ---
 
 <Site title="Gallery" active="/gallery/" class="gal">
-  <div class="wrap">
-    <header class="page-head">
-      <h1>Gallery</h1>
-      <p class="lead">What every Nurbling is made of, and the colours it can wear.</p>
+  <section class="wrap gal-hero">
+    <div>
+      <h1>No two alike</h1>
+      <p class="lead">
+        Every name hatches its own Nurbling. More than {millions} million combinations of body, face and colour,
+        and each one gets a small twist of its own on top.
+      </p>
+      <label class="name-field">
+        <span class="sr-only">Type a name</span>
+        <input id="gal-seed" value="your name" placeholder="Type any name" autocomplete="off" spellcheck="false" />
+      </label>
       <nav class="jump" aria-label="On this page">
-        <a href="#family">The family</a>
         <a href="#themes">Colour themes</a>
+        <a href="#family">The endless family</a>
       </nav>
-    </header>
+    </div>
+    <div class="gal-hero-av" id="gal-hero" set:html={nurbling('your name', { size: 280, frame: 'full', title: 'your name' })} />
+  </section>
 
-    <section id="family" class="traits">
-      <h2>The family</h2>
-      <p class="lead">Ten body shapes, four plate placements and five moods. The seed picks the mix.</p>
-
-      <h3>Body shapes</h3>
-      <div class="trait-grid">
-        {
-          designs.map(([name]) => (
-            <figure>
-              <Nurbling seed={name} silhouette={name as keyof typeof SILHOUETTES} size={104} title={name} />
-              <figcaption>{name}</figcaption>
-            </figure>
-          ))
-        }
-      </div>
-
-      <h3>Plates</h3>
-      <div class="zone-grid">
-        {
-          byZone.map(({ label, names }) => (
-            <figure>
+  <section id="themes" class="wrap section">
+    <h2>Colour themes</h2>
+    <p class="lead">Ten themes, one prop each. The same faces sit in every card, so only the colours change.</p>
+    <div class="themes">
+      {
+        Object.values(THEMES).map((t) => (
+          <article class="theme-card card" style={`--accent:${t.accent}`}>
+            <header>
               <div>
-                {names.map((name) => (
-                  <Nurbling seed={`plates-${name}`} silhouette={name as keyof typeof SILHOUETTES} size={80} title={name} />
+                <h3>{t.label}</h3>
+                <small>{kinds[t.kind]}</small>
+              </div>
+              <div class="swatches" aria-label={`Palette: ${t.colors.join(', ')}`}>
+                {t.colors.map((c) => (
+                  <i style={`background:${c}`} title={c} />
                 ))}
               </div>
-              <figcaption>{label}</figcaption>
-            </figure>
-          ))
-        }
-      </div>
-
-      <h3>Moods</h3>
-      <div class="trait-grid">
-        {
-          moods.map((mood) => (
-            <figure>
-              <Nurbling seed="ada" mood={mood} size={104} title={mood} />
-              <figcaption>{mood}</figcaption>
-            </figure>
-          ))
-        }
-      </div>
-
-      <h3>Any container, any size</h3>
-      <div class="zone-grid">
-        {
-          containers.map((background) => (
-            <figure>
-              <div class="sized">
-                {sizes.map((size) => (
-                  <Nurbling seed="grace" size={size} background={background} />
+            </header>
+            <div class="mini">
+              <div class="mini-profile">
+                <span class="av" set:html={t.render('grace', { size: 84, background: 'circle', title: 'Grace Liu' })} />
+                <b>Grace Liu</b>
+                <small>Engineer · online</small>
+                <span class="mini-btn">Message</span>
+              </div>
+              <div class="mini-list">
+                {people.map(([seed, name]) => (
+                  <div class="mini-row">
+                    <span class="av" set:html={t.render(seed, { size: 36, background: 'circle', title: name })} />
+                    <span>{name}</span>
+                  </div>
                 ))}
               </div>
-              <figcaption>{background}</figcaption>
-            </figure>
-          ))
-        }
-      </div>
-    </section>
+            </div>
+            <div class="theme-crowd">
+              {crowd.map((s) => (
+                <span class="av" set:html={t.render(s, { size: 48, background: 'circle', title: s })} />
+              ))}
+            </div>
+            <div class="theme-actions">
+              <button class="copy-chip" type="button" data-copy={snippet(t.id)}>
+                <code>{t.id === 'default' ? 'no theme prop' : `theme="${t.id}"`}</code>
+                <span data-copy-label>Copy</span>
+              </button>
+              <a class="btn btn-ghost" href={`/playground/#theme=${t.id}`}>Open in the playground</a>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
 
-    <section id="themes" class="section">
-      <h2>Colour themes</h2>
-      <p class="lead">Ten themes, one prop each. The same faces sit in every card, so only the colours change.</p>
-      <div class="themes">
+  <section id="family" class="wall-section">
+    <div class="wrap wall-head">
+      <h2>The endless family</h2>
+      <p>They keep hatching as you scroll. Pick a trait and the same crowd takes it on.</p>
+    </div>
+    <div class="filter-bar">
+      <div class="wrap filters" role="group" aria-label="Filter the family">
         {
-          Object.values(THEMES).map((t) => (
-            <article class="theme-card card" style={`--accent:${t.accent}`}>
-              <header>
-                <div>
-                  <h3>{t.label}</h3>
-                  <small>{kinds[t.kind]}</small>
-                </div>
-                <div class="swatches" aria-label={`Palette: ${t.colors.join(', ')}`}>
-                  {t.colors.map((c) => (
-                    <i style={`background:${c}`} title={c} />
-                  ))}
-                </div>
-              </header>
-              <div class="mini">
-                <div class="mini-profile">
-                  <span class="av" set:html={t.render('grace', { size: 84, background: 'circle', title: 'Grace Liu' })} />
-                  <b>Grace Liu</b>
-                  <small>Engineer · online</small>
-                  <span class="mini-btn">Message</span>
-                </div>
-                <div class="mini-list">
-                  {people.map(([seed, name]) => (
-                    <div class="mini-row">
-                      <span class="av" set:html={t.render(seed, { size: 36, background: 'circle', title: name })} />
-                      <span>{name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div class="theme-crowd">
-                {crowd.map((s) => (
-                  <span class="av" set:html={t.render(s, { size: 48, background: 'circle', title: s })} />
-                ))}
-              </div>
-              <div class="theme-actions">
-                <button class="copy-chip" type="button" data-copy={snippet(t.id)}>
-                  <code>{t.id === 'default' ? 'no theme prop' : `theme="${t.id}"`}</code><span data-copy-label>Copy</span>
+          filters.map((f) => (
+            <div class="filter">
+              <span>{f.label}</span>
+              <div class="filter-chips">
+                <button type="button" class="fchip any" data-f={f.key} data-v="" aria-pressed="true">
+                  Any
                 </button>
-                <a class="btn btn-ghost" href={`/playground/#theme=${t.id}`}>Open in the playground</a>
+                {f.options.map((o) => (
+                  <button
+                    type="button"
+                    class:list={['fchip', { swatch: f.key === 'theme' }]}
+                    data-f={f.key}
+                    data-v={o.value}
+                    aria-pressed="false"
+                    title={o.text}
+                  >
+                    <span class="fchip-art" set:html={o.art} />
+                    <span class:list={[{ 'sr-only': f.key === 'theme' }]}>{o.text}</span>
+                  </button>
+                ))}
               </div>
-            </article>
+            </div>
           ))
         }
       </div>
-    </section>
-  </div>
+    </div>
+    <div class="wrap">
+      <p class="wall-count" aria-live="polite"><b id="hatched">0</b> hatched so far</p>
+      <div class="wall" id="wall"></div>
+      <p class="wall-end" id="wall-end"></p>
+    </div>
+  </section>
 </Site>
 
+<script>
+  import { reducedMotion } from '../lib/client'
+  import { THEMES } from '../lib/themes'
+
+  const $ = (id: string) => document.getElementById(id) as HTMLElement
+  const NAMES = ['ada', 'grace', 'linus', 'margaret', 'alan', 'hedy', 'radia', 'ken', 'joan', 'tim', 'frances', 'dennis', 'barbara', 'edsger', 'katherine', 'guido', 'sophie', 'anders', 'mary', 'jean', 'leslie', 'donald', 'shafi', 'lynn', 'adele', 'annie', 'dorothy', 'roberta', 'carol', 'hal', 'evelyn', 'niklaus']
+  const BATCH = 60
+  // enough to feel endless while keeping the page light
+  const CAP = 2400
+  const pins: Record<string, string> = { silhouette: '', mood: '', extra: '', theme: '' }
+
+  const wall = $('wall')
+  const hatched = $('hatched')
+  const end = $('wall-end')
+  const renderer = () => THEMES[pins.theme || 'default'] ?? THEMES.default
+  const seedAt = (i: number) => `${NAMES[i % NAMES.length]}-${Math.floor(i / NAMES.length) + 1}`
+  const options = (seed: string) => ({
+    size: 72,
+    background: 'circle' as const,
+    animate: false,
+    title: seed,
+    ...(pins.silhouette ? { silhouette: pins.silhouette } : {}),
+    ...(pins.mood ? { mood: pins.mood } : {}),
+    ...(pins.extra ? { extra: pins.extra } : {}),
+  })
+  const link = (seed: string) => {
+    const p = new URLSearchParams({ seed })
+    for (const [k, v] of Object.entries(pins)) if (v) p.set(k, v)
+    return `/playground/#${p}`
+  }
+  const draw = (cell: HTMLAnchorElement, pop: boolean, k: number) => {
+    const seed = cell.dataset.seed ?? ''
+    cell.innerHTML = renderer()?.render(seed, options(seed) as never) ?? ''
+    cell.href = link(seed)
+    if (pop && !reducedMotion()) {
+      cell.style.setProperty('--k', String(k % BATCH))
+      cell.classList.remove('pop')
+      void cell.offsetWidth
+      cell.classList.add('pop')
+    }
+  }
+  const more = () => {
+    const from = wall.childElementCount
+    const to = Math.min(CAP, from + BATCH)
+    const frag = document.createDocumentFragment()
+    for (let i = from; i < to; i++) {
+      const cell = document.createElement('a')
+      cell.className = 'cell'
+      cell.dataset.seed = seedAt(i)
+      cell.title = `${cell.dataset.seed}, open in the playground`
+      draw(cell, true, i)
+      frag.append(cell)
+    }
+    wall.append(frag)
+    hatched.textContent = to.toLocaleString('en-US')
+    if (to >= CAP) end.textContent = `${CAP.toLocaleString('en-US')} hatched on this page. The rest are waiting for their names.`
+  }
+  more()
+  // keeps hatching while the end of the wall is near; observing again after
+  // each batch checks at once whether the end is still in reach
+  const watch = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((e) => e.isIntersecting) || wall.childElementCount >= CAP) return
+      more()
+      watch.unobserve(end)
+      watch.observe(end)
+    },
+    { rootMargin: '900px 0px' },
+  )
+  watch.observe(end)
+
+  // filters: the same crowd takes on the chosen trait
+  document.querySelector('.filters')?.addEventListener('click', (e) => {
+    const chip = (e.target as Element).closest<HTMLElement>('[data-f]')
+    if (!chip) return
+    const key = chip.dataset.f ?? ''
+    pins[key] = chip.dataset.v ?? ''
+    for (const c of document.querySelectorAll<HTMLElement>(`[data-f="${key}"]`)) {
+      c.setAttribute('aria-pressed', String(c === chip))
+    }
+    let k = 0
+    for (const cell of wall.children) draw(cell as HTMLAnchorElement, true, k++)
+    hero()
+  })
+
+  // the hero: any name, drawn as you type
+  const input = $('gal-seed') as HTMLInputElement
+  const heroBox = $('gal-hero')
+  const hero = () => {
+    const name = input.value || ' '
+    heroBox.innerHTML =
+      renderer()?.render(name, { size: 280, frame: 'full', title: input.value || 'Nurbling', ...(pins.mood ? { mood: pins.mood } : {}), ...(pins.extra ? { extra: pins.extra } : {}), ...(pins.silhouette ? { silhouette: pins.silhouette } : {}) } as never) ?? ''
+  }
+  input.addEventListener('input', hero)
+</script>
+
 <style is:global>
+  .gal .gal-hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: clamp(24px, 4vw, 56px);
+    align-items: center;
+    padding-block: clamp(32px, 6vw, 72px) 24px;
+  }
+
+  .gal .gal-hero h1 {
+    font-size: clamp(52px, 7.4vw, 108px);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+  }
+
+  .gal .gal-hero-av {
+    justify-self: center;
+    line-height: 0;
+    background: var(--tint);
+    border-radius: 44% 56% 52% 48% / 50% 44% 56% 50%;
+    padding: clamp(12px, 3vw, 32px);
+  }
+
+  .gal .gal-hero-av svg {
+    width: min(280px, 64vw);
+    height: auto;
+  }
+
+  .gal .name-field {
+    display: flex;
+    max-width: 440px;
+    margin: 26px 0 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 12px 18px;
+    transition: border-color 0.2s;
+  }
+
+  .gal .name-field:focus-within {
+    border-color: var(--accent);
+  }
+
+  .gal .name-field input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: none;
+    font-size: 18px;
+    font-weight: 500;
+    outline: none;
+  }
+
   .gal .jump {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 22px;
   }
 
   .gal .jump a {
@@ -181,17 +362,156 @@ const sizes = [24, 32, 48, 64, 96, 128]
     border-color: var(--accent);
   }
 
-  .gal section > h2 {
-    font-size: clamp(34px, 4vw, 52px);
-    font-weight: 800;
-    scroll-margin-top: 84px;
-  }
-
   .gal section[id] {
     scroll-margin-top: 84px;
   }
 
-  .gal section > .lead {
+  .gal .wall-section {
+    padding-bottom: 40px;
+  }
+
+  .gal .wall-head h2,
+  .gal #themes > h2 {
+    font-size: clamp(34px, 4vw, 52px);
+    font-weight: 800;
+  }
+
+  .gal .wall-head p {
+    color: var(--muted);
+    font-size: 18px;
+    margin: 12px 0 0;
+  }
+
+  /* the filters stay at hand while the wall scrolls under them */
+  .gal .filter-bar {
+    position: sticky;
+    top: 68px;
+    z-index: 10;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    padding-block: 12px;
+    margin-top: 24px;
+  }
+
+  .gal .filters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .gal .filter {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+  }
+
+  .gal .filter > span {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .gal .filter-chips {
+    /* scroll inside the row instead of widening the page */
+    min-width: 0;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 2px;
+  }
+
+  .gal .fchip {
+    /* holds its visually hidden label, which would otherwise escape the scrolling row */
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 2px 12px 2px 2px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    text-transform: capitalize;
+    transition:
+      border-color 0.2s,
+      background-color 0.2s;
+  }
+
+  .gal .fchip.any {
+    padding: 8px 14px;
+  }
+
+  .gal .fchip.swatch {
+    padding: 2px;
+  }
+
+  .gal .fchip-art {
+    line-height: 0;
+  }
+
+  .gal .fchip:hover {
+    border-color: var(--accent);
+  }
+
+  .gal .fchip[aria-pressed='true'] {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  }
+
+  .gal .wall-count {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 18px 0 12px;
+  }
+
+  .gal .wall-count b {
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gal .wall {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 12px;
+    justify-items: center;
+  }
+
+  .gal .cell {
+    line-height: 0;
+    border-radius: 50%;
+    transition: transform 0.3s var(--spring);
+  }
+
+  .gal .cell:hover,
+  .gal .cell:focus-visible {
+    transform: scale(1.18) rotate(-4deg);
+  }
+
+  .gal .cell.pop {
+    animation: nb-hatch 0.5s var(--spring) both;
+    animation-delay: calc(var(--k, 0) * 10ms);
+  }
+
+  @keyframes nb-hatch {
+    from {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+  }
+
+  .gal .wall-end {
+    color: var(--muted);
+    text-align: center;
+    min-height: 1px;
+    margin: 28px 0 0;
+  }
+
+  .gal #themes > .lead {
     margin-bottom: 8px;
   }
 
@@ -308,58 +628,21 @@ const sizes = [24, 32, 48, 64, 96, 128]
     align-items: center;
   }
 
-  .gal .traits h3 {
-    font-size: 24px;
-    font-weight: 800;
-    margin: 36px 0 14px;
-  }
-
-  .gal .trait-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
-  }
-
-  .gal figure {
-    margin: 0;
-    display: grid;
-    justify-items: center;
-    gap: 8px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--r-md);
-    padding: 16px 10px;
-    line-height: 0;
-  }
-
-  .gal figcaption {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--muted);
-    line-height: 1.3;
-    text-transform: capitalize;
-  }
-
-  .gal .zone-grid {
-    display: grid;
-    gap: 12px;
-  }
-
-  .gal .zone-grid figure > div {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-  }
-
-  .gal .zone-grid .sized {
-    align-items: flex-end;
-  }
-
   @media (max-width: 900px) {
+    .gal .gal-hero,
     .gal .themes,
     .gal .mini {
       grid-template-columns: minmax(0, 1fr);
+    }
+
+    .gal .filter {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+    }
+
+    /* four rows of filters would take a third of a phone screen */
+    .gal .filter-bar {
+      position: static;
     }
   }
 </style>
