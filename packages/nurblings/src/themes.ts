@@ -3,7 +3,7 @@
 // `nurbling()` carries none of it.
 
 import { contrast, ensureContrast, shade } from './colour'
-import type { NurblingOptions, NurblingRenderer } from './index'
+import type { NurblingRenderer } from './index'
 import { createNurblings, type Hex, nurbling, type Theme } from './nurbling'
 
 export type { Hex, Theme }
@@ -13,71 +13,71 @@ const named = (prefix: string, list: readonly Hex[]) =>
   Object.fromEntries(list.map((hex, i) => [`${prefix}${i + 1}`, hex])) as Record<string, Hex>
 
 // Soft themes: pastel bodies and a pop of strong colour behind them.
-export const lagoon: Theme = {
+export const lagoon = {
   name: 'lagoon',
   shells: { cream: '#edecb3', sun: '#fad928', tang: '#ffd392', aqua: '#a2e6e1' },
   accents: { deep: '#00686c', ember: '#d1495b', ink: '#1f4e79' },
   backdrops: ['#00686c', '#32c2b9', '#edecb3', '#fad928', '#ff9915'],
-}
-export const punch: Theme = {
+} satisfies Theme
+export const punch = {
   name: 'punch',
   shells: { foam: '#f1faee', ice: '#a8dadc', blush: '#ffd6da', sand: '#f4e3b1' },
   accents: { red: '#e63946', steel: '#457b9d', sea: '#2f5d8a' },
   backdrops: ['#1d3557', '#457b9d', '#a8dadc', '#f1faee', '#e63946'],
-}
-export const candy: Theme = {
+} satisfies Theme
+export const candy = {
   name: 'candy',
   shells: { butter: '#ffd166', sky: '#9be3f7', bubble: '#ffb3da', lilac: '#d9c2ff' },
   accents: { plum: '#b5179e', blue: '#3f51d8', rose: '#d6246e' },
   backdrops: ['#3a0ca3', '#7209b7', '#f72585', '#4cc9f0', '#ffd166'],
-}
-export const picnic: Theme = {
+} satisfies Theme
+export const picnic = {
   name: 'picnic',
   shells: { mustard: '#e9c46a', apricot: '#f7bb8c', oat: '#f6e7cb', sage: '#bfd8c2' },
   accents: { rust: '#c44536', pine: '#1f7a6d', slate: '#3d5a80' },
   backdrops: ['#264653', '#2a9d8f', '#e9c46a', '#f4a261', '#e76f51'],
-}
-export const sorbet: Theme = {
+} satisfies Theme
+export const sorbet = {
   name: 'sorbet',
   shells: { lemon: '#ffe57a', mint: '#b1e9b8', peachy: '#ffcec5', cloud: '#eef3ff' },
   accents: { coral: '#e05252', blue: '#2f6fd6', green: '#2e8b57' },
   backdrops: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#f7f7f7'],
-}
-export const terracotta: Theme = {
+} satisfies Theme
+export const terracotta = {
   name: 'terracotta',
   shells: { bone: '#f4f1de', clay: '#f6d0c2', moss: '#cbdfd4', honey: '#f4d6a4' },
   accents: { terra: '#c8553d', indigo: '#4a5080', sage: '#4f7f67' },
   backdrops: ['#3d405b', '#e07a5f', '#81b29a', '#f2cc8f', '#f4f1de'],
-}
+} satisfies Theme
 
 // Vivid themes: saturated bodies, one ink for every mark.
-export const marble: Theme = {
+export const marble = {
   name: 'marble',
-  shells: named('b', ['#ffb238', '#ff7d10', '#ff5c8a', '#ffd37a']),
+  shells: { b1: '#ffb238', b2: '#ff7d10', b3: '#ff5c8a', b4: '#ffd37a' },
   accents: { ink: '#1b0630' },
   backdrops: ['#0a0310', '#49007e', '#ff005b', '#ff7d10', '#ffb238'],
   darkBackdrops: ['#0a0310', '#49007e'],
-}
-export const riso: Theme = {
+} satisfies Theme
+export const riso = {
   name: 'riso',
-  shells: named('b', ['#ffe800', '#ff7ac6', '#3dbe7a', '#4da3df', '#ffb0d9']),
+  shells: { b1: '#ffe800', b2: '#ff7ac6', b3: '#3dbe7a', b4: '#4da3df', b5: '#ffb0d9' },
   accents: { ink: '#1a1a2e' },
   backdrops: ['#0078bf', '#ff48b0', '#ffe800', '#00a95c', '#f8f2e8'],
-}
-export const lime: Theme = {
+} satisfies Theme
+export const lime = {
   name: 'lime',
-  shells: named('b', ['#c6f432', '#ff8cc3', '#a895ff', '#f5f5f5']),
+  shells: { b1: '#c6f432', b2: '#ff8cc3', b3: '#a895ff', b4: '#f5f5f5' },
   accents: { ink: '#1b1b1b' },
   backdrops: ['#1b1b1b', '#c6f432', '#7b61ff', '#ff5da2', '#f5f5f5'],
   darkBackdrops: ['#1b1b1b'],
-}
-export const bauhaus: Theme = {
+} satisfies Theme
+export const bauhaus = {
   name: 'bauhaus',
-  shells: named('b', ['#f2c14e', '#f78154', '#e07ba0', '#7fb89d']),
+  shells: { b1: '#f2c14e', b2: '#f78154', b3: '#e07ba0', b4: '#7fb89d' },
   accents: { ink: '#1e1e24' },
   backdrops: ['#1e1e24', '#b4436c', '#f2c14e', '#f78154', '#4d9078'],
   darkBackdrops: ['#1e1e24'],
-}
+} satisfies Theme
 
 /** Every built-in theme, by name. Importing this pulls them all in; import one by name to keep only it. */
 export const THEMES = {
@@ -181,10 +181,11 @@ export function themed(theme: ThemeName | Theme): NurblingRenderer {
 export function renderNurbling(
   renderer: NurblingRenderer | undefined,
   seed: string,
-  opts: NurblingOptions,
+  opts: NonNullable<Parameters<NurblingRenderer['nurbling']>[1]>,
   theme?: ThemeName | Theme,
 ): string {
-  if (!theme) return (renderer ?? { nurbling }).nurbling(seed, opts)
+  const plain: NurblingRenderer = { nurbling }
+  if (!theme) return (renderer ?? plain).nurbling(seed, opts)
   return renderer
     ? renderer.nurbling(seed, { ...opts, theme: themeOf(theme) })
     : themed(theme).nurbling(seed, opts)

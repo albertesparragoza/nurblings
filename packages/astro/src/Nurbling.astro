@@ -1,9 +1,11 @@
 ---
-import type { NurblingOptions, NurblingRenderer } from 'nurblings'
+import type { NurblingOptions, NurblingRenderer, ShellName } from 'nurblings'
 import { renderNurbling, type Theme, type ThemeName } from 'nurblings/themes'
 
-export interface Props extends NurblingOptions {
+export interface Props extends Omit<NurblingOptions, 'shell'> {
   seed: string
+  /** a body colour by name; with a theme, one of that theme's names */
+  shell?: ShellName | (string & {})
   class?: string
   style?: string
   /** a built-in theme by name, such as `"lagoon"`, or any theme object */

@@ -22,9 +22,9 @@ import {
   type SilhouetteName,
 } from './gen1'
 import { isFlagshipSeed, renderFlagship } from './protect'
-import { normaliseSeed, stream } from './seed'
+import { normaliseSeed, type Rng, stream } from './seed'
 import { render, type Slots } from './svg'
-import type { Extra, Mood, Mouth, RenderOptions, Silhouette, Traits } from './types'
+import type { Extra, Mood, Mouth, Palette, RenderOptions, Silhouette, Traits } from './types'
 
 export { contrast }
 
@@ -80,6 +80,14 @@ export interface NurblingsConfig {
 type NamesOf<T, Fallback extends string> =
   T extends Readonly<Record<string, unknown>> ? Extract<keyof T, string> : Fallback
 
+/** Body colour names: the config's own shells, else its theme's, else the built-in ones. */
+type ShellNamesOf<C extends NurblingsConfig> =
+  C['shells'] extends Readonly<Record<string, unknown>>
+    ? Extract<keyof C['shells'], string>
+    : C['theme'] extends Theme
+      ? Extract<keyof C['theme']['shells'], string>
+      : ShellName
+
 /** Options for a configured instance: `silhouette` and `shell` name that instance's own tables. */
 export type ConfiguredOptions<C extends NurblingsConfig> = Omit<
   NurblingOptions,
@@ -88,7 +96,7 @@ export type ConfiguredOptions<C extends NurblingsConfig> = Omit<
   /** colours for this call; the creature's shape and face stay the same */
   theme?: Theme
   silhouette?: NamesOf<C['silhouettes'], SilhouetteName>
-  shell?: NamesOf<C['shells'], ShellName>
+  shell?: ShellNamesOf<C>
 }
 
 type Pins = Omit<NurblingOptions, 'silhouette' | 'shell'> & {
@@ -111,6 +119,8 @@ interface Tables {
   shells: Readonly<Record<string, ShellEntry>>
   silhouettes: Readonly<Record<string, SilhouetteShape>>
   weights: readonly (readonly [string, number])[]
+  /** built from a theme: colours are drawn on top of the built-in shape and face */
+  themed?: boolean
 }
 
 /** A deep tint of the body: its container on a dark page. */
@@ -165,14 +175,7 @@ function draw(seed: string, attempt: number, opts: Pins, tables: Tables): Traits
     grain: 1 + b.int(999_999),
   }
 
-  const c = key('colour')
-  const drawnShell = c.pick(Object.keys(tables.shells))
-  const entry = tables.shells[opts.shell ?? drawnShell] as ShellEntry
-  const accent = c.pick(entry.accents)
-  // a one-accent theme wears its accent; the built-in shells always have a second
-  const others = entry.accents.filter((a) => a !== accent)
-  const wear = others.length ? c.pick(others) : accent
-  const ground = (list: readonly string[]) => list[silhouette.grain % list.length] as string
+  const palette = colours(key('colour'), opts, tables, silhouette.grain)
 
   const a = key('antennae')
   const [lo, hi] = RANGES.length
@@ -211,15 +214,27 @@ function draw(seed: string, attempt: number, opts: Pins, tables: Tables): Traits
     mouth: opts.mouth ?? mouth,
     extra: opts.extra ?? extra,
     mood: opts.mood ?? mood,
-    palette: {
-      shell: entry.shell,
-      accent,
-      eye: entry.eye,
-      catchlight: CATCHLIGHT,
-      wear,
-      background: ground(entry.backdrops),
-      backgroundDark: ground(entry.darkBackdrops),
-    },
+    palette,
+  }
+}
+
+/** The colour draw alone, from its own stream: a theme can swap it and nothing else. */
+function colours(c: Rng, opts: Pins, tables: Tables, grain: number): Palette {
+  const drawnShell = c.pick(Object.keys(tables.shells))
+  const entry = tables.shells[opts.shell ?? drawnShell] as ShellEntry
+  const accent = c.pick(entry.accents)
+  // a one-accent theme wears its accent; the built-in shells always have a second
+  const others = entry.accents.filter((a) => a !== accent)
+  const wear = others.length ? c.pick(others) : accent
+  const ground = (list: readonly string[]) => list[grain % list.length] as string
+  return {
+    shell: entry.shell,
+    accent,
+    eye: entry.eye,
+    catchlight: CATCHLIGHT,
+    wear,
+    background: ground(entry.backdrops),
+    backgroundDark: ground(entry.darkBackdrops),
   }
 }
 
@@ -264,9 +279,19 @@ function resolve(seed: string, opts: Pins, tables: Tables): Traits {
     }
   }
   const normal = normaliseSeed(seed)
-  let t = draw(normal, 0, opts, tables)
+  // A theme changes colours only: shape and face are drawn with the built-in
+  // colours, exactly as without a theme, and the theme's colours go on top.
+  const { shell, ...unpinned } = opts
+  const base = tables.themed
+    ? { ...DEFAULT_TABLES, silhouettes: tables.silhouettes, weights: tables.weights }
+    : tables
+  const baseOpts = tables.themed ? unpinned : opts
+  let t = draw(normal, 0, baseOpts, base)
   for (let attempt = 1; attempt <= MAX_REROLLS && inProtectedRegion(t); attempt++) {
-    t = draw(normal, attempt, opts, tables)
+    t = draw(normal, attempt, baseOpts, base)
+  }
+  if (tables.themed) {
+    t = { ...t, palette: colours(stream(normal, 'colour'), opts, tables, t.silhouette.grain) }
   }
   // The region can only be reached through Nurbi's quiet face unless a palette
   // brings its own near-flagship accent; a wave brow always breaks the quiet face.
@@ -389,7 +414,7 @@ function buildTables(config: NurblingsConfig): Tables {
       darkBackdrops: pool(theme?.darkBackdrops, shell, night(shell)),
     }
   }
-  return { shells: table, silhouettes, weights }
+  return { shells: table, silhouettes, weights, themed: Boolean(theme) }
 }
 
 /**

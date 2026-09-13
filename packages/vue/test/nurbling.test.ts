@@ -22,7 +22,7 @@ describe('Nurbling (server render)', () => {
     for (const seed of SEEDS) {
       for (const opts of OPTION_SETS) {
         const html = await ssr({ seed, ...opts })
-        expect(html).toContain(nurbling(seed, opts))
+        expect(html).toContain(nurbling(seed, opts as Parameters<typeof nurbling>[1]))
       }
     }
   })

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { contrast } from '../src/colour'
-import { createNurblings, nurbling } from '../src/nurbling'
+import { createNurblings, nurbling, traits } from '../src/nurbling'
 import { lagoon, palette, renderNurbling, THEMES, themed, themeOf } from '../src/themes'
 
 const seeds = Array.from({ length: 120 }, (_, i) => `person-${i}`)
@@ -14,6 +14,23 @@ describe('built-in themes', () => {
       expect(contrast(p.accent, p.shell)).toBeGreaterThanOrEqual(3)
       expect(Object.values(theme.shells)).toContain(p.shell)
     }
+  })
+
+  it('changes colours only: every seed keeps its shape and face', () => {
+    const face = (t: ReturnType<typeof traits>) => ({
+      ...t,
+      palette: null,
+      brow: { ...t.brow, shape: null },
+    })
+    for (const theme of Object.values(THEMES)) {
+      const nb = createNurblings({ theme })
+      for (const seed of seeds) expect(face(nb.traits(seed))).toEqual(face(traits(seed)))
+    }
+  })
+
+  it('types body colour names from the theme', () => {
+    const nb = createNurblings({ theme: lagoon })
+    expect(nb.traits('ada', { shell: 'cream' }).palette.shell).toBe('#edecb3')
   })
 
   it('resolves names, and refuses unknown ones', () => {

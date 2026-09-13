@@ -504,11 +504,12 @@ const LAYERS = { mb: 'breath', mk: 'blink', ma: 'antennae', mh: 'hover' } as con
 
 // `mode: 'auto'`: light colours are attributes, dark ones custom properties on
 // the root, swapped by the OS setting unless a page marks itself light, or by a
-// `data-theme="dark"` or `.dark` ancestor. Identical text in every avatar.
+// `data-theme="dark"` or `.dark` ancestor unless a light marker sits closer.
+// Identical text in every avatar.
 const AUTO_DARK = '.nb-auto:not([data-theme=light] *,.light *)'
 const AUTO_RULES = (at: string) =>
   `${at} .nb-g{fill:var(--nb-g)}${at} .nb-c{stroke:var(--nb-c)}${at} .nb-c rect{fill:var(--nb-c)}`
-export const AUTO = `<style>@media (prefers-color-scheme:dark){${AUTO_RULES(AUTO_DARK)}}${AUTO_RULES(':is([data-theme=dark],.dark) .nb-auto')}</style>`
+export const AUTO = `<style>@media (prefers-color-scheme:dark){${AUTO_RULES(AUTO_DARK)}}${AUTO_RULES(':is([data-theme=dark],.dark) .nb-auto:not(:is([data-theme=dark],.dark) :is([data-theme=light],.light) *)')}</style>`
 
 /** Page grounds an antenna stands on when there is no container. */
 const PAGE = { light: '#f7f5f2', dark: '#16161a' }

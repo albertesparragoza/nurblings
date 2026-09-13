@@ -1,4 +1,4 @@
-import type { NurblingOptions, NurblingRenderer } from 'nurblings'
+import type { NurblingOptions, NurblingRenderer, ShellName } from 'nurblings'
 import { renderNurbling, type Theme, type ThemeName } from 'nurblings/themes'
 import type { CSSProperties } from 'react'
 
@@ -10,7 +10,10 @@ export type NurblingProps = {
   theme?: ThemeName | Theme
   /** render with an app-wide configuration from `createNurblings` */
   nurblings?: NurblingRenderer
-} & NurblingOptions
+} & Omit<NurblingOptions, 'shell'> & {
+    /** a body colour by name; with a theme, one of that theme's names */
+    shell?: ShellName | (string & {})
+  }
 
 /**
  * A deterministic avatar rendered as inline SVG. A valid React Server

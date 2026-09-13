@@ -6,8 +6,10 @@ import type { NurblingOptions, NurblingRenderer } from 'nurblings'
 import { renderNurbling, type Theme, type ThemeName } from 'nurblings/themes'
 import { defineComponent, h, type InjectionKey, inject, type Plugin, type PropType } from 'vue'
 
-export interface NurblingProps extends NurblingOptions {
+export interface NurblingProps extends Omit<NurblingOptions, 'shell'> {
   seed: string
+  /** a body colour by name; with a theme, one of that theme's names */
+  shell?: string
   /** a built-in theme by name, such as `"lagoon"`, or any theme object */
   theme?: ThemeName | Theme
   /** render with an app-wide configuration from `createNurblings` */
@@ -63,7 +65,7 @@ export const Nurbling = defineComponent({
       type: String as PropType<NurblingOptions['silhouette']>,
       default: undefined,
     },
-    shell: { type: String as PropType<NurblingOptions['shell']>, default: undefined },
+    shell: { type: String, default: undefined },
     frame: { type: String as PropType<NurblingOptions['frame']>, default: undefined },
     mode: { type: String as PropType<NurblingOptions['mode']>, default: undefined },
     theme: { type: [String, Object] as PropType<ThemeName | Theme>, default: undefined },
