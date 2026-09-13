@@ -1,0 +1,147 @@
+---
+// The footer for every page, marketing and docs alike. It lays itself out by
+// its own width (a container query), since the docs give it the content
+// column and the marketing pages the full page.
+import { nurbling } from 'nurblings'
+import { FOOTER } from '../lib/nav'
+import Brand from './Brand.astro'
+
+interface Props {
+  /** centre it in the page width, as the marketing pages do */
+  wide?: boolean
+}
+
+const { wide = false } = Astro.props
+const family = ['ada', 'grace', 'linus', 'radia', 'hedy', 'alan']
+---
+
+<footer class:list={['site-footer', { wide }]}>
+  <div class="frame">
+    <div class="grid">
+      <div class="about">
+        <Brand />
+        <p>Small animated avatars for React, Vue, Astro and plain HTML. A creature of its own for every account.</p>
+        <div class="family" aria-hidden="true">
+          {family.map((seed) => <span set:html={nurbling(seed, { size: 34, background: 'circle', animate: false })} />)}
+        </div>
+      </div>
+      {
+        FOOTER.map((column) => (
+          <nav aria-label={column.title}>
+            <p class="heading">{column.title}</p>
+            <ul>
+              {column.links.map(([label, href]) => (
+                <li>
+                  <a href={href}>{label}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+    <p class="legal">
+      Code under MIT. Generated avatars are public domain (CC0). The names Nurbi and Nurblings and the flagship
+      artwork are reserved.
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    container-type: inline-size;
+    border-top: 1px solid var(--line);
+    margin-top: 56px;
+    padding-block: 48px 36px;
+    color: var(--muted);
+    font: 14px / 1.55 var(--text);
+  }
+
+  .wide .frame {
+    width: min(100% - 2 * var(--gutter), var(--maxw));
+    margin-inline: auto;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 24px;
+  }
+
+  .about {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 14px;
+    justify-items: start;
+  }
+
+  .about p {
+    margin: 0;
+    max-width: 38ch;
+  }
+
+  .family {
+    display: flex;
+    line-height: 0;
+  }
+
+  .family span {
+    margin-right: -6px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--paper);
+    transition: transform 0.3s var(--spring);
+  }
+
+  .family span:hover {
+    transform: translateY(-4px);
+  }
+
+  .heading {
+    margin: 0 0 12px;
+    font: 700 13px / 1 var(--text);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  a:hover {
+    color: var(--ink);
+  }
+
+  .legal {
+    margin: 40px 0 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+  }
+
+  @container (min-width: 520px) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @container (min-width: 880px) {
+    .grid {
+      grid-template-columns: 1.6fr repeat(3, minmax(0, 1fr));
+    }
+
+    .about {
+      grid-column: auto;
+    }
+  }
+</style>

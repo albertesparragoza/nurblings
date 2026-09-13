@@ -1,0 +1,83 @@
+---
+// Light and dark, on every page. In the docs it stands in for Starlight's
+// theme select and writes the same storage key, so the choice follows the
+// visitor across the site.
+// the docs render it twice (header and mobile menu): each mask needs its own id
+const mask = `mode-bite-${Math.random().toString(36).slice(2, 8)}`
+---
+
+<button class="mode-toggle" type="button" aria-label="Switch light and dark" data-mode-toggle>
+  <!-- one icon that morphs: a sun in light mode, a moon in dark mode -->
+  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+    <mask id={mask}>
+      <rect width="24" height="24" fill="#fff"></rect>
+      <circle class="bite" cx="26" cy="2" r="7" fill="#000"></circle>
+    </mask>
+    <circle class="core" cx="12" cy="12" r="5" fill="currentColor" mask={`url(#${mask})`}></circle>
+    <g class="rays" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.2M19.8 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"></path>
+    </g>
+  </svg>
+</button>
+
+<script>
+  for (const button of document.querySelectorAll('[data-mode-toggle]')) {
+    button.addEventListener('click', () => {
+      const dark = document.documentElement.dataset.theme !== 'dark'
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      try {
+        localStorage.setItem('starlight-theme', dark ? 'dark' : 'light')
+      } catch {}
+    })
+  }
+</script>
+
+<style>
+  .mode-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 10px;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .mode-toggle:hover {
+    background: var(--tint);
+  }
+
+  /* sun in light mode; in dark mode the core grows, a bite slides over it and
+     the rays spin away, leaving a moon */
+  .core,
+  .bite {
+    transition:
+      r 0.5s var(--spring),
+      cx 0.5s var(--ease),
+      cy 0.5s var(--ease);
+  }
+
+  .rays {
+    transform-origin: 12px 12px;
+    transition:
+      transform 0.5s var(--spring),
+      opacity 0.3s var(--ease);
+  }
+
+  :global(:root[data-theme="dark"]) .core {
+    r: 8.5px;
+  }
+
+  :global(:root[data-theme="dark"]) .bite {
+    cx: 17px;
+    cy: 7px;
+  }
+
+  :global(:root[data-theme="dark"]) .rays {
+    transform: rotate(90deg) scale(0.4);
+    opacity: 0;
+  }
+</style>

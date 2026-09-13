@@ -31,7 +31,13 @@ export default defineConfig({
       social: [{ icon: 'github', label: 'GitHub', href: REPO }],
       editLink: { baseUrl: `${REPO}/edit/develop/` },
       // preloads the site fonts on docs pages too, so text never blinks in
-      components: { Head: './src/components/DocsHead.astro' },
+      // the header, theme switch and footer are the marketing pages' own
+      components: {
+        Head: './src/components/DocsHead.astro',
+        Header: './src/components/DocsHeader.astro',
+        ThemeSelect: './src/components/ModeToggle.astro',
+        Footer: './src/components/DocsFooter.astro',
+      },
       customCss: [
         './src/styles/fonts.css',
         './src/styles/tokens.css',
@@ -48,7 +54,7 @@ export default defineConfig({
             { label: 'Playground', link: '/playground/' },
             { label: 'Gallery', link: '/gallery/' },
             { label: 'AI skill', link: '/ai/' },
-            { label: 'Nurbi and the brand', link: '/brand/' },
+            { label: 'Meet Nurbi', link: '/brand/' },
           ],
         },
       ],

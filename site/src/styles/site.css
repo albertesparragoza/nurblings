@@ -91,26 +91,6 @@ h3 {
   height: 68px;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  line-height: 0;
-}
-
-.brand b {
-  font: 800 22px / 1 var(--display);
-  letter-spacing: -0.03em;
-}
-
-.brand small {
-  font-size: 13px;
-  line-height: 1;
-  color: var(--muted);
-  padding-top: 5px;
-}
-
 .site-nav {
   display: flex;
   align-items: center;
@@ -133,48 +113,6 @@ h3 {
 .site-nav a[aria-current="page"] {
   color: var(--ink);
   background: var(--tint);
-}
-
-.icon-btn {
-  display: inline-grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  margin-left: 6px;
-  border: 0;
-  border-radius: 10px;
-  background: none;
-}
-
-/* sun in light mode; in dark mode the core grows, a bite slides over it and
-   the rays spin away, leaving a moon */
-.mode-core,
-.mode-bite {
-  transition:
-    r 0.5s var(--spring),
-    cx 0.5s var(--ease),
-    cy 0.5s var(--ease);
-}
-
-.mode-rays {
-  transform-origin: 12px 12px;
-  transition:
-    transform 0.5s var(--spring),
-    opacity 0.3s var(--ease);
-}
-
-:root[data-theme="dark"] .mode-core {
-  r: 8.5px;
-}
-
-:root[data-theme="dark"] .mode-bite {
-  cx: 17px;
-  cy: 7px;
-}
-
-:root[data-theme="dark"] .mode-rays {
-  transform: rotate(90deg) scale(0.4);
-  opacity: 0;
 }
 
 .site-nav {
@@ -498,41 +436,6 @@ h3 {
 .js [data-reveal].in {
   opacity: 1;
   transform: none;
-}
-
-/* footer */
-.site-footer {
-  border-top: 1px solid var(--line);
-  padding-block: 40px 56px;
-  margin-top: 40px;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.site-footer .wrap {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-.site-footer nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-}
-
-.site-footer a {
-  text-decoration: none;
-}
-
-.site-footer a:hover {
-  color: var(--ink);
-}
-
-.site-footer p {
-  margin: 0;
-  max-width: 52ch;
 }
 
 @media (prefers-reduced-motion: reduce) {

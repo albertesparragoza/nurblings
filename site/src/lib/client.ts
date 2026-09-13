@@ -1,6 +1,6 @@
 // Browser side of the marketing pages: the avatar theme, repainting avatars,
-// copy buttons, reveal on scroll, the header and the light/dark switch (shared
-// with the docs). The avatar theme lasts for the page only: restoring a saved
+// copy buttons, reveal on scroll and the header. The light/dark switch lives in
+// ModeToggle.astro, shared with the docs. The avatar theme lasts for the page only: restoring a saved
 // one would repaint every server-rendered avatar just after it appears.
 import { type RenderOptions, THEMES } from './themes'
 
@@ -111,15 +111,6 @@ export function boot() {
   const onScroll = () => header?.classList.toggle('scrolled', scrollY > 8)
   addEventListener('scroll', onScroll, { passive: true })
   onScroll()
-
-  const mode = document.getElementById('mode-toggle')
-  mode?.addEventListener('click', () => {
-    const dark = document.documentElement.dataset.theme !== 'dark'
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-    try {
-      localStorage.setItem('starlight-theme', dark ? 'dark' : 'light')
-    } catch {}
-  })
 
   reveal()
 }

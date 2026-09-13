@@ -4,13 +4,16 @@ import textFont from '@fontsource-variable/dm-sans/files/dm-sans-latin-wght-norm
 import '../styles/fonts.css'
 import '../styles/tokens.css'
 import '../styles/site.css'
-// Nurbi is the flagship: always the default renderer, never repainted by a theme
-import { nurbling } from 'nurblings'
+import Brand from '../components/Brand.astro'
+import GitHubLink from '../components/GitHubLink.astro'
+import ModeToggle from '../components/ModeToggle.astro'
+import SiteFooter from '../components/SiteFooter.astro'
+import { isActive, NAV } from '../lib/nav'
 
 interface Props {
   title?: string
   description?: string
-  /** path of the active nav item */
+  /** path of the active nav item; defaults to the page's own */
   active?: string
   class?: string
 }
@@ -18,19 +21,12 @@ interface Props {
 const {
   title,
   description = 'Small animated avatars for React, Vue, Astro and plain HTML. Every account gets a creature of its own that breathes, blinks and looks the same everywhere.',
-  active,
+  active = Astro.url.pathname,
   class: className,
 } = Astro.props
 const pageTitle = title
   ? `${title} · Nurblings Avatars`
   : 'Nurblings Avatars · A small creature for every account'
-const REPO = 'https://github.com/albertesparragoza/nurblings'
-const nav = [
-  ['Playground', '/playground/'],
-  ['Gallery', '/gallery/'],
-  ['Docs', '/docs/getting-started/'],
-  ['AI skill', '/ai/'],
-] as const
 ---
 
 <!doctype html>
@@ -69,34 +65,19 @@ const nav = [
   <body class={className}>
     <header class="site-header">
       <div class="wrap">
-        <a class="brand" href="/" aria-label="Nurblings Avatars, home">
-          <span class="av" set:html={nurbling('nurbi', { size: 40, frame: 'full', title: 'Nurbi' })} />
-          <b>nurblings</b><small>avatars</small>
-        </a>
+        <Brand />
         <nav class="site-nav" id="site-nav" aria-label="Main">
           {
-            nav.map(([label, href]) => (
-              <a href={href} aria-current={active === href ? 'page' : undefined}>
+            NAV.map(([label, href]) => (
+              <a href={href} aria-current={isActive(href, active) ? 'page' : undefined}>
                 {label}
               </a>
             ))
           }
-          <a href={REPO}>GitHub</a>
         </nav>
         <div class="header-actions">
-          <button class="icon-btn" id="mode-toggle" type="button" aria-label="Switch light and dark">
-            <!-- one icon that morphs: a sun in light mode, a moon in dark mode -->
-            <svg class="mode-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-              <mask id="mode-bite-mask">
-                <rect width="24" height="24" fill="#fff"></rect>
-                <circle class="mode-bite" cx="26" cy="2" r="7" fill="#000"></circle>
-              </mask>
-              <circle class="mode-core" cx="12" cy="12" r="5" fill="currentColor" mask="url(#mode-bite-mask)"></circle>
-              <g class="mode-rays" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-                <path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.2M19.8 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"></path>
-              </g>
-            </svg>
-          </button>
+          <GitHubLink />
+          <ModeToggle />
           <button class="menu-btn" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
           </button>
@@ -108,23 +89,7 @@ const nav = [
       <slot />
     </main>
 
-    <footer class="site-footer">
-      <div class="wrap">
-        <p>
-          Code under MIT. Generated avatars are public domain (CC0). The names Nurbi and Nurblings and the
-          flagship artwork are reserved.
-        </p>
-        <nav aria-label="Footer">
-          <a href="/docs/getting-started/">Getting started</a>
-          <a href="/docs/api/">API</a>
-          <a href="/playground/">Playground</a>
-          <a href="/gallery/">Gallery</a>
-          <a href="/ai/">AI skill</a>
-          <a href="/brand/">Nurbi and the brand</a>
-          <a href={REPO}>GitHub</a>
-        </nav>
-      </div>
-    </footer>
+    <SiteFooter wide />
 
     <script>
       import { boot } from '../lib/client'
