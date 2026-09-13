@@ -30,8 +30,6 @@ export default defineConfig({
       favicon: '/favicon.svg',
       social: [{ icon: 'github', label: 'GitHub', href: REPO }],
       editLink: { baseUrl: `${REPO}/edit/develop/` },
-      // preloads the site fonts on docs pages too, so text never blinks in
-      components: { Head: './src/components/DocsHead.astro' },
       customCss: [
         './src/styles/fonts.css',
         './src/styles/tokens.css',
