@@ -34,6 +34,7 @@ means two different strings can hatch the same creature.
 | `title` | `string` | `'Nurbling'` | The accessible name, used for `aria-label` and `<title>`. Escaped for you. |
 | `animate` | `boolean \| Motion` | `true` | Ambient life: breath, blink, antenna drift and a hover wiggle. `false` draws a still avatar; an object picks layers. See [Motion and transitions](motion.md). |
 | `frame` | `'auto' \| 'full' \| 'portrait'` | `'auto'` | How the Nurbling sits in its square. `portrait` crops closer on the face, which reads better in small round avatars; `full` shows the whole figure. `auto` uses a portrait at 48 px and below. |
+| `mode` | `'light' \| 'dark' \| 'auto'` | `'light'` | The page the avatar sits on. The container colour and, where needed, the antennae change; the creature does not. `auto` follows the OS or a `data-theme="dark"` or `.dark` ancestor with CSS only. |
 | `transition` | `string` | none | A key for `morph()`: the same key in two places links them, so the avatar glides between them. Adds a `data-nurbling-transition` attribute. |
 | `gen` | `1` | `1` | The trait generation. Pin it to keep an avatar identical across future releases. |
 | `mood` | `'neutral' \| 'curious' \| 'pleased' \| 'thinking' \| 'sleepy'` | from the seed | Pins the resting mood. |
@@ -89,6 +90,20 @@ character. Every other seed is kept away from Nurbi's look.
 Makes an instance with your palette, body designs, drawn parts and defaults,
 returning `{ nurbling, traits }` with the same signatures as above. Colours are
 checked for contrast at setup. See [Customising](customising.md).
+
+## `nurblings/themes`
+
+Named themes, `palette()` and colour helpers, in their own entry. Components
+take `theme="lagoon"`; `createNurblings({ theme })` takes a theme object. See
+[Customising](customising.md#themes).
+
+| Export | Does |
+| --- | --- |
+| `lagoon`, `punch`, `candy`, `picnic`, `sorbet`, `terracotta`, `marble`, `riso`, `lime`, `bauhaus` | The built-in themes |
+| `THEMES`, `ThemeName` | All of them by name |
+| `palette(colours, name?)` | A theme from 2 to 5 hex colours |
+| `themed(theme)` | A ready instance: `themed('lagoon').nurbling(seed)` |
+| `contrast`, `ensureContrast`, `readableOn`, `shade`, `pickBy`, `recolour`, `setFill` | Colour helpers for slots |
 
 ## `morph(update, options?)` and `transitionName(key)`
 

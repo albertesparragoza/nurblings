@@ -42,6 +42,7 @@ const TRAITS: Traits = {
     catchlight: '#9a9a9a',
     wear: '#e07a5f',
     background: '#f4efe6',
+    backgroundDark: '#1d2b2a',
   },
 }
 
