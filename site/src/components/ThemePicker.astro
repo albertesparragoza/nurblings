@@ -4,7 +4,7 @@
 import { THEMES, themeIds } from '../lib/themes'
 
 const groups = [
-  ['Original', ['default']],
+  ['', ['default']],
   ['Soft', themeIds('pastel')],
   ['Vivid', themeIds('bold')],
 ] as const
@@ -15,7 +15,7 @@ const groups = [
   {
     groups.map(([label, ids]) => (
       <Fragment>
-        <span>{label}</span>
+        {label && <span>{label}</span>}
         {ids.map((id) => (
           <button
             type="button"

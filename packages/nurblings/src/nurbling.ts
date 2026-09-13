@@ -376,7 +376,8 @@ function buildTables(config: NurblingsConfig): Tables {
   const pool = (list: readonly string[] | undefined, shell: string, fallback: string) => {
     const ok = hexes(Object.fromEntries((list ?? []).map((hex, i) => [`backdrop ${i}`, hex])))
       .map(([, hex]) => hex)
-      .filter((hex) => contrast(hex, shell) >= 1.2)
+      // a container must stand apart from the body, or the creature melts into it
+      .filter((hex) => contrast(hex, shell) >= 1.5)
     return ok.length ? ok : [fallback]
   }
   const table: Record<string, ShellEntry> = {}
