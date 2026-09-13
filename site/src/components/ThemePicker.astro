@@ -1,15 +1,17 @@
 ---
-// The avatar theme switcher: each chip is a tiny Nurbling in that theme.
+// The avatar colour switcher: each chip is a tiny Nurbling in that theme, and
+// the name of the one in use stays visible.
 import { THEMES, themeIds } from '../lib/themes'
 
 const groups = [
-  ['Default', ['default']],
-  ['Themes', themeIds('pastel')],
-  ['Bold', themeIds('bold')],
+  ['Original', ['default']],
+  ['Soft', themeIds('pastel')],
+  ['Vivid', themeIds('bold')],
 ] as const
 ---
 
-<div class="picker" role="group" aria-label="Avatar theme">
+<div class="picker" role="group" aria-label="Avatar colours">
+  <b class="picker-name" data-theme-name>{THEMES.default?.label}</b>
   {
     groups.map(([label, ids]) => (
       <Fragment>
@@ -20,7 +22,7 @@ const groups = [
             class="chip"
             data-theme-chip={id}
             aria-pressed={String(id === 'default')}
-            aria-label={THEMES[id]?.label}
+            aria-label={`${THEMES[id]?.label} colours`}
             title={THEMES[id]?.label}
             set:html={THEMES[id]?.render('nurbling', { size: 30, background: 'circle', animate: false })}
           />

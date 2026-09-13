@@ -11,6 +11,7 @@ interface Props {
   title?: string
   mood?: 'neutral' | 'curious' | 'pleased' | 'thinking' | 'sleepy'
   frame?: 'auto' | 'full' | 'portrait'
+  mode?: 'light' | 'dark' | 'auto'
   still?: boolean
   class?: string
   id?: string
@@ -24,6 +25,7 @@ const {
   title = seed,
   mood,
   frame,
+  mode,
   still = false,
   class: className,
   id,
@@ -36,6 +38,7 @@ const svg = THEMES.default?.render(seed, {
   ...(transition ? { transition } : {}),
   ...(mood ? { mood } : {}),
   ...(frame ? { frame } : {}),
+  ...(mode ? { mode } : {}),
   ...(still ? { animate: false } : {}),
 })
 ---
@@ -51,6 +54,7 @@ const svg = THEMES.default?.render(seed, {
   data-transition={transition}
   data-mood={mood}
   data-frame={frame}
+  data-mode={mode}
   data-still={still ? '' : undefined}
   set:html={svg}
 />

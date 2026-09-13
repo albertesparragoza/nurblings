@@ -32,7 +32,7 @@ const META: Record<ThemeName, readonly [label: string, kind: ThemeKind, accent: 
 export const THEMES: Record<string, Theme> = {
   default: {
     id: 'default',
-    label: 'Nurblings',
+    label: 'Original',
     kind: 'default',
     accent: '#6a4bd6',
     colors: Object.values(SHELLS)

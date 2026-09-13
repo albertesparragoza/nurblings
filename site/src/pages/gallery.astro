@@ -12,10 +12,12 @@ const people = [
 ] as const
 const crowd = ['radia', 'ken', 'frances', 'dennis', 'barbara', 'joan', 'tim', 'hedy']
 const kinds = {
-  default: 'The default colours',
-  pastel: 'Colour theme',
-  bold: 'Bold colour theme, preview',
+  default: 'Original colours',
+  pastel: 'Soft theme',
+  bold: 'Vivid theme',
 }
+const snippet = (id: string) =>
+  id === 'default' ? '<Nurbling seed={user.id} />' : `<Nurbling seed={user.id} theme="${id}" />`
 
 const designs = Object.entries(SILHOUETTES)
 const zones = [
@@ -37,7 +39,7 @@ const sizes = [24, 32, 48, 64, 96, 128]
   <div class="wrap">
     <header class="page-head">
       <h1>Gallery</h1>
-      <p class="lead">What every Nurbling is made of, and the palettes it can wear.</p>
+      <p class="lead">What every Nurbling is made of, and the colours it can wear.</p>
       <nav class="jump" aria-label="On this page">
         <a href="#family">The family</a>
         <a href="#themes">Colour themes</a>
@@ -107,7 +109,7 @@ const sizes = [24, 32, 48, 64, 96, 128]
 
     <section id="themes" class="section">
       <h2>Colour themes</h2>
-      <p class="lead">The same faces in every card, so only the palette changes.</p>
+      <p class="lead">Ten themes, one prop each. The same faces sit in every card, so only the colours change.</p>
       <div class="themes">
         {
           Object.values(THEMES).map((t) => (
@@ -144,7 +146,12 @@ const sizes = [24, 32, 48, 64, 96, 128]
                   <span class="av" set:html={t.render(s, { size: 48, background: 'circle', title: s })} />
                 ))}
               </div>
-              <a class="btn btn-ghost" href={`/playground/#theme=${t.id}`}>Open in the playground</a>
+              <div class="theme-actions">
+                <button class="copy-chip" type="button" data-copy={snippet(t.id)}>
+                  <code>{t.id === 'default' ? 'no theme prop' : `theme="${t.id}"`}</code><span data-copy-label>Copy</span>
+                </button>
+                <a class="btn btn-ghost" href={`/playground/#theme=${t.id}`}>Open in the playground</a>
+              </div>
             </article>
           ))
         }
@@ -294,8 +301,11 @@ const sizes = [24, 32, 48, 64, 96, 128]
     gap: 6px;
   }
 
-  .gal .theme-card .btn {
-    justify-self: start;
+  .gal .theme-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
   }
 
   .gal .traits h3 {

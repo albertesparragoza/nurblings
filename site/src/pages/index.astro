@@ -126,19 +126,19 @@ const prompt = `npx skills add albertesparragoza/nurblings
   <section class="hero wrap">
     <div class="hero-copy">
       <h1>
-        <span style="--i:0">Any</span> <span style="--i:1">string</span> <span style="--i:2">in,</span>{' '}
-        <em><span style="--i:3">a</span> <span style="--i:4">small</span> <span style="--i:5">creature</span> <span style="--i:6">out</span></em>
+        <span style="--i:0">A</span> <span style="--i:1">small</span> <span style="--i:2">creature</span>{' '}
+        <em><span style="--i:3">for</span> <span style="--i:4">every</span> <span style="--i:5">account</span></em>
       </h1>
-      <p class="lead fade" style="--i:6">
-        Deterministic SVG avatars for React, Vue, Astro and plain HTML. The same id draws the same face every
-        time, with nothing stored.
+      <p class="lead">
+        Animated avatars that breathe, blink and wiggle their antennae. Everyone who signs up gets one of their
+        own, in React, Vue, Astro or plain HTML.
       </p>
-      <label class="seed-field fade" style="--i:7">
-        <span class="sr-only">Seed</span>
-        <input id="seed" value="ada@example.com" autocomplete="off" spellcheck="false" />
+      <label class="seed-field">
+        <span class="sr-only">Type a name</span>
+        <input id="seed" value="ada@example.com" placeholder="Type a name" autocomplete="off" spellcheck="false" />
         <button class="btn btn-ghost" id="shuffle" type="button">Shuffle</button>
       </label>
-      <div class="actions fade" style="--i:8">
+      <div class="actions">
         <a class="btn" href="/docs/getting-started/">Get started</a>
         <a class="btn btn-ghost" href="/playground/">Open the playground</a>
         <button class="copy-chip" type="button" data-copy="npm install @nurblings/react">
@@ -157,26 +157,22 @@ const prompt = `npx skills add albertesparragoza/nurblings
         ))
       }
       <div class="hero-tilt">
-        <button class="hero-av" id="hero-av" type="button" aria-label="Boop the Nurbling">
+        <button class="hero-av" id="hero-av" type="button" aria-label="Boop the Nurbling" aria-describedby="bubble">
           <Avatar id="hero-avatar" seed="ada@example.com" size={320} background="none" />
         </button>
       </div>
       <span class="bubble" id="bubble" aria-live="polite"></span>
-      <span class="hint">Click me</span>
     </div>
   </section>
 
-  <div class="wrap picker-row" data-reveal>
+  <div class="wrap picker-row">
     <ThemePicker />
   </div>
 
   <section class="wrap section" id="scene-section" data-reveal>
     <div class="section-head">
-      <h2>Made to sit inside real products</h2>
-      <p>
-        A member list, a profile, a conversation. Click a teammate and the avatar travels into the profile with
-        <code>morph()</code>.
-      </p>
+      <h2>At home in real products</h2>
+      <p>Member lists, profiles, conversations. Pick a teammate and their avatar travels into the profile.</p>
     </div>
     <div class="panel">
       <div class="scene">
@@ -212,7 +208,10 @@ const prompt = `npx skills add albertesparragoza/nurblings
         </div>
         <div class="card chat">
           <h3>#launch</h3>
-          <div id="chat"></div>
+          <div id="chat">
+            <div class="msg"><Avatar seed="linus" size={32} /><p>Shipping the onboarding flow today.</p></div>
+            <div class="msg me"><p>On it, reviewing after lunch.</p><Avatar seed="ada" size={32} /></div>
+          </div>
           <div class="msg typing-row" id="typing">
             <Avatar seed="margaret" size={32} />
             <p class="typing"><i></i><i></i><i></i></p>
@@ -224,8 +223,8 @@ const prompt = `npx skills add albertesparragoza/nurblings
 
   <section class="section family" data-reveal>
     <div class="wrap section-head">
-      <h2>Ten bodies, five moods, one family resemblance</h2>
-      <p>Plates, antennae, eyes, extras and colours all come from the seed, so each person keeps the same face everywhere.</p>
+      <h2>Ten bodies, five moods, one family</h2>
+      <p>Scarves, hats, badges and antennae at every angle. Each person keeps the same Nurbling wherever they show up.</p>
     </div>
     <div class="marquee" aria-hidden="true">
       <div class="track">{[...rowA, ...rowA].map((s) => <Avatar seed={s} size={76} still />)}</div>
@@ -238,7 +237,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
 
   <section class="wrap section" data-reveal>
     <div class="section-head">
-      <h2>What ships in 8 KB</h2>
+      <h2>The details come included</h2>
     </div>
     <div class="features">
       <article class="feature">
@@ -247,8 +246,8 @@ const prompt = `npx skills add albertesparragoza/nurblings
           <Avatar seed="hopper" size={64} />
           <Avatar seed="hopper" size={96} />
         </div>
-        <h3>One seed, one face</h3>
-        <p>A username, email or id draws the same avatar on every device. There is nothing to store, upload or fetch.</p>
+        <h3>Theirs for good</h3>
+        <p>The same person gets the same creature on every page and every device. Nothing to store, upload or fetch.</p>
       </article>
       <article class="feature">
         <div class="feature-art">
@@ -260,7 +259,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
           </div>
         </div>
         <h3>Alive by default</h3>
-        <p>Breath, blink and antenna drift in plain CSS. Each layer turns off on its own, and all of it stops for reduced motion.</p>
+        <p>They breathe, blink and drift in plain CSS, and hold still for anyone who prefers reduced motion.</p>
       </article>
       <article class="feature">
         <div class="feature-art glide">
@@ -269,30 +268,33 @@ const prompt = `npx skills add albertesparragoza/nurblings
           <Avatar seed="turing" size={96} />
         </div>
         <h3>Moves between views</h3>
-        <p>Give an avatar the same transition key in two places and wrap the change in <code>morph()</code>.</p>
+        <p>An avatar glides from a list into a profile, or a card into a header, instead of jumping there.</p>
       </article>
       <article class="feature">
         <div class="feature-art"><ThemePicker /></div>
-        <h3>Your palette</h3>
-        <p><code>createNurblings</code> takes brand colours and checks them for contrast before anything renders.</p>
+        <h3>Your colours</h3>
+        <p>Ten ready themes, or two to five brand colours of your own. Faces stay readable either way.</p>
       </article>
       <article class="feature">
-        <div class="feature-art"><span class="big-num">0 KB</span></div>
-        <h3>Zero client JavaScript</h3>
-        <p>React Server Components and Astro render the SVG on the server. No ids, so any number of avatars share a page.</p>
+        <div class="feature-art modes">
+          <span class="tile"><Avatar seed="radia" size={80} /></span>
+          <span class="tile dark"><Avatar seed="radia" size={80} mode="dark" /></span>
+        </div>
+        <h3>Light and dark</h3>
+        <p>Containers follow the page, and antennae stay visible on either side. One prop, no script.</p>
       </article>
       <article class="feature">
         <div class="feature-art"><span class="big-num">~8 KB</span></div>
-        <h3>Typed, no dependencies</h3>
-        <p>About 8 KB compressed, full TypeScript types, and a custom element for every other stack.</p>
+        <h3>Light on the page</h3>
+        <p>No dependencies, full TypeScript types, and server components that send no JavaScript to the browser.</p>
       </article>
     </div>
   </section>
 
   <section class="wrap section" data-reveal>
     <div class="section-head">
-      <h2>Server-rendered wherever your framework allows</h2>
-      <p>Server components in React and Astro, a Vue component, and a custom element for everything else.</p>
+      <h2>Works where you build</h2>
+      <p>A component for React, Vue and Astro, and one HTML tag for everything else.</p>
     </div>
     <div class="tabs" role="tablist" aria-label="Framework">
       {
@@ -338,7 +340,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
   </section>
 
   <section class="wrap section cta" data-reveal>
-    <h2>Start with one seed</h2>
+    <h2>Hatch your first one</h2>
     <div class="actions">
       <a class="btn" href="/docs/getting-started/">Get started</a>
       <a class="btn btn-ghost" href="/playground/">Open the playground</a>
@@ -387,25 +389,37 @@ const prompt = `npx skills add albertesparragoza/nurblings
     pop(heroButton)
   })
 
+  // a speech bubble asks for the first click, then carries the replies
   const MOODS = ['curious', 'pleased', 'thinking', 'sleepy', 'neutral'] as const
   const LINES = ['hi', 'oh', 'hmm', 'zzz', 'hey']
   let boops = 0
   const bubble = $('bubble')
+  let hide = 0
+  const say = (text: string, hold = 0) => {
+    bubble.textContent = text
+    bubble.classList.add('on')
+    clearTimeout(hide)
+    if (hold) hide = window.setTimeout(() => bubble.classList.remove('on'), hold)
+  }
+  const ask = window.setTimeout(() => {
+    say(matchMedia('(pointer: coarse)').matches ? 'Tap me' : 'Click me')
+    heroButton.classList.add('beckon')
+  }, reduce() ? 0 : 600)
   heroButton.addEventListener('click', () => {
+    clearTimeout(ask)
+    heroButton.classList.remove('beckon')
     const i = boops++ % MOODS.length
     hero.dataset.mood = MOODS[i]
     repaint(hero)
     pop(heroButton)
-    bubble.textContent = LINES[i] ?? ''
-    bubble.classList.remove('show')
-    void bubble.offsetWidth
-    bubble.classList.add('show')
-    document.querySelector('.hint')?.remove()
+    say(LINES[i] ?? '', 1600)
   })
 
   // the stage leans toward the pointer; satellites drift at their own depth
   const stage = $('stage')
   io.observe(stage)
+  // only a mouse leans the stage: touch scrolling should not move it
+  const fine = matchMedia('(hover: hover) and (pointer: fine)')
   {
     let tx = 0
     let ty = 0
@@ -422,7 +436,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
     addEventListener(
       'pointermove',
       (e) => {
-        if (reduce()) return
+        if (reduce() || !fine.matches || !inView.has(stage)) return
         tx = e.clientX / innerWidth - 0.5
         ty = e.clientY / innerHeight - 0.5
         if (!raf) raf = requestAnimationFrame(tick)
@@ -460,7 +474,8 @@ const prompt = `npx skills add albertesparragoza/nurblings
   const scene = $('scene-section')
   io.observe(scene)
   let selected = 'grace'
-  let lastTouch = 0
+  // once a visitor picks someone, the scene stops running on its own
+  let touched = false
   const select = (button: HTMLElement) => {
     if (button.dataset.seed === selected) return
     morph(() => {
@@ -481,7 +496,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
   members.addEventListener('click', (e) => {
     const button = (e.target as Element).closest<HTMLElement>('.member')
     if (!button) return
-    lastTouch = Date.now()
+    touched = true
     select(button)
   })
 
@@ -496,8 +511,9 @@ const prompt = `npx skills add albertesparragoza/nurblings
   const chat = $('chat')
   const typing = $('typing')
   const typingAv = typing.querySelector<HTMLElement>('[data-av]')
-  let line = 0
-  const say = (animate: boolean) => {
+  // the first two lines are rendered on the server, so nothing grows after load
+  let line = 2
+  const post = (animate: boolean) => {
     const m = SCRIPT[line++ % SCRIPT.length] as (typeof SCRIPT)[number]
     const row = document.createElement('div')
     row.className = `msg${m.me ? ' me' : ''}${animate ? ' new' : ''}`
@@ -517,15 +533,13 @@ const prompt = `npx skills add albertesparragoza/nurblings
       typing.classList.toggle('me', Boolean(upcoming.me))
     }
   }
-  say(false)
-  say(false)
 
   {
     let beat = 0
     setInterval(() => {
-      if (reduce() || document.hidden || !inView.has(scene) || Date.now() - lastTouch < 8000) return
+      if (reduce() || document.hidden || !inView.has(scene) || touched) return
       beat++
-      say(true)
+      post(true)
       const dots = members.querySelectorAll('.dot')
       dots[Math.floor(Math.random() * dots.length)]?.classList.toggle('on')
       if (beat % 2 === 0) {
@@ -586,13 +600,8 @@ const prompt = `npx skills add albertesparragoza/nurblings
 
   .home h1 span {
     display: inline-block;
-    animation: nb-rise 0.9s var(--ease) both;
-    animation-delay: calc(var(--i) * 70ms + 80ms);
-  }
-
-  .home .fade {
-    animation: nb-fade 0.9s var(--ease) both;
-    animation-delay: calc(var(--i) * 70ms + 120ms);
+    animation: nb-rise 0.7s var(--ease) both;
+    animation-delay: calc(var(--i) * 45ms);
   }
 
   @keyframes nb-rise {
@@ -602,12 +611,6 @@ const prompt = `npx skills add albertesparragoza/nurblings
     }
   }
 
-  @keyframes nb-fade {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
-    }
-  }
 
   .seed-field {
     display: flex;
@@ -651,14 +654,13 @@ const prompt = `npx skills add albertesparragoza/nurblings
     inset: 9%;
     border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%;
     background: var(--tint);
-    animation: nb-blob 14s ease-in-out infinite alternate;
+    animation: nb-blob 16s ease-in-out infinite alternate;
     transition: background-color 0.4s var(--ease);
   }
 
   @keyframes nb-blob {
-    50% {
-      border-radius: 58% 42% 45% 55% / 42% 58% 42% 58%;
-      transform: rotate(8deg) scale(1.04);
+    to {
+      transform: rotate(10deg) scale(1.04);
     }
   }
 
@@ -703,52 +705,70 @@ const prompt = `npx skills add albertesparragoza/nurblings
 
   .bubble {
     position: absolute;
-    left: 60%;
-    top: 12%;
+    left: 58%;
+    top: 13%;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 16px 16px 16px 4px;
     padding: 8px 14px;
     font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 10px 24px -16px rgb(0 0 0 / 0.35);
     opacity: 0;
     pointer-events: none;
+    transform: translateY(4px) scale(0.96);
     transform-origin: 0 100%;
+    transition:
+      opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .bubble.show {
-    animation: nb-bubble 1.9s var(--spring) both;
+  .bubble.on {
+    opacity: 1;
+    transform: none;
   }
 
-  @keyframes nb-bubble {
-    0% {
-      opacity: 0;
-      transform: scale(0.5);
+  /* while it waits for the first click, the Nurbling hops now and then */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-av.beckon {
+      animation: nb-beckon 3.6s var(--ease) 1.2s infinite;
     }
-    15%,
-    80% {
-      opacity: 1;
-      transform: scale(1);
-    }
+  }
+
+  @keyframes nb-beckon {
+    0%,
+    78%,
     100% {
-      opacity: 0;
-      transform: scale(0.9);
+      transform: none;
+    }
+    85% {
+      transform: translateY(-12px) rotate(-3deg);
+    }
+    92% {
+      transform: translateY(0) rotate(2deg);
     }
   }
 
-  .hint {
-    position: absolute;
-    bottom: 6%;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--muted);
-  }
-
+  /* the colour picker stays under the header while the page scrolls */
   .picker-row {
+    position: sticky;
+    top: 76px;
+    z-index: 20;
     display: flex;
     justify-content: center;
-    margin-top: -24px;
+  }
+
+  .picker-row .picker {
+    box-shadow: 0 12px 30px -22px rgb(0 0 0 / 0.45);
+  }
+
+  @media (max-width: 720px) {
+    .picker-row .picker {
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
   }
 
   /* scene */
@@ -1005,6 +1025,24 @@ const prompt = `npx skills add albertesparragoza/nurblings
 
   .feature-art .picker > span {
     display: none;
+  }
+
+  .feature-art.modes {
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .modes .tile {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    align-self: stretch;
+    background: #f7f5f2;
+  }
+
+  .modes .tile.dark {
+    background: #16161a;
   }
 
   .feature-art.glide {

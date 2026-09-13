@@ -1,9 +1,9 @@
-// Browser side of the marketing pages: the shared avatar theme (remembered
-// between pages), repainting avatars, copy buttons, reveal on scroll, the
-// header and the light/dark switch (shared with the docs).
+// Browser side of the marketing pages: the avatar theme, repainting avatars,
+// copy buttons, reveal on scroll, the header and the light/dark switch (shared
+// with the docs). The avatar theme lasts for the page only: restoring a saved
+// one would repaint every server-rendered avatar just after it appears.
 import { type RenderOptions, THEMES } from './themes'
 
-const STORE = 'nb-theme'
 let current = 'default'
 
 export const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -27,6 +27,7 @@ export function optionsOf(el: HTMLElement): RenderOptions {
     ...(d.transition ? { transition: d.transition } : {}),
     ...(d.mood ? { mood: d.mood as RenderOptions['mood'] } : {}),
     ...(d.frame ? { frame: d.frame as RenderOptions['frame'] } : {}),
+    ...(d.mode ? { mode: d.mode as RenderOptions['mode'] } : {}),
     ...(animate !== undefined ? { animate } : {}),
   }
 }
@@ -40,30 +41,35 @@ export function paint(root: ParentNode = document) {
   for (const el of root.querySelectorAll<HTMLElement>('[data-av]')) repaint(el)
 }
 
-export function applyTheme(id: string, save = true) {
+export function applyTheme(id: string) {
   const next = THEMES[id] ? id : 'default'
-  const changed = next !== current
+  if (next === current) return
   current = next
   document.documentElement.style.setProperty('--accent', theme().accent)
   for (const chip of document.querySelectorAll<HTMLElement>('[data-theme-chip]')) {
     chip.setAttribute('aria-pressed', String(chip.dataset.themeChip === next))
   }
-  if (changed) paint()
-  if (save) {
-    try {
-      localStorage.setItem(STORE, next)
-    } catch {}
-  }
+  for (const name of document.querySelectorAll('[data-theme-name]'))
+    name.textContent = theme().label
+  paint()
   document.dispatchEvent(new CustomEvent('nb-theme', { detail: next }))
 }
 
 async function copyFrom(el: HTMLElement) {
-  const raw =
-    el.dataset.copy ?? (el.dataset.copyUrl ? await (await fetch(el.dataset.copyUrl)).text() : '')
-  await navigator.clipboard.writeText(raw.replaceAll('{origin}', location.origin))
   const label = el.querySelector<HTMLElement>('[data-copy-label]') ?? el
   const was = label.textContent
-  label.textContent = 'Copied'
+  try {
+    let raw = el.dataset.copy ?? ''
+    if (el.dataset.copyUrl) {
+      const res = await fetch(el.dataset.copyUrl)
+      if (!res.ok) throw new Error(res.statusText)
+      raw = await res.text()
+    }
+    await navigator.clipboard.writeText(raw.replaceAll('{origin}', location.origin))
+    label.textContent = 'Copied'
+  } catch {
+    label.textContent = 'Copy failed'
+  }
   setTimeout(() => {
     label.textContent = was
   }, 1400)
@@ -89,20 +95,10 @@ function reveal() {
 }
 
 export function boot() {
-  let saved = 'default'
-  try {
-    saved = localStorage.getItem(STORE) ?? 'default'
-  } catch {}
-  applyTheme(saved, false)
-
   document.addEventListener('click', (event) => {
     const target = event.target as Element
     const chip = target.closest<HTMLElement>('[data-theme-chip]')
-    if (chip) {
-      const go = () => applyTheme(chip.dataset.themeChip ?? 'default')
-      if ('startViewTransition' in document && !reducedMotion()) document.startViewTransition(go)
-      else go()
-    }
+    if (chip) applyTheme(chip.dataset.themeChip ?? 'default')
     const copy = target.closest<HTMLElement>('[data-copy], [data-copy-url]')
     if (copy) void copyFrom(copy)
   })
