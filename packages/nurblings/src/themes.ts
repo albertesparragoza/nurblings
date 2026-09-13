@@ -101,7 +101,10 @@ export function themeOf(theme: ThemeName | Theme): Theme
 export function themeOf(theme: ThemeName | Theme | undefined): Theme | undefined
 export function themeOf(theme: ThemeName | Theme | undefined): Theme | undefined {
   if (typeof theme !== 'string') return theme
-  const found = (THEMES as Record<string, Theme>)[theme]
+  // own names only: 'constructor' or '__proto__' must not resolve to object internals
+  const found = Object.keys(THEMES).includes(theme)
+    ? (THEMES as Record<string, Theme>)[theme]
+    : undefined
   if (!found) throw new RangeError(`nurblings: unknown theme ${theme}`)
   return found
 }
