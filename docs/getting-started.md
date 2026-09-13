@@ -20,6 +20,44 @@ npm install nurblings           # plain JavaScript
 Using a coding agent? `npx skills add albertesparragoza/nurblings` teaches
 Claude Code, Cursor, Codex and others how to use the library.
 
+## What each package supports
+
+Every package draws the same avatar from the same seed. They differ in where
+the drawing happens and how you pass options.
+
+| Feature | React | Vue | Astro | HTML element | JavaScript |
+| --- | --- | --- | --- | --- | --- |
+| Server-side rendering | Yes | Yes | Yes | No | Yes |
+| Client JavaScript for a still avatar | None | Your Vue app | None | Element and core | Optional |
+| Built-in themes | Prop | Prop | Prop | Attribute | `themed()` |
+| Your own colours | Prop | Prop | Prop | Property | `createNurblings()` |
+| Light, dark and auto mode | Yes | Yes | Yes | Yes | Yes |
+| Motion | Yes | Yes | Yes | Yes | Yes |
+| Motion speed | Yes | Yes | Yes | No | Yes |
+| Stops for reduced motion | Yes | Yes | Yes | Yes | Yes |
+| Glides between views | Yes | Yes | Yes | Yes | Yes |
+| App-wide configuration | Prop or provider | Prop or plugin | Prop | Property | `createNurblings()` |
+| Pinned traits | Yes | Yes | Yes | Yes | Yes |
+
+- **Server-side rendering:** React renders as a Server Component, Vue renders
+  on the server and hydrates with your app (Nuxt included), and Astro ships
+  static SVG. The HTML element draws in the browser.
+- **Themes:** `theme="lagoon"` on React, Vue, Astro and the element;
+  `themed('lagoon').nurbling(seed)` in plain JavaScript.
+- **Your own colours:** `theme={palette([...])}` (Vue: `:theme`), or
+  `el.nurblings = themed(palette([...]))` on the element. `palette()` and
+  `themed()` come from `nurblings/themes`.
+- **App-wide configuration:** a `nurblings` prop everywhere, plus
+  `NurblingsProvider` in React client components and `NurblingsPlugin` in Vue.
+- **Glides between views:** `morph()` from `nurblings/transition` runs in the
+  browser: call it from client code in React and from a `<script>` in Astro.
+- **Motion on the element:** `animate="blink hover"` picks layers; speed has no
+  attribute, so set it through the JavaScript API.
+
+Auto mode and motion are CSS inside the SVG, so they work without JavaScript
+wherever the SVG is rendered. For an `<img>` source, a CSS background or an
+email, `nurblingSrc(seed)` from `nurblings` works alongside any package.
+
 ## Your first Nurbling
 
 The core returns an SVG string:
