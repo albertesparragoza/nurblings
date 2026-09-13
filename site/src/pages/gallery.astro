@@ -161,11 +161,20 @@ const THEME_IDS = [
   type Lens = 'silhouette' | 'mood' | 'extra'
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T
   const NAMES = ['ada', 'grace', 'linus', 'margaret', 'alan', 'hedy', 'radia', 'ken', 'joan', 'tim', 'frances', 'dennis', 'barbara', 'edsger', 'katherine', 'guido', 'sophie', 'anders', 'mary', 'jean', 'leslie', 'donald', 'shafi', 'lynn', 'adele', 'annie', 'dorothy', 'roberta', 'carol', 'hal', 'evelyn', 'niklaus']
-  // a phone gets a smaller crowd; the grid keeps its size while it fills
-  const SIZE = innerWidth < 720 ? 120 : 240
+  // a crowd is always 240 names, so a shared crowd is the same on every screen;
+  // a phone shows the first 120 of them
+  const PAGE = 240
+  const SIZE = innerWidth < 720 ? 120 : PAGE
   // how far a search looks before it settles for what it found
   const LIMIT = 1_000_000
+  const MAX_CROWD = 9999
   const pins: Record<Lens, string> = { silhouette: '', mood: '', extra: '' }
+  // only values the family actually has; anything else in an address is ignored
+  const ALLOWED: Record<Lens, readonly string[]> = {
+    silhouette: Object.keys(SILHOUETTES),
+    mood: ['neutral', 'curious', 'pleased', 'thinking', 'sleepy'],
+    extra: ['none', 'scarf', 'hat', 'collar'],
+  }
   let crowdNo = 1
 
   const crowd = $('crowd')
@@ -232,7 +241,7 @@ const THEME_IDS = [
     const mine = ++run
     const lensed = Boolean(pins.silhouette || pins.mood || pins.extra)
     for (const cell of cells) empty(cell)
-    const skip = (crowdNo - 1) * SIZE
+    const skip = (crowdNo - 1) * PAGE
     let found = 0
     let matched = 0
     let k = lensed ? 0 : skip
@@ -257,13 +266,28 @@ const THEME_IDS = [
     }
   }
 
-  // lenses, the crowd number and the theme live in the address, so a crowd can be shared
+  // lenses, the crowd number and the theme live in the address, so a crowd can be
+  // shared; each change is a history entry, so Back returns to the crowd before
+  let restoring = false
   const save = () => {
+    if (restoring) return
     const p = new URLSearchParams()
     if (crowdNo > 1) p.set('crowd', String(crowdNo))
     for (const [k, v] of Object.entries(pins)) if (v) p.set(k, v)
     if (currentTheme() !== 'default') p.set('theme', currentTheme())
-    history.replaceState(null, '', p.size ? `#${p}` : location.pathname)
+    const next = p.size ? `#${p}` : location.pathname
+    if (next !== location.hash && !(next === location.pathname && !location.hash)) history.pushState(null, '', next)
+  }
+  // reads the address, keeping only a whole crowd number in range and known lens values
+  const read = () => {
+    const p = new URLSearchParams(location.hash.slice(1))
+    const n = Number(p.get('crowd'))
+    crowdNo = Number.isInteger(n) && n >= 1 && n <= MAX_CROWD ? n : 1
+    for (const key of Object.keys(pins) as Lens[]) {
+      const v = p.get(key) ?? ''
+      pins[key] = ALLOWED[key].includes(v) ? v : ''
+    }
+    return p.get('theme') ?? 'default'
   }
   const showLenses = () => {
     for (const key of Object.keys(pins) as Lens[]) {
@@ -277,13 +301,9 @@ const THEME_IDS = [
     $('lens-clear').hidden = !(pins.silhouette || pins.mood || pins.extra)
   }
 
-  {
-    const p = new URLSearchParams(location.hash.slice(1))
-    crowdNo = Math.max(1, Number(p.get('crowd')) || 1)
-    for (const key of Object.keys(pins) as Lens[]) pins[key] = p.get(key) ?? ''
-    const linked = p.get('theme')
-    if (linked) applyTheme(linked)
-  }
+  restoring = true
+  applyTheme(read())
+  restoring = false
   showLenses()
   void search()
 
@@ -312,13 +332,17 @@ const THEME_IDS = [
 
   // a new theme recolours the same crowd in place, a slice at a time
   let paintRun = 0
-  const snippet = $('theme-snippet')
-  document.addEventListener('nb-theme', async () => {
+  // the colour section's snippet and playground link follow the theme in use
+  const syncTheme = () => {
     const id = currentTheme()
     const code = id === 'default' ? '<Nurbling seed={user.id} />' : `<Nurbling seed={user.id} theme="${id}" />`
-    snippet.dataset.copy = code
+    $('theme-snippet').dataset.copy = code
     $('theme-snippet-code').textContent = code
     $<HTMLAnchorElement>('theme-play').href = id === 'default' ? '/playground/' : `/playground/#theme=${id}`
+  }
+  syncTheme()
+  document.addEventListener('nb-theme', async () => {
+    syncTheme()
     for (const panel of document.querySelectorAll<HTMLElement>('#lens-theme:popover-open')) panel.hidePopover()
     save()
     const mine = ++paintRun
@@ -327,6 +351,15 @@ const THEME_IDS = [
       await new Promise((r) => requestAnimationFrame(r))
       if (mine !== paintRun) return
     }
+  })
+
+  // Back and Forward restore the crowd, lenses and theme without adding entries
+  addEventListener('popstate', () => {
+    restoring = true
+    applyTheme(read())
+    restoring = false
+    showLenses()
+    void search()
   })
 
   // the lens pill shows only while the crowd is on screen
@@ -369,6 +402,7 @@ const THEME_IDS = [
     const seed = cell?.dataset.seed
     if (!cell || !seed || reducedMotion()) {
       meet.close()
+      cell?.focus()
       return
     }
     await morph(() => {
