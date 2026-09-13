@@ -165,7 +165,7 @@ const prompt = `npx skills add albertesparragoza/nurblings
     </div>
   </section>
 
-  <div class="wrap picker-row">
+  <div class="picker-row">
     <ThemePicker />
   </div>
 
@@ -752,14 +752,13 @@ const prompt = `npx skills add albertesparragoza/nurblings
   /* the colour picker stays under the header while the page scrolls */
   .picker-row {
     position: sticky;
-    top: 76px;
+    top: 68px;
     z-index: 20;
     display: flex;
     justify-content: center;
-  }
-
-  .picker-row .picker {
-    box-shadow: 0 12px 30px -22px rgb(0 0 0 / 0.45);
+    padding: 10px var(--gutter);
+    background: color-mix(in srgb, var(--paper) 84%, transparent);
+    backdrop-filter: blur(14px);
   }
 
   @media (max-width: 720px) {
@@ -768,6 +767,10 @@ const prompt = `npx skills add albertesparragoza/nurblings
       justify-content: flex-start;
       overflow-x: auto;
       scrollbar-width: none;
+    }
+
+    .picker-row .picker > span {
+      display: none;
     }
   }
 

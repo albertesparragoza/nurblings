@@ -364,8 +364,8 @@ h3 {
 .picker-name {
   font-size: 13px;
   font-weight: 700;
-  min-width: 11ch;
-  padding: 0 4px 0 8px;
+  min-width: 8ch;
+  padding: 0 6px 0 8px;
   white-space: nowrap;
 }
 
