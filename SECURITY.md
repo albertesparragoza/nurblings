@@ -28,6 +28,11 @@ Nurblings turns arbitrary strings into SVG. The areas that matter most:
 - `renderTraits()` checks every value in the traits it is handed, so traits
   read back from a database or a form can only fail, never inject markup.
 - Theme names resolve to built-in themes only.
+- Slots read a frozen copy of the traits and geometry, so a slot cannot change
+  what the built-in parts draw, and a slot must return a string.
+- Custom body designs are checked when an instance is created: finite
+  numbers, a known plate zone and a plate grid of at most 12 by 12, so a
+  design cannot stall rendering.
 
 Two things stay with the caller:
 

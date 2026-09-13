@@ -1,6 +1,6 @@
 // The public entry: seed in, SVG out.
 
-import { checkTraits } from './check'
+import { checkDesign, checkTraits } from './check'
 import { contrast, ensureContrast, shade } from './colour'
 import {
   ACCENTS,
@@ -374,6 +374,9 @@ function buildTables(config: NurblingsConfig): Tables {
     : SILHOUETTE_WEIGHTS
   if (weights.some(([, w]) => !(w >= 0)) || !weights.some(([, w]) => w > 0)) {
     throw new RangeError('nurblings: silhouette weights must be 0 or more, at least one above 0')
+  }
+  if (config.silhouettes) {
+    for (const [name, design] of Object.entries(config.silhouettes)) checkDesign(name, design)
   }
   const theme = config.theme
   if (!config.shells && !config.accents && !theme)
