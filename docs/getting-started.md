@@ -102,9 +102,9 @@ the rest.
 Use a data URI anywhere an image goes:
 
 ```ts
-import { nurbling, toDataUri } from 'nurblings'
+import { nurbling, nurblingSrc } from 'nurblings'
 
-img.src = toDataUri(nurbling('ada@example.com', { size: 64 }))
+img.src = nurblingSrc('ada@example.com', { size: 64 })
 ```
 
 ## Next steps
