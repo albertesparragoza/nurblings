@@ -100,6 +100,15 @@ design rules, and none may bring a seed closer to the flagship. Check your
 trait on the sheet (`pnpm sheet`) at every size, on light and dark pages, in
 monochrome and as a favicon.
 
+## Adding a theme
+
+Themes change colours only, so a new one needs no new generation. Built-in
+themes live in `packages/nurblings/src/themes.ts`, and the tests in
+`packages/nurblings/test/themes.test.ts` check every face in them stays
+readable. Open an issue with the colours and a gallery screenshot before
+building one; a palette that is not built in can always be shared as a
+`palette([...])` snippet.
+
 ## Brand
 
 Using the code is MIT. Using the names and the flagship character is covered by

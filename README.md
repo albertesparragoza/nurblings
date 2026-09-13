@@ -111,31 +111,29 @@ back with the right package, stable-id seeds and accessible names.
 - **Accessible.** Every avatar has an accessible name, colours are paired for
   contrast on light and dark pages, and all motion stops for anyone who asks
   for reduced motion.
-- **Small.** The core is about 7 KB compressed with no dependencies; each
+- **Themes and dark mode.** Ten built-in themes by name, any 2 to 5 brand
+  colours through `palette()`, and `mode="auto"` for light and dark pages with
+  CSS alone.
+- **Small.** The core is about 8.5 KB compressed with no dependencies; each
   framework component adds well under 1 KB. Size limits run in CI.
 
 ## Make it yours
 
-`createNurblings` builds an instance with your palette, body designs, drawn
-parts and defaults. Pass it to a component, or install it once for the whole
-app.
+Pick a built-in theme by name, or turn your brand colours into one:
 
-```ts
-import { SILHOUETTES, createNurblings } from 'nurblings'
-
-export const avatars = createNurblings({
-  shells: { mist: '#e4ebf2', sand: '#f1e4cf' },
-  accents: { ink: '#2c5fd9', coral: '#c94f38', forest: '#2e7d4f' },
-  silhouettes: { tall: SILHOUETTES.tall, round: SILHOUETTES.round },
-  slots: { extra: false },
-})
-
-avatars.nurbling('ada@example.com', { shell: 'mist' })
+```tsx
+<Nurbling seed={user.id} title={user.name} theme="lagoon" mode="auto" />
 ```
 
-Brand colours are checked for contrast when the instance is created, so a
-palette that would produce unreadable faces fails early. React has a
-`NurblingsProvider`, Vue a `NurblingsPlugin`; see
+```ts
+import { createNurblings } from 'nurblings'
+import { palette } from 'nurblings/themes'
+
+export const avatars = createNurblings({ theme: palette(['#264653', '#e9c46a', '#f4a261']) })
+```
+
+`createNurblings` also takes your own body designs, drawn parts and defaults.
+React has a `NurblingsProvider`, Vue a `NurblingsPlugin`; see
 [customising](docs/customising.md).
 
 ## Repository

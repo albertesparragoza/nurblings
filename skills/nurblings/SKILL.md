@@ -5,9 +5,9 @@ description: >
   (a user id, username or email) always hatches the same small creature. Use
   when adding avatars, profile pictures, user icons, member lists, comment
   authors, placeholders or default images to a React, Next.js, Vue, Nuxt,
-  Astro, Svelte, Angular or plain HTML/JavaScript app, when theming avatars to
-  a brand palette, animating them, or moving an avatar between a list and a
-  dialog. Also use whenever the user mentions nurblings, Nurbi or
+  Astro, Svelte, Angular or plain HTML/JavaScript app, when theming avatars
+  with a built-in theme or a brand palette, supporting dark mode, animating
+  them, or moving an avatar between a list and a dialog. Also use whenever the user mentions nurblings, Nurbi or
   @nurblings/* packages.
 ---
 
@@ -85,24 +85,40 @@ Vue: `morph(async () => { open.value = true; await nextTick() })`. It uses
 View Transitions when available and a transform animation otherwise, and does
 nothing under reduced motion.
 
-## Brand palette
+## Colours and themes
+
+Ten built-in themes, passed by name on every component:
+
+```tsx
+<Nurbling seed={user.id} title={user.name} theme="lagoon" />
+```
+
+`lagoon`, `punch`, `candy`, `picnic`, `sorbet` and `terracotta` put soft bodies
+on strong containers; `marble`, `riso`, `lime` and `bauhaus` use vivid bodies
+with one dark ink. Pick one that matches the product before writing colours.
+
+For brand colours, turn 2 to 5 of them into a theme with `palette()`:
 
 ```ts
 // avatars.ts
 import { createNurblings } from 'nurblings'
+import { palette } from 'nurblings/themes'
 
-export const avatars = createNurblings({
-  shells: { mist: '#e4ebf2', sand: '#f1e4cf' },          // body colours, light
-  accents: { ink: '#2c5fd9', coral: '#c94f38', forest: '#2e7d4f' }, // brow and antennae
-})
+export const avatars = createNurblings({ theme: palette(['#264653', '#e9c46a', '#f4a261']) })
 ```
 
 Pass it with `nurblings={avatars}`, `NurblingsProvider` (React client),
 `app.use(NurblingsPlugin(avatars))` (Vue) or `el.nurblings = avatars`
-(element). Setup throws a `RangeError` naming a colour when contrast fails:
-every shell needs readable eyes and two accents at 3:1 that also read 2.5:1 on
-light and dark pages. Fix it by lightening the named shell or adding a
-mid-tone accent; do not catch and ignore the error.
+(element). `palette()` repairs contrast itself. Hand-written `shells` and
+`accents` still throw a `RangeError` naming a colour that fails contrast: fix
+the named colour, or switch to `palette()`; never catch and ignore the error.
+
+## Light and dark pages
+
+On a dark page, pass `mode="dark"`. For a site with both, `mode="auto"` follows
+the OS setting and any `data-theme="dark"` or `.dark` ancestor with CSS only,
+so it stays server-rendered. The creature never changes between modes; the
+container colour does, so pair `mode` with `background`.
 
 ## Avoid
 
