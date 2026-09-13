@@ -35,7 +35,7 @@ export const GEN1_GOLDEN: Record<string, string> = {
   '["alan-turing",24]': '02f7832de0962910',
   '["alan-turing",128]': 'd827a51082cd64e0',
   '["katherine johnson",24]': '36260fb3a5c7d797',
-  '["katherine johnson",128]': 'cff556b02f9cdc0a',
+  '["katherine johnson",128]': 'b42b970f263255b1',
   '["margaret_hamilton",24]': '6ce4f316c8220cf9',
   '["margaret_hamilton",128]': 'dbdc19e008c1f476',
   '["dennis",24]': 'ad5e9eeeeb4cdd58',

@@ -70,7 +70,7 @@ export interface Brow {
 }
 
 export type Mouth = 'none' | 'dot' | 'line' | 'smile'
-export type Extra = 'none' | 'scarf' | 'pin' | 'hat' | 'collar'
+export type Extra = 'none' | 'scarf' | 'badge' | 'hat' | 'collar'
 export type Mood = 'neutral' | 'curious' | 'pleased' | 'thinking' | 'sleepy'
 
 export interface Palette {

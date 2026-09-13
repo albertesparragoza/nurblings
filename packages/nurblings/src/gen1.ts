@@ -152,7 +152,7 @@ export const MOUTHS: readonly (readonly [Mouth, number])[] = [
 export const EXTRAS: readonly (readonly [Extra, number])[] = [
   ['none', 5],
   ['scarf', 1],
-  ['pin', 1],
+  ['badge', 1],
   ['hat', 1],
   ['collar', 1],
 ]
