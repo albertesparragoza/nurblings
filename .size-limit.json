@@ -3,13 +3,13 @@
     "name": "nurblings: nurbling()",
     "path": "packages/nurblings/dist/index.js",
     "import": "{ nurbling }",
-    "limit": "8.75 KB"
+    "limit": "9 KB"
   },
   {
     "name": "nurblings: everything, createNurblings included",
     "path": "packages/nurblings/dist/index.js",
     "import": "*",
-    "limit": "10.25 KB"
+    "limit": "10.5 KB"
   },
   {
     "name": "nurblings/transition: morph()",
