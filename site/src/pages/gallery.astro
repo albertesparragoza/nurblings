@@ -1,22 +1,9 @@
 ---
 import { nurbling, SHELLS, SILHOUETTES } from 'nurblings'
+import Avatar from '../components/Avatar.astro'
+import ThemeChip from '../components/ThemeChip.astro'
+import ThemePicker from '../components/ThemePicker.astro'
 import Site from '../layouts/Site.astro'
-import { THEMES } from '../lib/themes'
-
-const people = [
-  ['ada', 'Ada Park'],
-  ['linus', 'Linus Ortega'],
-  ['margaret', 'Margaret Oduya'],
-  ['alan', 'Alan Reyes'],
-] as const
-const crowd = ['radia', 'ken', 'frances', 'dennis', 'barbara', 'joan', 'tim', 'hedy']
-const kinds = {
-  default: 'Original colours',
-  pastel: 'Soft theme',
-  bold: 'Vivid theme',
-}
-const snippet = (id: string) =>
-  id === 'default' ? '<Nurbling seed={user.id} />' : `<Nurbling seed={user.id} theme="${id}" />`
 
 // every discrete choice a seed makes; the smooth variations come on top
 const colourPairs = Object.values(SHELLS).reduce(
@@ -32,18 +19,18 @@ const combinations =
   4 * // eye shapes
   4 * // brows
   13 * // brow tilts
-  2 // one or two antennae
+  2 * // one or two antennae
+  5 // antenna bends
 const millions = Math.floor(combinations / 1_000_000)
 
 const tiny = (seed: string, opts: Parameters<typeof nurbling>[1]) =>
   nurbling(seed, { size: 30, background: 'circle', animate: false, frame: 'portrait', ...opts })
-const filters = [
+const lenses = [
   {
     key: 'silhouette',
     label: 'Body',
     options: Object.keys(SILHOUETTES).map((name) => ({
       value: name,
-      text: name,
       art: tiny(`body-${name}`, { silhouette: name as keyof typeof SILHOUETTES, frame: 'full' }),
     })),
   },
@@ -52,7 +39,6 @@ const filters = [
     label: 'Mood',
     options: (['neutral', 'curious', 'pleased', 'thinking', 'sleepy'] as const).map((mood) => ({
       value: mood,
-      text: mood,
       art: tiny('mood-grace', { mood }),
     })),
   },
@@ -61,588 +47,618 @@ const filters = [
     label: 'Wearing',
     options: (['none', 'scarf', 'hat', 'collar'] as const).map((extra) => ({
       value: extra,
-      text: extra === 'none' ? 'nothing' : extra,
       art: tiny('wear-linus', { extra, frame: 'full' }),
     })),
   },
-  {
-    key: 'theme',
-    label: 'Colours',
-    options: Object.values(THEMES)
-      .filter((t) => t.id !== 'default')
-      .map((t) => ({
-        value: t.id,
-        text: t.label,
-        art: t.render('nurbling', { size: 30, background: 'circle', animate: false }),
-      })),
-  },
+]
+const EIGHT = ['ada', 'grace', 'linus', 'margaret', 'alan', 'hedy', 'radia', 'ken']
+const THEME_IDS = [
+  'default',
+  'lagoon',
+  'punch',
+  'candy',
+  'picnic',
+  'sorbet',
+  'terracotta',
+  'marble',
+  'riso',
+  'lime',
+  'bauhaus',
 ]
 ---
 
 <Site title="Gallery" active="/gallery/" class="gal">
-  <section class="wrap gal-hero">
-    <div>
-      <h1>No two alike</h1>
-      <p class="lead">
-        Every name hatches its own Nurbling. More than {millions} million combinations of body, face and colour,
-        and each one gets a small twist of its own on top.
-      </p>
-      <label class="name-field">
-        <span class="sr-only">Type a name</span>
-        <input id="gal-seed" value="your name" placeholder="Type any name" autocomplete="off" spellcheck="false" />
-      </label>
-      <nav class="jump" aria-label="On this page">
-        <a href="#themes">Colour themes</a>
-        <a href="#family">The endless family</a>
-      </nav>
-    </div>
-    <div class="gal-hero-av" id="gal-hero" set:html={nurbling('your name', { size: 280, frame: 'full', title: 'your name' })} />
+  <section class="wrap crowd-head">
+    <h1>Meet the family</h1>
+    <p class="lead">
+      {millions} million combinations of body, face and colour, and every name adds its own small twist. Pick
+      any face to meet it.
+    </p>
   </section>
 
-  <section id="themes" class="wrap section">
-    <h2>Colour themes</h2>
-    <p class="lead">Ten themes, one prop each. The same faces sit in every card, so only the colours change.</p>
-    <div class="themes">
-      {
-        Object.values(THEMES).map((t) => (
-          <article class="theme-card card" style={`--accent:${t.accent}`}>
-            <header>
-              <div>
-                <h3>{t.label}</h3>
-                <small>{kinds[t.kind]}</small>
-              </div>
-              <div class="swatches" aria-label={`Palette: ${t.colors.join(', ')}`}>
-                {t.colors.map((c) => (
-                  <i style={`background:${c}`} title={c} />
-                ))}
-              </div>
-            </header>
-            <div class="mini">
-              <div class="mini-profile">
-                <span class="av" set:html={t.render('grace', { size: 84, background: 'circle', title: 'Grace Liu' })} />
-                <b>Grace Liu</b>
-                <small>Engineer · online</small>
-                <span class="mini-btn">Message</span>
-              </div>
-              <div class="mini-list">
-                {people.map(([seed, name]) => (
-                  <div class="mini-row">
-                    <span class="av" set:html={t.render(seed, { size: 36, background: 'circle', title: name })} />
-                    <span>{name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div class="theme-crowd">
-              {crowd.map((s) => (
-                <span class="av" set:html={t.render(s, { size: 48, background: 'circle', title: s })} />
-              ))}
-            </div>
-            <div class="theme-actions">
-              <button class="copy-chip" type="button" data-copy={snippet(t.id)}>
-                <code>{t.id === 'default' ? 'no theme prop' : `theme="${t.id}"`}</code>
-                <span data-copy-label>Copy</span>
-              </button>
-              <a class="btn btn-ghost" href={`/playground/#theme=${t.id}`}>Open in the playground</a>
-            </div>
-          </article>
-        ))
-      }
+  <section class="wrap crowd-section" id="crowd-section" aria-labelledby="crowd-status">
+    <div class="crowd-bar">
+      <p class="crowd-status" id="crowd-status" aria-live="polite">Crowd 001</p>
+      <button type="button" class="btn btn-ghost" id="another">Another crowd</button>
     </div>
+    <div class="crowd" id="crowd"></div>
   </section>
 
-  <section id="family" class="wall-section">
-    <div class="wrap wall-head">
-      <h2>The endless family</h2>
-      <p>They keep hatching as you scroll. Pick a trait and the same crowd takes it on.</p>
-    </div>
-    <div class="filter-bar">
-      <div class="wrap filters" role="group" aria-label="Filter the family">
-        {
-          filters.map((f) => (
-            <div class="filter">
-              <span>{f.label}</span>
-              <div class="filter-chips">
-                <button type="button" class="fchip any" data-f={f.key} data-v="" aria-pressed="true">
-                  Any
-                </button>
-                {f.options.map((o) => (
-                  <button
-                    type="button"
-                    class:list={['fchip', { swatch: f.key === 'theme' }]}
-                    data-f={f.key}
-                    data-v={o.value}
-                    aria-pressed="false"
-                    title={o.text}
-                  >
-                    <span class="fchip-art" set:html={o.art} />
-                    <span class:list={[{ 'sr-only': f.key === 'theme' }]}>{o.text}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))
-        }
+  <nav class="lens-pill" id="lens-pill" aria-label="Lenses">
+    {
+      lenses.map((l) => (
+        <button type="button" class="lens" popovertarget={`lens-${l.key}`} data-lens-button={l.key}>
+          <span class="lens-label">{l.label}</span>
+          <b class="lens-value" data-lens-value={l.key}>Any</b>
+        </button>
+      ))
+    }
+    <button type="button" class="lens" popovertarget="lens-theme">
+      <span class="lens-label">Colours</span>
+      <b class="lens-value" data-theme-name>Original</b>
+    </button>
+    <button type="button" class="lens lens-clear" id="lens-clear" aria-label="Clear lenses" hidden>
+      Clear
+    </button>
+  </nav>
+
+  {
+    lenses.map((l) => (
+      <div class="lens-panel" id={`lens-${l.key}`} popover>
+        <p class="lens-title">{l.label}</p>
+        <div class="lens-options">
+          <button type="button" class="lchip any" data-lens={l.key} data-v="" aria-pressed="true">
+            Any
+          </button>
+          {l.options.map((o) => (
+            <button type="button" class="lchip" data-lens={l.key} data-v={o.value} aria-pressed="false">
+              <span class="lchip-art" set:html={o.art} />
+              <span>{o.value === 'none' ? 'nothing' : o.value}</span>
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
-    <div class="wrap">
-      <p class="wall-count" aria-live="polite"><b id="hatched">0</b> hatched so far</p>
-      <div class="wall" id="wall"></div>
-      <p class="wall-end" id="wall-end"></p>
+    ))
+  }
+  <div class="lens-panel" id="lens-theme" popover>
+    <p class="lens-title">Colours</p>
+    <div class="lens-options">{THEME_IDS.map((id) => <ThemeChip id={id} />)}</div>
+  </div>
+
+  <section id="colours" class="wrap section colours">
+    <h2>Same eight, every colour</h2>
+    <p class="lead">Ten themes, one prop each. The faces stay put while the colours change.</p>
+    <ThemePicker />
+    <div class="eight">{EIGHT.map((s) => <Avatar seed={s} size={104} title={s} />)}</div>
+    <div class="actions">
+      <button class="copy-chip" type="button" id="theme-snippet" data-copy="<Nurbling seed={user.id} />">
+        <code id="theme-snippet-code">{'<Nurbling seed={user.id} />'}</code>
+        <span data-copy-label>Copy</span>
+      </button>
+      <a class="btn btn-ghost" id="theme-play" href="/playground/">Open in the playground</a>
     </div>
   </section>
+
+  <dialog class="meet" id="meet" aria-labelledby="meet-name">
+    <div class="meet-av" id="meet-av"></div>
+    <h2 id="meet-name">ada</h2>
+    <p class="meet-traits" id="meet-traits"></p>
+    <div class="actions">
+      <button class="copy-chip" type="button" id="meet-copy" data-copy="">
+        <code id="meet-code"></code><span data-copy-label>Copy</span>
+      </button>
+      <a class="btn" id="meet-play" href="/playground/">Open in the playground</a>
+      <button type="button" class="btn btn-ghost" id="meet-close">Close</button>
+    </div>
+  </dialog>
 </Site>
 
 <script>
-  import { reducedMotion } from '../lib/client'
-  import { THEMES } from '../lib/themes'
+  import { SILHOUETTES, traits } from 'nurblings'
+  import { morph } from 'nurblings/transition'
+  import { applyTheme, currentTheme, reducedMotion, theme } from '../lib/client'
 
-  const $ = (id: string) => document.getElementById(id) as HTMLElement
+  type Lens = 'silhouette' | 'mood' | 'extra'
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T
   const NAMES = ['ada', 'grace', 'linus', 'margaret', 'alan', 'hedy', 'radia', 'ken', 'joan', 'tim', 'frances', 'dennis', 'barbara', 'edsger', 'katherine', 'guido', 'sophie', 'anders', 'mary', 'jean', 'leslie', 'donald', 'shafi', 'lynn', 'adele', 'annie', 'dorothy', 'roberta', 'carol', 'hal', 'evelyn', 'niklaus']
-  const BATCH = 60
-  // enough to feel endless while keeping the page light
-  const CAP = 2400
-  const pins: Record<string, string> = { silhouette: '', mood: '', extra: '', theme: '' }
+  // a phone gets a smaller crowd; the grid keeps its size while it fills
+  const SIZE = innerWidth < 720 ? 120 : 240
+  // how far a search looks before it settles for what it found
+  const LIMIT = 1_000_000
+  const pins: Record<Lens, string> = { silhouette: '', mood: '', extra: '' }
+  let crowdNo = 1
 
-  const wall = $('wall')
-  const hatched = $('hatched')
-  const end = $('wall-end')
-  const renderer = () => THEMES[pins.theme || 'default'] ?? THEMES.default
-  const seedAt = (i: number) => `${NAMES[i % NAMES.length]}-${Math.floor(i / NAMES.length) + 1}`
-  const options = (seed: string) => ({
-    size: 72,
-    background: 'circle' as const,
-    animate: false,
-    title: seed,
-    ...(pins.silhouette ? { silhouette: pins.silhouette } : {}),
-    ...(pins.mood ? { mood: pins.mood } : {}),
-    ...(pins.extra ? { extra: pins.extra } : {}),
-  })
-  const link = (seed: string) => {
-    const p = new URLSearchParams({ seed })
+  const crowd = $('crowd')
+  const status = $('crowd-status')
+  const seedAt = (k: number) => `${NAMES[k % NAMES.length]}-${Math.floor(k / NAMES.length) + 1}`
+  const count = (n: number) => n.toLocaleString('en-US')
+  const pad = (n: number) => String(n).padStart(3, '0')
+
+  // the body a seed drew: the preset with the same plates and the nearest proportions
+  const presets = Object.entries(SILHOUETTES)
+  const bodyOf = (t: ReturnType<typeof traits>) => {
+    const s = t.silhouette
+    let best = ''
+    let gap = Number.POSITIVE_INFINITY
+    for (const [name, p] of presets) {
+      if (p.rows !== s.rows || p.cols !== s.cols || (p.plates ?? 'crown') !== (s.plates ?? 'crown')) continue
+      const d = Math.abs(p.hw - s.hw) + Math.abs((p.width ?? 1) - (s.width ?? 1))
+      if (d < gap) [best, gap] = [name, d]
+    }
+    return best
+  }
+  const matches = (seed: string) => {
+    const t = traits(seed)
+    return (
+      (!pins.mood || t.mood === pins.mood) &&
+      (!pins.extra || t.extra === pins.extra) &&
+      (!pins.silhouette || bodyOf(t) === pins.silhouette)
+    )
+  }
+
+  // a fixed grid of cells, filled as the search finds its crowd
+  const cells: HTMLButtonElement[] = []
+  for (let i = 0; i < SIZE; i++) {
+    const cell = document.createElement('button')
+    cell.type = 'button'
+    cell.className = 'cell'
+    crowd.append(cell)
+    cells.push(cell)
+  }
+  const draw = (cell: HTMLElement, seed: string, transition?: string) => {
+    cell.innerHTML = theme().render(seed, {
+      size: 56,
+      background: 'circle',
+      animate: false,
+      title: seed,
+      ...(transition ? { transition } : {}),
+    })
+  }
+  const fill = (cell: HTMLButtonElement, seed: string) => {
+    cell.dataset.seed = seed
+    cell.setAttribute('aria-label', `Meet ${seed}`)
+    cell.disabled = false
+    draw(cell, seed)
+  }
+  const empty = (cell: HTMLButtonElement) => {
+    delete cell.dataset.seed
+    cell.removeAttribute('aria-label')
+    cell.disabled = true
+    cell.innerHTML = ''
+  }
+
+  let run = 0
+  const search = async () => {
+    const mine = ++run
+    const lensed = Boolean(pins.silhouette || pins.mood || pins.extra)
+    for (const cell of cells) empty(cell)
+    const skip = (crowdNo - 1) * SIZE
+    let found = 0
+    let matched = 0
+    let k = lensed ? 0 : skip
+    const label = `Crowd ${pad(crowdNo)}`
+    while (found < SIZE && k < LIMIT) {
+      // short slices, so typing, scrolling and new choices never wait on the search
+      const until = performance.now() + 8
+      while (found < SIZE && k < LIMIT && performance.now() < until) {
+        const seed = seedAt(k++)
+        if (lensed && (!matches(seed) || matched++ < skip)) continue
+        fill(cells[found++] as HTMLButtonElement, seed)
+      }
+      status.textContent = lensed ? `${label} · found ${count(found)} in ${count(k)} names` : `${label} · ${count(found)} Nurblings`
+      await new Promise((r) => setTimeout(r, 0))
+      if (mine !== run) return
+    }
+    if (lensed) {
+      status.textContent =
+        found < SIZE
+          ? `${label} · a rare mix: ${count(found)} in the first ${count(k)} names`
+          : `${label} · found ${count(found)} in ${count(k)} names`
+    }
+  }
+
+  // lenses, the crowd number and the theme live in the address, so a crowd can be shared
+  const save = () => {
+    const p = new URLSearchParams()
+    if (crowdNo > 1) p.set('crowd', String(crowdNo))
     for (const [k, v] of Object.entries(pins)) if (v) p.set(k, v)
-    return `/playground/#${p}`
+    if (currentTheme() !== 'default') p.set('theme', currentTheme())
+    history.replaceState(null, '', p.size ? `#${p}` : location.pathname)
   }
-  const draw = (cell: HTMLAnchorElement, pop: boolean, k: number) => {
-    const seed = cell.dataset.seed ?? ''
-    cell.innerHTML = renderer()?.render(seed, options(seed) as never) ?? ''
-    cell.href = link(seed)
-    if (pop && !reducedMotion()) {
-      cell.style.setProperty('--k', String(k % BATCH))
-      cell.classList.remove('pop')
-      void cell.offsetWidth
-      cell.classList.add('pop')
+  const showLenses = () => {
+    for (const key of Object.keys(pins) as Lens[]) {
+      const v = pins[key]
+      const el = document.querySelector(`[data-lens-value="${key}"]`)
+      if (el) el.textContent = v ? (v === 'none' ? 'nothing' : v) : 'Any'
+      for (const chip of document.querySelectorAll<HTMLElement>(`[data-lens="${key}"]`)) {
+        chip.setAttribute('aria-pressed', String(chip.dataset.v === v))
+      }
     }
+    $('lens-clear').hidden = !(pins.silhouette || pins.mood || pins.extra)
   }
-  const more = () => {
-    const from = wall.childElementCount
-    const to = Math.min(CAP, from + BATCH)
-    const frag = document.createDocumentFragment()
-    for (let i = from; i < to; i++) {
-      const cell = document.createElement('a')
-      cell.className = 'cell'
-      cell.dataset.seed = seedAt(i)
-      cell.title = `${cell.dataset.seed}, open in the playground`
-      draw(cell, true, i)
-      frag.append(cell)
-    }
-    wall.append(frag)
-    hatched.textContent = to.toLocaleString('en-US')
-    if (to >= CAP) end.textContent = `${CAP.toLocaleString('en-US')} hatched on this page. The rest are waiting for their names.`
-  }
-  more()
-  // keeps hatching while the end of the wall is near; observing again after
-  // each batch checks at once whether the end is still in reach
-  const watch = new IntersectionObserver(
-    (entries) => {
-      if (!entries.some((e) => e.isIntersecting) || wall.childElementCount >= CAP) return
-      more()
-      watch.unobserve(end)
-      watch.observe(end)
-    },
-    { rootMargin: '900px 0px' },
-  )
-  watch.observe(end)
 
-  // filters: the same crowd takes on the chosen trait
-  document.querySelector('.filters')?.addEventListener('click', (e) => {
-    const chip = (e.target as Element).closest<HTMLElement>('[data-f]')
+  {
+    const p = new URLSearchParams(location.hash.slice(1))
+    crowdNo = Math.max(1, Number(p.get('crowd')) || 1)
+    for (const key of Object.keys(pins) as Lens[]) pins[key] = p.get(key) ?? ''
+    const linked = p.get('theme')
+    if (linked) applyTheme(linked)
+  }
+  showLenses()
+  void search()
+
+  document.addEventListener('click', (e) => {
+    const chip = (e.target as Element).closest<HTMLElement>('[data-lens]')
     if (!chip) return
-    const key = chip.dataset.f ?? ''
-    pins[key] = chip.dataset.v ?? ''
-    for (const c of document.querySelectorAll<HTMLElement>(`[data-f="${key}"]`)) {
-      c.setAttribute('aria-pressed', String(c === chip))
-    }
-    let k = 0
-    for (const cell of wall.children) draw(cell as HTMLAnchorElement, true, k++)
-    hero()
+    pins[chip.dataset.lens as Lens] = chip.dataset.v ?? ''
+    crowdNo = 1
+    chip.closest<HTMLElement>('[popover]')?.hidePopover()
+    showLenses()
+    save()
+    void search()
+  })
+  $('lens-clear').addEventListener('click', () => {
+    pins.silhouette = pins.mood = pins.extra = ''
+    crowdNo = 1
+    showLenses()
+    save()
+    void search()
+  })
+  $('another').addEventListener('click', () => {
+    crowdNo++
+    save()
+    void search()
   })
 
-  // the hero: any name, drawn as you type
-  const input = $('gal-seed') as HTMLInputElement
-  const heroBox = $('gal-hero')
-  const hero = () => {
-    const name = input.value || ' '
-    heroBox.innerHTML =
-      renderer()?.render(name, { size: 280, frame: 'full', title: input.value || 'Nurbling', ...(pins.mood ? { mood: pins.mood } : {}), ...(pins.extra ? { extra: pins.extra } : {}), ...(pins.silhouette ? { silhouette: pins.silhouette } : {}) } as never) ?? ''
+  // a new theme recolours the same crowd in place, a slice at a time
+  let paintRun = 0
+  const snippet = $('theme-snippet')
+  document.addEventListener('nb-theme', async () => {
+    const id = currentTheme()
+    const code = id === 'default' ? '<Nurbling seed={user.id} />' : `<Nurbling seed={user.id} theme="${id}" />`
+    snippet.dataset.copy = code
+    $('theme-snippet-code').textContent = code
+    $<HTMLAnchorElement>('theme-play').href = id === 'default' ? '/playground/' : `/playground/#theme=${id}`
+    for (const panel of document.querySelectorAll<HTMLElement>('#lens-theme:popover-open')) panel.hidePopover()
+    save()
+    const mine = ++paintRun
+    for (let i = 0; i < cells.length; i += 60) {
+      for (const cell of cells.slice(i, i + 60)) if (cell.dataset.seed) draw(cell, cell.dataset.seed)
+      await new Promise((r) => requestAnimationFrame(r))
+      if (mine !== paintRun) return
+    }
+  })
+
+  // the lens pill shows only while the crowd is on screen
+  const pill = $('lens-pill')
+  // the grid itself, less a strip at the bottom: the pill leaves before the colours section arrives
+  new IntersectionObserver(([entry]) => pill.classList.toggle('show', Boolean(entry?.isIntersecting)), {
+    rootMargin: '-120px 0px -140px 0px',
+  }).observe(crowd)
+
+  // meet one: the face glides from the crowd into the dialog and back
+  const meet = $<HTMLDialogElement>('meet')
+  let from: HTMLButtonElement | null = null
+  const describe = (seed: string) => {
+    const t = traits(seed)
+    return [bodyOf(t), t.mood, t.extra === 'none' ? '' : `wearing a ${t.extra}`].filter(Boolean).join(' · ')
   }
-  input.addEventListener('input', hero)
+  crowd.addEventListener('click', async (e) => {
+    const cell = (e.target as Element).closest<HTMLButtonElement>('.cell')
+    const seed = cell?.dataset.seed
+    if (!cell || !seed) return
+    from = cell
+    const id = currentTheme()
+    const code = id === 'default' ? `<Nurbling seed="${seed}" />` : `<Nurbling seed="${seed}" theme="${id}" />`
+    $('meet-name').textContent = seed
+    $('meet-traits').textContent = describe(seed)
+    $('meet-code').textContent = code
+    $('meet-copy').dataset.copy = code
+    const link = new URLSearchParams({ seed })
+    if (id !== 'default') link.set('theme', id)
+    $<HTMLAnchorElement>('meet-play').href = `/playground/#${link}`
+    draw(cell, seed, 'meet')
+    await morph(() => {
+      draw(cell, seed)
+      $('meet-av').innerHTML = theme().render(seed, { size: 220, frame: 'full', title: seed, transition: 'meet' })
+      meet.showModal()
+    })
+  })
+  const close = async () => {
+    const cell = from
+    const seed = cell?.dataset.seed
+    if (!cell || !seed || reducedMotion()) {
+      meet.close()
+      return
+    }
+    await morph(() => {
+      $('meet-av').innerHTML = ''
+      meet.close()
+      draw(cell, seed, 'meet')
+    })
+    draw(cell, seed)
+    cell.focus()
+  }
+  $('meet-close').addEventListener('click', close)
+  meet.addEventListener('cancel', (e) => {
+    e.preventDefault()
+    void close()
+  })
+  meet.addEventListener('click', (e) => {
+    if (e.target === meet) void close()
+  })
 </script>
 
 <style is:global>
-  .gal .gal-hero {
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: clamp(24px, 4vw, 56px);
-    align-items: center;
-    padding-block: clamp(32px, 6vw, 72px) 24px;
+  .gal .crowd-head {
+    padding-block: clamp(28px, 5vw, 56px) 8px;
+    max-width: 760px;
+    margin-left: max(var(--gutter), calc((100% - var(--maxw)) / 2));
   }
 
-  .gal .gal-hero h1 {
-    font-size: clamp(52px, 7.4vw, 108px);
+  .gal .crowd-head h1 {
+    font-size: clamp(36px, 4.4vw, 56px);
     font-weight: 800;
-    letter-spacing: -0.045em;
-    line-height: 0.95;
+    letter-spacing: -0.035em;
   }
 
-  .gal .gal-hero-av {
-    justify-self: center;
+  .gal .crowd-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 14px;
+  }
+
+  .gal .crowd-status {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gal .crowd {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+    gap: 10px 8px;
+    justify-items: center;
+  }
+
+  /* room for the pill under the last row */
+  .gal .crowd-section {
+    padding-bottom: 96px;
+  }
+
+  .gal .cell {
+    width: 56px;
+    height: 56px;
+    border: 0;
+    padding: 0;
+    border-radius: 50%;
     line-height: 0;
     background: var(--tint);
-    border-radius: 44% 56% 52% 48% / 50% 44% 56% 50%;
-    padding: clamp(12px, 3vw, 32px);
+    transition: transform 0.25s var(--spring);
   }
 
-  .gal .gal-hero-av svg {
-    width: min(280px, 64vw);
-    height: auto;
+  .gal .cell:disabled {
+    cursor: default;
+    opacity: 0.45;
   }
 
-  .gal .name-field {
+  .gal .cell:not(:disabled):hover,
+  .gal .cell:focus-visible {
+    transform: scale(1.2);
+  }
+
+  /* the lens pill: small, at thumb height, only while the crowd is on screen */
+  .gal .lens-pill {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    z-index: 25;
     display: flex;
-    max-width: 440px;
-    margin: 26px 0 18px;
+    gap: 4px;
+    max-width: calc(100vw - 32px);
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 6px;
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 12px 18px;
-    transition: border-color 0.2s;
+    border-radius: 999px;
+    box-shadow: 0 16px 40px -20px rgb(0 0 0 / 0.45);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 12px);
+    transition:
+      opacity 0.2s var(--ease),
+      transform 0.2s var(--ease),
+      visibility 0.2s;
   }
 
-  .gal .name-field:focus-within {
-    border-color: var(--accent);
+  .gal .lens-pill.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
   }
 
-  .gal .name-field input {
-    flex: 1;
-    min-width: 0;
+  .gal .lens {
+    flex: none;
+    display: grid;
+    gap: 1px;
+    text-align: left;
     border: 0;
     background: none;
-    font-size: 18px;
-    font-weight: 500;
-    outline: none;
-  }
-
-  .gal .jump {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .gal .jump a {
-    text-decoration: none;
-    font-weight: 600;
-    border: 1px solid var(--line);
-    background: var(--surface);
     border-radius: 999px;
-    padding: 8px 16px;
+    padding: 6px 14px;
+    line-height: 1.1;
   }
 
-  .gal .jump a:hover {
-    border-color: var(--accent);
+  .gal .lens:hover {
+    background: var(--tint);
   }
 
-  .gal section[id] {
-    scroll-margin-top: 84px;
-  }
-
-  .gal .wall-section {
-    padding-bottom: 40px;
-  }
-
-  .gal .wall-head h2,
-  .gal #themes > h2 {
-    font-size: clamp(34px, 4vw, 52px);
-    font-weight: 800;
-  }
-
-  .gal .wall-head p {
+  .gal .lens-label {
+    font-size: 11px;
+    font-weight: 600;
     color: var(--muted);
-    font-size: 18px;
-    margin: 12px 0 0;
   }
 
-  /* the filters stay at hand while the wall scrolls under them */
-  .gal .filter-bar {
-    position: sticky;
-    top: 68px;
-    z-index: 10;
-    background: var(--paper);
-    border-bottom: 1px solid var(--line);
-    padding-block: 12px;
-    margin-top: 24px;
+  .gal .lens-value {
+    font-size: 14px;
+    text-transform: capitalize;
+    white-space: nowrap;
   }
 
-  .gal .filters {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
+  .gal .lens[hidden] {
+    display: none;
   }
 
-  .gal .filter {
-    display: grid;
-    grid-template-columns: 76px minmax(0, 1fr);
-    align-items: center;
-    gap: 8px;
+  .gal .lens-value[data-theme-name] {
+    text-transform: none;
   }
 
-  .gal .filter > span {
+  .gal .lens-clear {
+    align-self: center;
+    font-weight: 700;
+    color: var(--accent-text);
+  }
+
+  .gal .lens-panel {
+    position: fixed;
+    inset: auto auto 84px 50%;
+    translate: -50% 0;
+    margin: 0;
+    width: min(620px, calc(100vw - 32px));
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 24px 60px -28px rgb(0 0 0 / 0.5);
+  }
+
+  .gal .lens-title {
+    margin: 0 0 10px;
     font-size: 12px;
     font-weight: 700;
     color: var(--muted);
   }
 
-  .gal .filter-chips {
-    /* scroll inside the row instead of widening the page */
-    min-width: 0;
+  .gal .lens-options {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding: 2px;
   }
 
-  .gal .fchip {
-    /* holds its visually hidden label, which would otherwise escape the scrolling row */
-    position: relative;
+  .gal .lchip {
     display: inline-flex;
-    flex: none;
     align-items: center;
     gap: 6px;
+    min-height: 40px;
     border: 1px solid var(--line);
     background: var(--surface);
     border-radius: 999px;
-    padding: 2px 12px 2px 2px;
+    padding: 2px 12px 2px 3px;
     font-size: 13px;
     font-weight: 600;
     line-height: 1;
     text-transform: capitalize;
-    transition:
-      border-color 0.2s,
-      background-color 0.2s;
   }
 
-  .gal .fchip.any {
-    padding: 8px 14px;
+  .gal .lchip.any {
+    padding: 2px 14px;
   }
 
-  .gal .fchip.swatch {
-    padding: 2px;
-  }
-
-  .gal .fchip-art {
+  .gal .lchip-art {
     line-height: 0;
   }
 
-  .gal .fchip:hover {
+  .gal .lchip:hover {
     border-color: var(--accent);
   }
 
-  .gal .fchip[aria-pressed='true'] {
+  .gal .lchip[aria-pressed='true'] {
     border-color: var(--accent);
     background: color-mix(in srgb, var(--accent) 14%, var(--surface));
   }
 
-  .gal .wall-count {
-    color: var(--muted);
-    font-size: 14px;
-    margin: 18px 0 12px;
-  }
-
-  .gal .wall-count b {
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .gal .wall {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
-    gap: 12px;
-    justify-items: center;
-  }
-
-  .gal .cell {
-    line-height: 0;
-    border-radius: 50%;
-    transition: transform 0.3s var(--spring);
-  }
-
-  .gal .cell:hover,
-  .gal .cell:focus-visible {
-    transform: scale(1.18) rotate(-4deg);
-  }
-
-  .gal .cell.pop {
-    animation: nb-hatch 0.5s var(--spring) both;
-    animation-delay: calc(var(--k, 0) * 10ms);
-  }
-
-  @keyframes nb-hatch {
-    from {
-      opacity: 0;
-      transform: scale(0.3);
-    }
-  }
-
-  .gal .wall-end {
-    color: var(--muted);
-    text-align: center;
-    min-height: 1px;
-    margin: 28px 0 0;
-  }
-
-  .gal #themes > .lead {
-    margin-bottom: 8px;
-  }
-
-  .gal .themes {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-    margin-top: 28px;
-  }
-
-  .gal .theme-card {
-    display: grid;
-    gap: 16px;
-    padding: 22px;
-  }
-
-  .gal .theme-card header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .gal .theme-card h3 {
-    font-size: 26px;
+  .gal .colours h2 {
+    font-size: clamp(34px, 4vw, 52px);
     font-weight: 800;
   }
 
-  .gal .theme-card header small {
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 600;
+  .gal .colours .lead {
+    margin-bottom: 22px;
   }
 
-  .gal .swatches {
-    display: flex;
-    gap: 4px;
-  }
-
-  .gal .swatches i {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
-  }
-
-  .gal .mini {
-    display: grid;
-    grid-template-columns: 0.9fr 1.1fr;
-    gap: 12px;
-    background: color-mix(in srgb, var(--accent) 10%, var(--paper));
-    border-radius: var(--r-md);
-    padding: 12px;
-  }
-
-  .gal .mini-profile {
-    display: grid;
-    justify-items: center;
-    align-content: center;
-    gap: 2px;
-    background: linear-gradient(color-mix(in srgb, var(--accent) 22%, var(--surface)) 0 38%, var(--surface) 38%);
-    border-radius: 14px;
-    padding: 14px 10px;
-    line-height: 1.2;
-  }
-
-  .gal .mini-profile .av {
-    margin-bottom: 6px;
-  }
-
-  .gal .mini-profile small {
-    color: var(--muted);
-    font-size: 12px;
-  }
-
-  .gal .mini-btn {
-    margin-top: 8px;
-    background: var(--accent);
-    color: #ffffff;
-    border-radius: 9px;
-    padding: 5px 12px;
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  .gal .mini-list {
-    display: grid;
-    align-content: center;
-    gap: 6px;
-    background: var(--surface);
-    border-radius: 14px;
-    padding: 12px;
-  }
-
-  .gal .mini-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    font-weight: 600;
-  }
-
-  .gal .theme-crowd {
+  .gal .eight {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: 6px;
+    gap: 12px;
+    margin: 28px 0 22px;
   }
 
-  .gal .theme-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
+  .gal .meet {
+    width: min(420px, calc(100vw - 32px));
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--surface);
+    color: var(--ink);
+    text-align: center;
   }
 
-  @media (max-width: 900px) {
-    .gal .gal-hero,
-    .gal .themes,
-    .gal .mini {
-      grid-template-columns: minmax(0, 1fr);
+  .gal .meet::backdrop {
+    background: rgb(20 16 32 / 0.45);
+  }
+
+  .gal .meet-av {
+    line-height: 0;
+    min-height: 220px;
+  }
+
+  .gal .meet-av svg {
+    width: min(220px, 60vw);
+    height: auto;
+  }
+
+  .gal .meet h2 {
+    font-size: 30px;
+    font-weight: 800;
+    margin-top: 10px;
+  }
+
+  .gal .meet-traits {
+    color: var(--muted);
+    margin: 6px 0 18px;
+    text-transform: capitalize;
+  }
+
+  .gal .meet .actions {
+    justify-content: center;
+  }
+
+  .gal .meet .copy-chip {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .gal .meet code {
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @media (max-width: 720px) {
+    .gal .crowd {
+      grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
     }
 
-    .gal .filter {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 4px;
-    }
-
-    /* four rows of filters would take a third of a phone screen */
-    .gal .filter-bar {
-      position: static;
+    .gal .eight {
+      justify-content: center;
     }
   }
 </style>
