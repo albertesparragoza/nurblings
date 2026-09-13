@@ -1,0 +1,21 @@
+---
+// One theme choice: a tiny Nurbling drawn in that theme.
+import { THEMES } from '../lib/themes'
+
+interface Props {
+  id: string
+}
+
+const { id } = Astro.props
+const theme = THEMES[id]
+---
+
+<button
+  type="button"
+  class="chip"
+  data-theme-chip={id}
+  aria-pressed={String(id === 'default')}
+  aria-label={`${theme?.label} colours`}
+  title={theme?.label}
+  set:html={theme?.render('nurbling', { size: 30, background: 'circle', animate: false })}
+/>

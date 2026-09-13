@@ -1,33 +1,49 @@
 ---
-// The avatar colour switcher: each chip is a tiny Nurbling in that theme, and
-// the name of the one in use stays visible.
+// The avatar colour switcher. `pill` is one row with the name of the theme in
+// use; `rows` stacks one group per row for narrow panels, where the panel's
+// own label carries the name.
 import { THEMES, themeIds } from '../lib/themes'
+import ThemeChip from './ThemeChip.astro'
 
+interface Props {
+  layout?: 'pill' | 'rows'
+}
+
+const { layout = 'pill' } = Astro.props
 const groups = [
-  ['', ['default']],
+  ['Original', ['default']],
   ['Soft', themeIds('pastel')],
   ['Vivid', themeIds('bold')],
 ] as const
 ---
 
-<div class="picker" role="group" aria-label="Avatar colours">
-  <b class="picker-name" data-theme-name>{THEMES.default?.label}</b>
-  {
-    groups.map(([label, ids]) => (
-      <Fragment>
-        {label && <span>{label}</span>}
-        {ids.map((id) => (
-          <button
-            type="button"
-            class="chip"
-            data-theme-chip={id}
-            aria-pressed={String(id === 'default')}
-            aria-label={`${THEMES[id]?.label} colours`}
-            title={THEMES[id]?.label}
-            set:html={THEMES[id]?.render('nurbling', { size: 30, background: 'circle', animate: false })}
-          />
-        ))}
-      </Fragment>
-    ))
-  }
-</div>
+{
+  layout === 'rows' ? (
+    <div class="picker picker-rows" role="group" aria-label="Avatar colours">
+      {groups.map(([label, ids]) => (
+        <div class="picker-group">
+          <span>{label}</span>
+          <div class="picker-chips">
+            {ids.map((id) => (
+              <ThemeChip id={id} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div class="picker" role="group" aria-label="Avatar colours">
+      <b class="picker-name" data-theme-name>
+        {THEMES.default?.label}
+      </b>
+      {groups.map(([label, ids], i) => (
+        <Fragment>
+          {i > 0 && <span>{label}</span>}
+          {ids.map((id) => (
+            <ThemeChip id={id} />
+          ))}
+        </Fragment>
+      ))}
+    </div>
+  )
+}

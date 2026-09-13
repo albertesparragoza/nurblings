@@ -31,9 +31,7 @@ export default defineConfig({
       social: [{ icon: 'github', label: 'GitHub', href: REPO }],
       editLink: { baseUrl: `${REPO}/edit/develop/` },
       customCss: [
-        '@fontsource-variable/bricolage-grotesque',
-        '@fontsource-variable/dm-sans',
-        '@fontsource-variable/geist-mono',
+        './src/styles/fonts.css',
         './src/styles/tokens.css',
         './src/styles/starlight.css',
       ],
