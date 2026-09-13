@@ -1,4 +1,6 @@
 ---
+import { createNurblings, traits } from 'nurblings'
+import { THEMES as LIBRARY, type ThemeName } from 'nurblings/themes'
 import Site from '../layouts/Site.astro'
 import { THEMES, themeIds } from '../lib/themes'
 
@@ -31,6 +33,34 @@ const chat = [
 const followers = ['Joan Clarke', 'Tim Berners', 'Frances Allen', 'Dennis Wright']
 const share = ['Barbara', 'Ken', 'Mary', 'Evelyn', 'Adele', 'Annie', 'Carol', 'Hal']
 
+// the group photo: the first three names with different body colours in that theme
+const crowd = [
+  'Joan Clarke',
+  'Tim Berners',
+  'Hedy Moreau',
+  'Frances Allen',
+  'Dennis Wright',
+  'Barbara Liskov',
+  'Evelyn Boyd',
+  'Hal Abelson',
+]
+const photoFor = (id: string) => {
+  const theme = LIBRARY[id as ThemeName]
+  const shellOf = theme
+    ? (name: string) => createNurblings({ theme }).traits(name).palette.shell
+    : (name: string) => traits(name).palette.shell
+  const picked: string[] = []
+  const seen = new Set<string>()
+  for (const name of crowd) {
+    const shell = shellOf(name)
+    if (seen.has(shell)) continue
+    seen.add(shell)
+    picked.push(name)
+    if (picked.length === 3) break
+  }
+  return picked
+}
+
 const snippet = (id: string) =>
   id === 'default' ? '<Nurbling seed={user.name} />' : `<Nurbling seed={user.name} theme="${id}" />`
 const blocks = ORDER.map((id, index) => {
@@ -48,7 +78,7 @@ const blocks = ORDER.map((id, index) => {
           ...opts,
         } as never)
       : `<i class="lazy" data-seed="${seed}" data-size="${size}" data-opts='${JSON.stringify(opts)}' style="width:${size}px;height:${size}px"></i>`
-  return { id, t, av }
+  return { id, t, av, photo: photoFor(id) }
 })
 ---
 
@@ -74,7 +104,7 @@ const blocks = ORDER.map((id, index) => {
 
   <div class="wrap blocks">
     {
-      blocks.map(({ id, t, av }) => (
+      blocks.map(({ id, t, av, photo }) => (
         <section class="block" id={id} data-block={id} style={`--accent:${t.accent}`} aria-labelledby={`${id}-title`}>
           <header class="block-head">
             <h2 id={`${id}-title`}>{t.label}</h2>
@@ -108,7 +138,11 @@ const blocks = ORDER.map((id, index) => {
                     <small>2 hours ago</small>
                   </p>
                 </div>
-                <div class="post-art" style={`background:linear-gradient(135deg, ${t.colors.join(', ')})`} />
+                <div class="post-art" role="img" aria-label="A group photo">
+                  {photo.map((name, i) => (
+                    <span class="av" set:html={av(name, i === 1 ? 120 : 92, { background: 'none', frame: 'full', mood: 'pleased' })} />
+                  ))}
+                </div>
                 <div class="liked">
                   <span class="stack">
                     {liked.map((name) => (
@@ -208,7 +242,7 @@ const blocks = ORDER.map((id, index) => {
               </article>
 
               <article class="app cover">
-                <div class="cover-art" style={`background:linear-gradient(120deg, ${[...t.colors].reverse().join(', ')})`} />
+                <div class="cover-art" />
                 <span class="av cover-av" set:html={av('Mary Edwards', 80, { animate: true })} />
                 <b>Mary Edwards</b>
                 <small>1.2k followers · 451 following</small>
@@ -517,6 +551,20 @@ const blocks = ORDER.map((id, index) => {
   .gal .cover-art {
     height: 150px;
     margin: 12px -16px;
+  }
+
+  /* a group photo: three Nurblings on a flat tint of the block's colour */
+  .gal .post-art {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  }
+
+  .gal .cover-art {
+    background: color-mix(in srgb, var(--accent) 42%, var(--surface));
   }
 
   .gal .liked {
