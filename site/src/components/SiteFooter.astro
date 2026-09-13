@@ -1,7 +1,6 @@
 ---
-// The footer for every page, marketing and docs alike. It lays itself out by
-// its own width (a container query), since the docs give it the content
-// column and the marketing pages the full page.
+// The footer for the marketing pages. It lays itself out by its own width (a
+// container query), so it fits any page it is placed in.
 import { nurbling } from 'nurblings'
 import { FOOTER } from '../lib/nav'
 import Brand from './Brand.astro'
@@ -9,15 +8,13 @@ import Brand from './Brand.astro'
 interface Props {
   /** centre it in the page width, as the marketing pages do */
   wide?: boolean
-  /** in the docs: covers the fixed sidebar, stays under the fixed header */
-  docs?: boolean
 }
 
-const { wide = false, docs = false } = Astro.props
+const { wide = false } = Astro.props
 const family = ['ada', 'grace', 'linus', 'radia', 'hedy', 'alan']
 ---
 
-<footer class:list={['site-footer', { wide, docs }]}>
+<footer class:list={['site-footer', { wide }]}>
   <div class="frame">
     <div class="grid">
       <div class="about">
@@ -57,13 +54,6 @@ const family = ['ada', 'grace', 'linus', 'radia', 'hedy', 'alan']
     padding-block: 48px 36px;
     color: var(--muted);
     font: 14px / 1.55 var(--text);
-  }
-
-  .docs {
-    position: relative;
-    z-index: calc(var(--sl-z-index-menu) + 1);
-    margin-top: 0;
-    background: var(--sl-color-bg);
   }
 
   .wide .frame {
