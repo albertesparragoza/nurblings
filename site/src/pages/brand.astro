@@ -1,15 +1,41 @@
 ---
+// Nurbi is the flagship: always the default renderer, never repainted by a theme
 import { nurbling } from 'nurblings'
 import Site from '../layouts/Site.astro'
+import { REPO } from '../lib/nav'
 
-const REPO = 'https://github.com/albertesparragoza/nurblings'
+const draw = (seed: string, size: number) =>
+  nurbling(seed, { size, background: 'circle', animate: false, title: seed })
+const relatives = ['ada', 'grace', 'linus', 'radia', 'hedy', 'alan', 'joan']
+const traits = [
+  {
+    title: 'Handles on the crown',
+    text: 'Two antennae rooted at the top, one for about one in eight. Straight stems, square tips: the only sharp corners on the creature.',
+    seed: 'linus',
+  },
+  {
+    title: 'A face that reads at 24 px',
+    text: 'Two eyes in a fixed band of the body, with a brow in the accent colour just above. It tilts a little and is never angry.',
+    seed: 'grace',
+  },
+  {
+    title: 'A soft, plated body',
+    text: "Ten bodies stretch, widen and move Nurbi's plates around the crown, the sides or the base.",
+    seed: 'radia',
+  },
+  {
+    title: 'Flat, and no limbs',
+    text: 'Solid fills and no gradients, so an avatar stays crisp from a favicon to a profile page.',
+    seed: 'hedy',
+  },
+]
 ---
 
-<Site title="Nurbi and the brand" active="/brand/" class="brandp">
+<Site title="Meet Nurbi" class="brandp">
   <div class="wrap">
     <section class="brand-hero">
       <figure>
-        <span class="av" set:html={nurbling('nurbi', { size: 300, title: 'Nurbi' })} />
+        <span class="av" set:html={nurbling('nurbi', { size: 280, title: 'Nurbi' })} />
         <figcaption>Nurbi, the flagship</figcaption>
       </figure>
       <div>
@@ -18,10 +44,34 @@ const REPO = 'https://github.com/albertesparragoza/nurblings'
           Nurbi's two antennae are bezier control handles: the tools that turn an intention into a curve.
           Nurblings borrows the idea literally. Your handle becomes its handles.
         </p>
-        <p class="lead">
-          The family keeps Nurbi's soft lower body and plated crown, then stretches, widens and moves the plates
-          around. Nurbi itself is never generated: a few reserved seeds show the original, and every other seed is
-          kept a clear step away from it.
+        <div class="relatives" aria-label="A few relatives">
+          {relatives.map((seed) => <span class="av" set:html={draw(seed, 52)} />)}
+        </div>
+      </div>
+    </section>
+
+    <section class="family-traits">
+      <h2>What runs in the family</h2>
+      <div class="trait-grid">
+        {
+          traits.map((t) => (
+            <article class="card">
+              <span class="av" set:html={draw(t.seed, 72)} />
+              <h3>{t.title}</h3>
+              <p>{t.text}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="reserved panel">
+      <span class="av" set:html={nurbling('nurbi', { size: 96, background: 'circle', animate: false, title: 'Nurbi' })} />
+      <div>
+        <h2>There is only one Nurbi</h2>
+        <p>
+          A few reserved seeds, such as <code>nurbi</code>, show the original. Every other seed is kept a clear step
+          away from it: no generated avatar gets Nurbi's body, colours or bare face.
         </p>
       </div>
     </section>
@@ -43,7 +93,7 @@ const REPO = 'https://github.com/albertesparragoza/nurblings'
           <li>Using Nurbi as a mascot, logo or endorsement.</li>
         </ul>
         <p>
-          The full terms are in <a href={`${REPO}/blob/develop/TRADEMARKS.md`}>TRADEMARKS.md</a>. Unsure?
+          The full terms are in <a href={`${REPO}/blob/develop/TRADEMARKS.md`}>TRADEMARKS.md</a>. Unsure?{' '}
           <a href={`${REPO}/issues`}>Open an issue</a> and ask.
         </p>
       </div>
@@ -83,6 +133,53 @@ const REPO = 'https://github.com/albertesparragoza/nurblings'
     max-width: 14ch;
   }
 
+  .brandp .relatives {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 28px;
+  }
+
+  .brandp h2 {
+    font-size: clamp(28px, 3.4vw, 40px);
+    font-weight: 800;
+  }
+
+  .brandp .family-traits {
+    padding-bottom: clamp(40px, 6vw, 72px);
+  }
+
+  .brandp .trait-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .brandp .trait-grid h3 {
+    font-size: 20px;
+    font-weight: 800;
+    margin-top: 14px;
+  }
+
+  .brandp .trait-grid p {
+    color: var(--muted);
+    margin: 8px 0 0;
+  }
+
+  .brandp .reserved {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 4vw, 40px);
+    margin-bottom: clamp(40px, 6vw, 72px);
+  }
+
+  .brandp .reserved p {
+    color: var(--muted);
+    max-width: 60ch;
+    margin: 10px 0 0;
+  }
+
   .brandp .rules {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -92,7 +189,6 @@ const REPO = 'https://github.com/albertesparragoza/nurblings'
 
   .brandp .rules h2 {
     font-size: 30px;
-    font-weight: 800;
   }
 
   .brandp .rules ul {
@@ -110,6 +206,13 @@ const REPO = 'https://github.com/albertesparragoza/nurblings'
     .brandp .brand-hero,
     .brandp .rules {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .brandp .reserved {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 </style>
