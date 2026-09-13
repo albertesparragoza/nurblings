@@ -38,7 +38,7 @@ means two different strings can hatch the same creature.
 | `gen` | `1` | `1` | The trait generation. Pin it to keep an avatar identical across future releases. |
 | `mood` | `'neutral' \| 'curious' \| 'pleased' \| 'thinking' \| 'sleepy'` | from the seed | Pins the resting mood. |
 | `mouth` | `'none' \| 'dot' \| 'line' \| 'smile'` | from the seed | Pins the mouth. |
-| `extra` | `'none' \| 'scarf' \| 'pin' \| 'hat' \| 'collar'` | from the seed | Pins the extra. |
+| `extra` | `'none' \| 'scarf' \| 'badge' \| 'hat' \| 'collar'` | from the seed | Pins the extra. |
 | `silhouette` | `'classic' \| 'basketball' \| 'squat' \| 'firm' \| 'round' \| 'bell' \| 'wide' \| 'smooth' \| 'pear' \| 'tall'` | from the seed | Pins the body design. Each seed still varies it slightly and gets its own plate pattern. |
 | `shell` | `'mint' \| 'sky' \| 'butter' \| 'peach' \| 'lilac' \| 'sage' \| 'cloud' \| 'blush' \| 'lemon'` | from the seed | Pins the body colour. The accent is still chosen from the colours that read well on it. |
 

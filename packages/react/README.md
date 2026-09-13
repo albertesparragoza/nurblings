@@ -43,7 +43,7 @@ export default function Avatar() {
 | `gen` | `1` | `1` | Trait generation. |
 | `mood` | `'neutral' \| 'curious' \| 'pleased' \| 'thinking' \| 'sleepy'` | derived from seed | Pins the mood trait. |
 | `mouth` | `'none' \| 'dot' \| 'line' \| 'smile'` | derived from seed | Pins the mouth trait. |
-| `extra` | `'none' \| 'scarf' \| 'pin' \| 'hat' \| 'collar'` | derived from seed | Pins the extra trait. |
+| `extra` | `'none' \| 'scarf' \| 'badge' \| 'hat' \| 'collar'` | derived from seed | Pins the extra trait. |
 | `silhouette` | `'classic' \| 'basketball' \| 'squat' \| 'firm' \| 'round' \| 'bell' \| 'wide' \| 'smooth' \| 'pear' \| 'tall'` | derived from seed | Pins the body design; each seed still varies it slightly. |
 | `shell` | `'mint' \| 'sky' \| 'butter' \| 'peach' \| 'lilac' \| 'sage' \| 'cloud' \| 'blush' \| 'lemon'` | derived from seed | Pins the shell colour trait. |
 
