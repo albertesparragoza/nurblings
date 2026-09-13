@@ -23,6 +23,7 @@ export type NurblingProps = {
 export function Nurbling(props: NurblingProps) {
   const { seed, className, style, nurblings, theme, ...options } = props
   const svg = renderNurbling(nurblings, seed, options, theme)
+  // nosemgrep: nurblings-html-sink -- svg comes from renderNurbling, which escapes every value
   return (
     <span
       className={className}

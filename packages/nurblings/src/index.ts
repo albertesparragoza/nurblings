@@ -9,11 +9,19 @@ export type {
   SilhouetteShape,
   Theme,
 } from './nurbling'
-export { contrast, createNurblings, nurbling, nurblingSrc, toDataUri, traits } from './nurbling'
+export {
+  contrast,
+  createNurblings,
+  nurbling,
+  nurblingSrc,
+  renderTraits,
+  toDataUri,
+  traits,
+} from './nurbling'
 export { isFlagshipSeed } from './protect'
 export { normaliseSeed } from './seed'
 export type { Slot, SlotContext, SlotName, Slots } from './svg'
-export { render as renderTraits, SLOTS } from './svg'
+export { SLOTS } from './svg'
 export type {
   Antennae,
   Background,

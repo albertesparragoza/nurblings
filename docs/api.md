@@ -82,7 +82,11 @@ const src = toDataUri(nurbling('user-42', { size: 64 }))
 ## `renderTraits(traits, options?)`
 
 Renders a traits object you built or edited yourself. Takes the rendering
-options: `size`, `background`, `title`, `animate`, `frame` and `transition`.
+options: `size`, `background`, `title`, `animate`, `frame`, `mode` and
+`transition`. Every value in the traits is checked first: a colour that is not
+6-digit hex, a name outside the known traits or a number that is not finite
+throws a `RangeError`, so traits from a database or a form can never inject
+markup.
 
 ## `normaliseSeed(seed)`
 

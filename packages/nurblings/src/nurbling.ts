@@ -1,5 +1,6 @@
 // The public entry: seed in, SVG out.
 
+import { checkTraits } from './check'
 import { contrast, ensureContrast, shade } from './colour'
 import {
   ACCENTS,
@@ -319,6 +320,16 @@ export function traits(seed: string, opts: NurblingOptions = {}): Traits {
 export function nurbling(seed: string, opts: NurblingOptions = {}): string {
   if (isFlagshipSeed(seed)) return renderFlagship(opts)
   return render(traits(seed, opts), opts)
+}
+
+/**
+ * Draws a traits object you built or stored yourself, such as one read back
+ * from a database. Every value is checked first, so traits from outside can
+ * only fail with a RangeError, never inject markup.
+ */
+export function renderTraits(t: Traits, opts: RenderOptions = {}, slots?: Slots): string {
+  checkTraits(t)
+  return render(t, opts, slots)
 }
 
 /** An SVG string as a data URI, for an img src or a CSS background. */
