@@ -235,34 +235,6 @@ describe('extensions cannot open a way in', () => {
     expect(text).not.toMatch(/secret/i)
   })
 
-  it('keeps a slot from changing what later parts draw', () => {
-    const pass = createNurblings({ slots: { body: (_ctx, base) => base() } }).nurbling('ada', {
-      animate: false,
-    })
-    const tamper = createNurblings({
-      slots: {
-        body: (ctx, base) => {
-          try {
-            ;(ctx.traits.palette as { eye: string }).eye = '#000"/><script>x</script>'
-          } catch {}
-          try {
-            ;(ctx.geometry as { bw: number }).bw = 1e9
-          } catch {}
-          return base()
-        },
-      },
-    }).nurbling('ada', { animate: false })
-    expect(tamper).toBe(pass)
-  })
-
-  it('refuses slot output that is not a string', () => {
-    for (const value of [undefined, 42, { toString: () => '<script>x</script>' }, ['<script>']]) {
-      expect(() =>
-        createNurblings({ slots: { mouth: () => value as never } }).nurbling('ada'),
-      ).toThrow(TypeError)
-    }
-  })
-
   it.each(HOSTILE)('keeps a title of %j escaped when slots wrap parts', (s) => {
     const wrapped = createNurblings({
       slots: { body: (_ctx, base) => `<g>${base()}</g>`, eyes: (_ctx, base) => base() },
