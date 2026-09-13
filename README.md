@@ -35,6 +35,9 @@ that turn an intention into a curve. Your handle becomes its handles.
 | Any HTML, Svelte, Angular | [`@nurblings/element`](packages/element) | `npm install @nurblings/element` |
 | Plain JavaScript | [`nurblings`](packages/nurblings) | `npm install nurblings` |
 
+What works where, from server rendering to themes, dark mode, motion and
+transitions: see the [feature table](docs/getting-started.md#what-each-package-supports).
+
 ## Quick start
 
 ```tsx
