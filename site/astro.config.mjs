@@ -36,7 +36,7 @@ export default defineConfig({
         Head: './src/components/DocsHead.astro',
         Header: './src/components/DocsHeader.astro',
         ThemeSelect: './src/components/ModeToggle.astro',
-        Footer: './src/components/DocsFooter.astro',
+        PageFrame: './src/components/DocsPageFrame.astro',
       },
       customCss: [
         './src/styles/fonts.css',

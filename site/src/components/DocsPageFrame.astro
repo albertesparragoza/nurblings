@@ -1,0 +1,13 @@
+---
+// Starlight's page frame, then the site footer at full page width, as on the
+// marketing pages. It slides over the fixed sidebar when scrolled into view.
+import Default from '@astrojs/starlight/components/PageFrame.astro'
+import SiteFooter from './SiteFooter.astro'
+---
+
+<Default>
+  <slot name="header" slot="header" />
+  <slot name="sidebar" slot="sidebar" />
+  <slot />
+</Default>
+<SiteFooter wide docs />
