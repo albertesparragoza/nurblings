@@ -1,0 +1,87 @@
+---
+// The docs header: the same mark, links and switches as the marketing pages,
+// with Starlight's search in the middle. On narrow screens the links move to
+// the sidebar menu, where Starlight already lists them.
+import Search from '@astrojs/starlight/components/Search.astro'
+import { isActive, NAV } from '../lib/nav'
+import Brand from './Brand.astro'
+import GitHubLink from './GitHubLink.astro'
+import ModeToggle from './ModeToggle.astro'
+
+const path = Astro.url.pathname
+---
+
+<div class="header">
+  <Brand />
+  <div class="search print:hidden"><Search /></div>
+  <nav class="links print:hidden" aria-label="Main">
+    {
+      NAV.map(([label, href]) => (
+        <a href={href} aria-current={isActive(href, path) ? 'page' : undefined}>
+          {label}
+        </a>
+      ))
+    }
+  </nav>
+  <div class="actions print:hidden">
+    <GitHubLink />
+    <ModeToggle />
+  </div>
+</div>
+
+<style>
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 100%;
+  }
+
+  .search {
+    display: flex;
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .links,
+  .actions {
+    display: none;
+  }
+
+  .links a {
+    padding: 8px 12px;
+    border-radius: 999px;
+    color: var(--muted);
+    font: 500 15px / 1.2 var(--text);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      color 0.2s,
+      background-color 0.2s;
+  }
+
+  .links a:hover,
+  .links a[aria-current="page"] {
+    color: var(--ink);
+    background: var(--tint);
+  }
+
+  @media (min-width: 50rem) {
+    .search {
+      justify-content: flex-start;
+      max-width: 22rem;
+      margin-inline: auto;
+    }
+
+    .search :global(site-search) {
+      width: 100%;
+    }
+
+    .links,
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
+</style>
