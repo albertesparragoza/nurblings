@@ -1,0 +1,12 @@
+---
+// The docs head: Starlight's own, plus the same font preloads as the rest of
+// the site, so the real fonts are usually ready before the first paint. When
+// one is late, the size-matched fallback in fonts.css holds its place.
+import Default from '@astrojs/starlight/components/Head.astro'
+import displayFont from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url'
+import textFont from '@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url'
+---
+
+<link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
+<link rel="preload" href={textFont} as="font" type="font/woff2" crossorigin />
+<Default />

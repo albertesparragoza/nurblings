@@ -1,12 +1,13 @@
-/* Self-hosted variable fonts, latin and latin-ext. `optional` instead of
-   `swap`: when a font is not ready in the first moment, the page keeps the
-   fallback for that visit instead of re-rendering every line when it arrives.
-   The layout preloads the two main faces, so they are almost always in time. */
+/* Self-hosted variable fonts, latin and latin-ext. The layouts preload the two
+   main faces, so they are usually ready before the first paint. When one is
+   late, `swap` shows a size-matched fallback first (below): a system font
+   scaled to the site font's width and line box, so the swap changes letter
+   shapes and nothing moves. */
 
 @font-face {
   font-family: "Bricolage Grotesque Variable";
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
   font-weight: 200 800;
   src: url("../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2")
     format("woff2-variations");
@@ -18,7 +19,7 @@
 @font-face {
   font-family: "Bricolage Grotesque Variable";
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
   font-weight: 200 800;
   src: url("../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-ext-wght-normal.woff2")
     format("woff2-variations");
@@ -31,7 +32,7 @@
 @font-face {
   font-family: "DM Sans Variable";
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
   font-weight: 100 1000;
   src: url("../../node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2")
     format("woff2-variations");
@@ -43,7 +44,7 @@
 @font-face {
   font-family: "DM Sans Variable";
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
   font-weight: 100 1000;
   src: url("../../node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-ext-wght-normal.woff2")
     format("woff2-variations");
@@ -56,7 +57,7 @@
 @font-face {
   font-family: "Geist Mono Variable";
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
   font-weight: 100 900;
   src: url("../../node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2")
     format("woff2-variations");
@@ -68,7 +69,7 @@
 @font-face {
   font-family: "Geist Mono Variable";
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
   font-weight: 100 900;
   src: url("../../node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-ext-wght-normal.woff2")
     format("woff2-variations");
@@ -76,4 +77,68 @@
     U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
     U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
     U+A720-A7FF;
+}
+
+/* Size-matched fallbacks, measured against the real fonts at 1000 px. Regular
+   and bold are separate faces pointing at the real regular and bold system
+   fonts: one face would make the browser fake the bold, which is narrower.
+   Each face lists the Windows and Mac names first and the Linux ones after
+   (Liberation fonts share Arial's and Courier New's metrics). */
+@font-face {
+  font-family: "Bricolage Fallback";
+  src:
+    local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans"),
+    local("Helvetica");
+  font-weight: 100 599;
+  size-adjust: 103.76%;
+  ascent-override: 89.63%;
+  descent-override: 26.02%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Bricolage Fallback";
+  src:
+    local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"),
+    local("LiberationSans-Bold"), local("Helvetica Bold");
+  font-weight: 600 1000;
+  size-adjust: 103.03%;
+  ascent-override: 90.27%;
+  descent-override: 26.21%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "DM Sans Fallback";
+  src:
+    local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans"),
+    local("Helvetica");
+  font-weight: 100 599;
+  size-adjust: 102.17%;
+  ascent-override: 97.09%;
+  descent-override: 30.34%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "DM Sans Fallback";
+  src:
+    local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"),
+    local("LiberationSans-Bold"), local("Helvetica Bold");
+  font-weight: 600 1000;
+  size-adjust: 101.41%;
+  ascent-override: 97.82%;
+  descent-override: 30.57%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Geist Mono Fallback";
+  src:
+    local("Courier New"), local("CourierNewPSMT"), local("Liberation Mono"), local("LiberationMono");
+  font-weight: 100 1000;
+  size-adjust: 99.98%;
+  ascent-override: 100.52%;
+  descent-override: 29.5%;
+  line-gap-override: 0%;
 }
