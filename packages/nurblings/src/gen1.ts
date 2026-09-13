@@ -145,7 +145,8 @@ export const CATCHLIGHTS: readonly (readonly [Catchlight, number])[] = [
 export const BROWS: readonly Brow['shape'][] = ['level', 'wave', 'split', 'bold']
 export const MOUTHS: readonly (readonly [Mouth, number])[] = [
   ['none', 3],
-  ['dot', 2],
+  // a dot mouth read as a mark on the skin: its share of the draw has no mouth
+  ['none', 2],
   ['line', 2],
   ['smile', 2],
 ]

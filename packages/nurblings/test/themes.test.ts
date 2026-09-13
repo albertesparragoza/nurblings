@@ -121,6 +121,10 @@ describe('mode', () => {
     expect(svg).toContain('nb-auto')
     expect(svg).toContain('--nb-g:')
     expect(svg).toContain('prefers-color-scheme:dark')
+    // the nearest light or dark marker wins, at any depth
+    expect(svg).toContain(
+      '@scope (:is([data-theme=dark],.dark)) to (:is([data-theme=light],.light))',
+    )
     expect(svg).not.toMatch(/\bid=/)
   })
 

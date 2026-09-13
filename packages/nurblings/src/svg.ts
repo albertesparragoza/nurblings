@@ -339,11 +339,7 @@ const LIFT: Record<Traits['mood'], number> = {
 }
 const RATIO: Record<Eyes['shape'], number> = { round: 1, tall: 1.1, wide: 0.86, almond: 0.78 }
 
-function eyes(
-  g: BodyGeometry,
-  t: Traits,
-  small: boolean,
-): { svg: string; top: number; outer: number; y: number } {
+function eyes(g: BodyGeometry, t: Traits): { svg: string; top: number; outer: number; y: number } {
   const e = t.eyes
   const y = g.top + e.depth * g.height
   const rx = (e.size * g.bw) / 2
@@ -358,11 +354,6 @@ function eyes(
     const cx = CX + side * dx
     const rot = e.shape === 'almond' ? ` transform="rotate(${-side * 8} ${n(cx)} ${n(cy)})"` : ''
     svg += `<ellipse cx="${n(cx)}" cy="${n(cy)}" rx="${n(rx)}" ry="${n(oy)}" fill="${p.eye}"${rot}/>`
-    if (!small && e.catchlight !== 'none' && open > 0.5) {
-      const big = e.catchlight === 'asymmetric' && side < 0 ? 0.36 : 0.2
-      const r = rx * (e.catchlight === 'pair' ? 0.26 : big)
-      svg += `<circle cx="${n(cx - rx * 0.36)}" cy="${n(cy - oy * 0.38)}" r="${n(r)}" fill="${p.catchlight}"/>`
-    }
   }
   return { svg, top: y - ry, outer: dx + rx, y }
 }
@@ -393,8 +384,6 @@ function mouth(t: Traits, eyeY: number, g: BodyGeometry): string {
   const c = t.palette.eye
   const u = g.bw
   switch (t.mouth) {
-    case 'dot':
-      return `<circle cx="${CX}" cy="${n(y)}" r="${n(0.018 * u)}" fill="${c}"/>`
     case 'line':
       return `<path d="M${n(CX - 0.04 * u)},${n(y)}L${n(CX + 0.04 * u)},${n(y)}" stroke="${c}" stroke-width="${n(0.016 * u)}" stroke-linecap="round"/>`
     case 'smile':
@@ -404,14 +393,45 @@ function mouth(t: Traits, eyeY: number, g: BodyGeometry): string {
   }
 }
 
-/** A band hugging the body between two heights (fractions of height from the base). */
-function band(g: BodyGeometry, from: number, to: number, fill: string, inset = 0): string {
+/** One side of the outline, from the base up to the apex. */
+function side(g: BodyGeometry, which: -1 | 1): Pt[] {
+  const v = g.outline.map((o) => o.p)
+  return which > 0 ? v.slice(0, g.apex + 1) : [...v.slice(g.apex), v[0] as Pt].reverse()
+}
+
+/** Where a side of the outline crosses height y. */
+function crossing(pts: readonly Pt[], y: number): number {
+  for (let i = 1; i < pts.length; i++) {
+    const [x0, y0] = pts[i - 1] as Pt
+    const [x1, y1] = pts[i] as Pt
+    if ((y0 - y) * (y1 - y) <= 0 && y0 !== y1) return x0 + ((x1 - x0) * (y - y0)) / (y1 - y0)
+  }
+  return CX
+}
+
+/**
+ * A band hugging the body between two heights (fractions of height from the
+ * base). Each side follows its own outline point by point, so a band sits
+ * exactly on the body however the two sides differ, plates included.
+ */
+function band(g: BodyGeometry, from: number, to: number, fill: string): string {
   const y0 = BASE_Y - from * g.height
   const y1 = BASE_Y - to * g.height
-  const h0 = g.halfWidthAt(y0) - inset
-  const h1 = g.halfWidthAt(y1) - inset
   const sag = 0.02 * g.bw
-  return `<path d="M${n(CX - h1)},${n(y1)}Q${CX},${n(y1 + sag)} ${n(CX + h1)},${n(y1)}L${n(CX + h0)},${n(y0)}Q${CX},${n(y0 + sag)} ${n(CX - h0)},${n(y0)}Z" fill="${fill}"/>`
+  const right = side(g, 1)
+  const left = side(g, -1)
+  const inside = (pts: readonly Pt[]) => pts.filter(([, y]) => y > y1 && y < y0)
+  const r = inside(right).reverse()
+  const l = inside(left)
+  const rx1 = crossing(right, y1)
+  const lx1 = crossing(left, y1)
+  const rx0 = crossing(right, y0)
+  const lx0 = crossing(left, y0)
+  let d = `M${n(lx1)},${n(y1)}Q${n((lx1 + rx1) / 2)},${n(y1 + sag)} ${n(rx1)},${n(y1)}`
+  for (const p of r) d += `L${pt(p)}`
+  d += `L${n(rx0)},${n(y0)}Q${n((lx0 + rx0) / 2)},${n(y0 + sag)} ${n(lx0)},${n(y0)}`
+  for (const p of l) d += `L${pt(p)}`
+  return `<path d="${d}Z" fill="${fill}"/>`
 }
 
 function extra(g: BodyGeometry, t: Traits): string {
@@ -427,7 +447,7 @@ function extra(g: BodyGeometry, t: Traits): string {
       return band(g, 0.3, 0.34, p.wear)
     case 'hat':
       // open at the top and stopping below the antenna roots: antennae own the crown
-      return band(g, 0.66, 0.84, p.wear) + band(g, 0.64, 0.68, p.accent, -0.01 * u)
+      return band(g, 0.66, 0.84, p.wear) + band(g, 0.64, 0.68, p.accent)
     default:
       return ''
   }
@@ -496,13 +516,14 @@ export const MOTION =
 const LAYERS = { mb: 'breath', mk: 'blink', ma: 'antennae', mh: 'hover' } as const
 
 // `mode: 'auto'`: light colours are attributes, dark ones custom properties on
-// the root, swapped by the OS setting unless a page marks itself light, or by a
-// `data-theme="dark"` or `.dark` ancestor unless a light marker sits closer.
-// Identical text in every avatar.
-const AUTO_DARK = '.nb-auto:not([data-theme=light] *,.light *)'
-const AUTO_RULES = (at: string) =>
-  `${at} .nb-g{fill:var(--nb-g)}${at} .nb-c{stroke:var(--nb-c)}${at} .nb-c rect{fill:var(--nb-c)}`
-export const AUTO = `<style>@media (prefers-color-scheme:dark){${AUTO_RULES(AUTO_DARK)}}${AUTO_RULES(':is([data-theme=dark],.dark) .nb-auto:not(:is([data-theme=dark],.dark) :is([data-theme=light],.light) *)')}</style>`
+// the root. The nearest marker wins at any depth: a `data-theme="dark"` or
+// `.dark` ancestor turns it dark until a `data-theme="light"` or `.light` one
+// inside it, and with no marker the OS setting decides. Identical text in
+// every avatar.
+const AUTO_RULES =
+  '.nb-auto .nb-g{fill:var(--nb-g)}.nb-auto .nb-c{stroke:var(--nb-c)}.nb-auto .nb-c rect{fill:var(--nb-c)}'
+const LIGHT = ':is([data-theme=light],.light)'
+export const AUTO = `<style>@media (prefers-color-scheme:dark){@scope (:root) to (${LIGHT}){${AUTO_RULES}}}@scope (:is([data-theme=dark],.dark)) to (${LIGHT}){${AUTO_RULES}}</style>`
 
 /** Page grounds an antenna stands on when there is no container. */
 const PAGE = { light: '#f7f5f2', dark: '#16161a' }
@@ -614,7 +635,7 @@ export function render(t: Traits, opts: RenderOptions = {}, slots: Slots = {}): 
   const small = size <= 32
   const g = body(t.silhouette)
   const box = frameBox(g, t, resolveFrame(opts.frame, size))
-  const face = eyes(g, t, small)
+  const face = eyes(g, t)
   const title = esc(opts.title ?? 'Nurbling')
   const mode = opts.mode ?? 'light'
   if (mode !== 'light' && mode !== 'dark' && mode !== 'auto') {

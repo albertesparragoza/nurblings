@@ -58,6 +58,7 @@ export interface Eyes {
   spacing: number
   /** eye centre depth from the crown, fraction of height (fixed band: 0.50..0.57) */
   depth: number
+  /** drawn from the seed and kept for stability; eyes are drawn without a highlight */
   catchlight: Catchlight
 }
 
@@ -69,7 +70,7 @@ export interface Brow {
   tilt: number
 }
 
-export type Mouth = 'none' | 'dot' | 'line' | 'smile'
+export type Mouth = 'none' | 'line' | 'smile'
 export type Extra = 'none' | 'scarf' | 'hat' | 'collar'
 export type Mood = 'neutral' | 'curious' | 'pleased' | 'thinking' | 'sleepy'
 

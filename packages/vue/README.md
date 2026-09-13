@@ -39,7 +39,7 @@ safe to use in a Nuxt page, layout or server component.
 | `frame` | `'auto' \| 'full' \| 'portrait'` | Portrait crops closer on the face for small round avatars; full shows the whole figure. Auto (the default) picks portrait at 48 px and below. |
 | `gen` | `1` | Trait generation. Pin it so an avatar never changes under a future release. |
 | `mood` | `'neutral' \| 'curious' \| 'pleased' \| 'thinking' \| 'sleepy'` | Lock the mood instead of deriving it from the seed. |
-| `mouth` | `'none' \| 'dot' \| 'line' \| 'smile'` | Lock the mouth. |
+| `mouth` | `'none' \| 'line' \| 'smile'` | Lock the mouth. |
 | `extra` | `'none' \| 'scarf' \| 'hat' \| 'collar'` | Lock the extra. |
 | `silhouette` | `'classic' \| 'basketball' \| 'squat' \| 'firm' \| 'round' \| 'bell' \| 'wide' \| 'smooth' \| 'pear' \| 'tall'` | Lock the body design; each seed still varies it slightly. |
 | `shell` | `'mint' \| 'sky' \| 'butter' \| 'peach' \| 'lilac' \| 'sage' \| 'cloud' \| 'blush' \| 'lemon'` | Lock the shell colour. |
