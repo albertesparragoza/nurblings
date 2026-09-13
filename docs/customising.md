@@ -45,9 +45,8 @@ avatars.traits('user-42', { silhouette: 'robot' }) // custom names are typed
   `base()` to wrap it, or pass `false` to drop it. Keep your markup free of
   `id` attributes, so many avatars can share a page. Slot markup goes into the SVG as it
   is, so build it from your own code and the traits, never from user input.
-  Slots read a frozen copy of the traits and the geometry and must return a
-  string: changing what they read throws instead of reaching the parts drawn
-  after them.
+  Slots share the traits and geometry the built-in parts draw from, so treat
+  them as read-only, and return a string.
 - **Custom body designs** need finite numbers, a positive `hw` and `width`, a
   known `plates` zone, and at most 12 plate rows and 12 columns. Setup throws a
   `RangeError` naming the design and the field otherwise.

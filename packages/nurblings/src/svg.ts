@@ -579,15 +579,6 @@ export function pixelSize(size: number | undefined): number {
   return s
 }
 
-/** A deep frozen copy of plain data; functions are kept as they are. */
-function frozenCopy<T>(value: T): T {
-  if (value === null || typeof value !== 'object') return value
-  const copy = Array.isArray(value)
-    ? value.map(frozenCopy)
-    : Object.fromEntries(Object.entries(value).map(([key, v]) => [key, frozenCopy(v)]))
-  return Object.freeze(copy) as T
-}
-
 /** The drawn parts, in paint order. Each can be replaced, wrapped or dropped. */
 export const SLOTS = [
   'backdrop',
@@ -675,24 +666,12 @@ export function render(t: Traits, opts: RenderOptions = {}, slots: Slots = {}): 
     brow: () => brow(g, t, face.top, face.outer, small),
     mouth: () => (small ? '' : mouth(t, face.y, g)),
   }
-  // Slots read a frozen copy of the traits and a frozen geometry: they can use
-  // both, but never change what the built-in parts after them draw.
-  const custom = Object.values(slots).some((slot) => typeof slot === 'function')
-  const ctx: SlotContext = Object.freeze({
-    traits: custom ? frozenCopy(t) : t,
-    geometry: custom ? frozenCopy(g) : g,
-    size,
-    small,
-    mode,
-  })
+  const ctx: SlotContext = { traits: t, geometry: g, size, small, mode }
   const live = motion(t.silhouette.grain, t.mood === 'sleepy', opts.animate, small)
   const [backdropSvg, ...figure] = SLOTS.map((name) => {
     const slot = slots[name]
     if (slot === false) return ''
     const out = slot ? slot(ctx, built[name]) : built[name]()
-    if (typeof out !== 'string') {
-      throw new TypeError(`nurblings: the ${name} slot must return a string, got ${typeof out}`)
-    }
     return live && name === 'eyes' && out ? `<g class="nb-e">${out}</g>` : out
   })
   const drawn = live ? `<g class="nb-f">${figure.join('')}</g>` : figure.join('')
