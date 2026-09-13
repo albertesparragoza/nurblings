@@ -326,6 +326,11 @@ export function toDataUri(svg: string): string {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
+/** A Nurbling ready for an `<img src>` or a CSS `url()`: `nurbling()` as a data URI. */
+export function nurblingSrc(seed: string, opts: NurblingOptions = {}): string {
+  return toDataUri(nurbling(seed, opts))
+}
+
 const LIGHT_GROUND = '#f7f5f2'
 const DARK_GROUND = '#16161a'
 /** Eyes on a dark body. */
@@ -429,15 +434,18 @@ export function createNurblings<const C extends NurblingsConfig>(config: C) {
   // a theme on one call swaps the colours and keeps this instance's body designs
   const tablesFor = (o: Pins) =>
     o.theme && o.theme !== config.theme ? themeTables(o.theme, config) : tables
+  const draw = (seed: string, opts: ConfiguredOptions<C> = {}): string => {
+    const o = merge(opts)
+    return render(resolve(seed, o, tablesFor(o)), o, config.slots)
+  }
   return {
     traits: (seed: string, opts: ConfiguredOptions<C> = {}): Traits => {
       const o = merge(opts)
       return resolve(seed, o, tablesFor(o))
     },
-    nurbling: (seed: string, opts: ConfiguredOptions<C> = {}): string => {
-      const o = merge(opts)
-      return render(resolve(seed, o, tablesFor(o)), o, config.slots)
-    },
+    nurbling: draw,
+    /** the same avatar as a data URI, for an `<img src>` or a CSS `url()` */
+    src: (seed: string, opts: ConfiguredOptions<C> = {}): string => toDataUri(draw(seed, opts)),
   }
 }
 

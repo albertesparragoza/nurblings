@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { contrast } from '../src/colour'
-import { createNurblings, nurbling, traits } from '../src/nurbling'
+import { createNurblings, nurbling, nurblingSrc, toDataUri, traits } from '../src/nurbling'
 import { lagoon, palette, renderNurbling, THEMES, themed, themeOf } from '../src/themes'
 
 const seeds = Array.from({ length: 120 }, (_, i) => `person-${i}`)
@@ -31,6 +31,19 @@ describe('built-in themes', () => {
   it('types body colour names from the theme', () => {
     const nb = createNurblings({ theme: lagoon })
     expect(nb.traits('ada', { shell: 'cream' }).palette.shell).toBe('#edecb3')
+  })
+
+  it('never recolours Nurbi', () => {
+    expect(themed('lagoon').nurbling('nurbi', { size: 64 })).toBe(nurbling('nurbi', { size: 64 }))
+    expect(renderNurbling(undefined, 'nurbi', { size: 64 }, 'riso')).toBe(
+      nurbling('nurbi', { size: 64 }),
+    )
+  })
+
+  it('hands out an img src in one call', () => {
+    expect(nurblingSrc('ada', { size: 64 })).toBe(toDataUri(nurbling('ada', { size: 64 })))
+    const nb = createNurblings({ theme: lagoon })
+    expect(nb.src('ada')).toBe(toDataUri(nb.nurbling('ada')))
   })
 
   it('resolves names, and refuses unknown ones', () => {

@@ -153,7 +153,7 @@ describe('traits', () => {
     expect(() => traits('x', { shell: 'ivory' as 'mint' })).toThrow(RangeError)
     expect(() => traits('x', { mood: 'angry' as 'sleepy' })).toThrow(RangeError)
     expect(() => traits('x', { mouth: 'fangs' as 'dot' })).toThrow(RangeError)
-    expect(() => traits('x', { extra: 'cape' as 'badge' })).toThrow(RangeError)
+    expect(() => traits('x', { extra: 'cape' as 'hat' })).toThrow(RangeError)
     expect(() => nurbling('x', { mood: 'angry' as 'sleepy' })).toThrow(RangeError)
   })
 
