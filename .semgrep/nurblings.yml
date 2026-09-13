@@ -1,0 +1,55 @@
+# Rules for the published packages. They flag the few ways a library like this
+# can turn caller input into running code or markup. Run in CI by the security
+# workflow; locally with `semgrep scan --config .semgrep`.
+rules:
+  - id: nurblings-no-eval
+    message: >-
+      Code built from strings at runtime runs whatever it is handed. Nurblings
+      never needs it.
+    severity: ERROR
+    languages: [typescript, javascript]
+    paths:
+      include:
+        - "/packages/*/src/**"
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+      - pattern: setTimeout("$S", ...)
+      - pattern: setInterval("$S", ...)
+
+  - id: nurblings-html-sink
+    message: >-
+      HTML written into the page must be SVG from nurbling() or
+      renderNurbling(), which check and escape every value. For a reviewed
+      exception, add `// nosemgrep: nurblings-html-sink` with the reason.
+    severity: ERROR
+    languages: [typescript, javascript]
+    paths:
+      include:
+        - "/packages/*/src/**"
+    patterns:
+      - pattern-either:
+          - pattern: $EL.innerHTML = $X
+          - pattern: $EL.outerHTML = $X
+          - pattern: $EL.insertAdjacentHTML(...)
+          - pattern: document.write(...)
+          - pattern: "{..., innerHTML: $X, ...}"
+          - pattern: <$TAG dangerouslySetInnerHTML={$X} />
+      - pattern-not: $EL.innerHTML = renderNurbling(...)
+      - pattern-not: "{..., innerHTML: renderNurbling(...), ...}"
+
+  - id: nurblings-url-sink
+    message: >-
+      Nurblings never navigates or loads a URL, so a value flowing into one is
+      out of place.
+    severity: ERROR
+    languages: [typescript, javascript]
+    paths:
+      include:
+        - "/packages/*/src/**"
+    pattern-either:
+      - pattern: window.location = $X
+      - pattern: location.href = $X
+      - pattern: location.assign(...)
+      - pattern: $EL.src = $X
+      - pattern: $EL.href = $X
