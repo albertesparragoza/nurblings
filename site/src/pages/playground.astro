@@ -239,13 +239,11 @@ const frameworks = [
   // a plain JSX string attribute only when nothing in it needs escaping
   const jsxProp = (k: string, v: unknown) =>
     typeof v === 'string' && /^[^"&<>{}\\]*$/.test(v) ? `${k}="${v}"` : `${k}={${js(v)}}`
-  // the same palette and palette-coloured backdrop the preview uses
-  const setupFor = (t: NonNullable<ReturnType<typeof themed>>, from = 'nurblings') =>
-    `import { createNurblings } from '${from}'\n\n// Theme presets are planned; until then, pass the palette yourself.\nconst colours = ${js(t.colors)}\nconst avatars = createNurblings({\n  shells: ${js(t.shells)},\n  accents: ${js(t.accents)},\n  // paint the backdrop in a palette colour, as on this site\n  slots: {\n    backdrop: (ctx, base) => {\n      const pool = colours.filter((c) => c !== ctx.traits.palette.shell.toLowerCase())\n      return base().replace(/fill="#[0-9a-f]{6}"/i, \`fill="\${pool[ctx.traits.silhouette.grain % pool.length]}"\`)\n    },\n  },\n})\n`
   const props = (): [string, unknown][] => {
     const a = animate()
     return [
       ['seed', state.seed],
+      ...(state.theme !== 'default' ? [['theme', state.theme] as [string, unknown]] : []),
       ['size', state.size],
       ...(state.background !== 'none' ? [['background', state.background] as [string, unknown]] : []),
       ...(state.frame !== 'auto' ? [['frame', state.frame] as [string, unknown]] : []),
@@ -255,22 +253,17 @@ const frameworks = [
   }
   const code = () => {
     const t = themed()
-    const pastel = t?.kind === 'pastel'
     const list = props()
-    const setup = pastel && t ? setupFor(t) : ''
-    const note = t?.kind === 'bold' ? `${t.label} is a preview of a planned bold mode: this code renders the default family.` : ''
     const jsx = list.map(([k, v]) => jsxProp(k, v))
-    if (pastel) jsx.push('nurblings={avatars}')
-    $('fw-note').textContent = note || (pastel ? `Theme: ${t?.label}` : 'Default family')
+    $('fw-note').textContent = t && t.kind !== 'default' ? `Theme: ${t.label}` : 'Original colours'
     switch (fw) {
       case 'react':
-        return `import { Nurbling } from '@nurblings/react'\n${setup}\n<Nurbling ${jsx.join(' ')} />`
+        return `import { Nurbling } from '@nurblings/react'\n\n<Nurbling ${jsx.join(' ')} />`
       case 'astro':
-        return `---\nimport { Nurbling } from '@nurblings/astro'\n${setup}---\n\n<Nurbling ${jsx.join(' ')} />`
+        return `---\nimport { Nurbling } from '@nurblings/astro'\n---\n\n<Nurbling ${jsx.join(' ')} />`
       case 'vue': {
         const attrs = list.map(([k, v]) => (typeof v === 'string' ? `${k}="${attr(v)}"` : `:${k}="${attr(js(v))}"`))
-        if (pastel) attrs.push(':nurblings="avatars"')
-        return `<script setup>\nimport { Nurbling } from '@nurblings/vue'\n${setup}<\/script>\n\n<template>\n  <Nurbling ${attrs.join(' ')} />\n</template>`
+        return `<script setup>\nimport { Nurbling } from '@nurblings/vue'\n<\/script>\n\n<template>\n  <Nurbling ${attrs.join(' ')} />\n</template>`
       }
       case 'html': {
         const a = animate()
@@ -282,13 +275,14 @@ const frameworks = [
         const element = `<nurbling-avatar ${attrs.join(' ')}></nurbling-avatar>`
         const speed = state.speed === 1 ? '' : '\n<!-- speed has no attribute: use the JavaScript tab to set it -->'
         const define = 'https://cdn.jsdelivr.net/npm/@nurblings/element/dist/define.js/+esm'
-        if (!pastel || !t) return `<script type="module" src="${define}"><\/script>\n\n${element}${speed}`
-        const body = setupFor(t, 'https://cdn.jsdelivr.net/npm/nurblings/+esm').trimEnd().replaceAll('\n', '\n  ')
-        return `<script type="module">\n  import '${define}'\n  ${body}\n  for (const el of document.querySelectorAll('nurbling-avatar')) el.nurblings = avatars\n<\/script>\n\n${element}${speed}`
+        return `<script type="module" src="${define}"><\/script>\n\n${element}${speed}`
       }
       default: {
-        const opts = Object.fromEntries(list.filter(([k]) => k !== 'seed'))
-        return `import { nurbling } from 'nurblings'\n${setup}\n${pastel ? 'avatars.nurbling' : 'nurbling'}(${js(state.seed)}, ${js(opts)})`
+        const opts = Object.fromEntries(list.filter(([k]) => k !== 'seed' && k !== 'theme'))
+        if (t && t.kind !== 'default') {
+          return `import { themed } from 'nurblings/themes'\n\nthemed(${js(t.id)}).nurbling(${js(state.seed)}, ${js(opts)})`
+        }
+        return `import { nurbling } from 'nurblings'\n\nnurbling(${js(state.seed)}, ${js(opts)})`
       }
     }
   }

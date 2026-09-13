@@ -71,28 +71,100 @@ app.use(NurblingsPlugin(avatars))
 
 ## Themes
 
-Named theme presets are planned for the library. Until they ship, a theme is a
-palette you hand to `createNurblings`. This is the Lagoon pop theme from the
-website:
+Ten themes ship in `nurblings/themes`. Pass one by name to any component, or
+hand it to `createNurblings`:
 
-```ts
-export const lagoon = createNurblings({
-  shells: { cream: '#edecb3', sun: '#fad928', tang: '#ffd392', aqua: '#a2e6e1' },
-  accents: { deep: '#00686c', ember: '#d1495b', ink: '#1f4e79' },
-})
+```tsx
+<Nurbling seed={user.id} theme="lagoon" />
 ```
 
-To paint the backdrop in a strong palette colour, as the website does, replace
-the `backdrop` slot and swap its fill:
+```ts
+import { createNurblings } from 'nurblings'
+import { lagoon } from 'nurblings/themes'
+
+export const avatars = createNurblings({ theme: lagoon })
+```
+
+| Theme | Feel |
+| --- | --- |
+| `lagoon`, `punch`, `candy`, `picnic`, `sorbet`, `terracotta` | Soft bodies on a strong container colour |
+| `marble`, `riso`, `lime`, `bauhaus` | Vivid bodies with one dark ink for every mark |
+
+Importing a theme by name keeps only that one in your bundle. The `theme="..."`
+prop on the components looks names up in `THEMES`, which adds about 1 KB.
+
+### Your own colours
+
+`palette()` turns 2 to 5 colours into a theme, in any order. The lightest
+become bodies, the darkest the brows and antennae, and the rest the containers.
 
 ```ts
-const colours = ['#00686c', '#32c2b9', '#fad928', '#ff9915']
+import { palette } from 'nurblings/themes'
+
+const brand = palette(['#264653', '#e9c46a', '#f4a261'])
+createNurblings({ theme: brand })
+```
+
+| Colours | Bodies | Brows and antennae | Containers |
+| --- | --- | --- | --- |
+| 2 | 1 | 1 | a tint of the body |
+| 3 | 1 | 1 | 1 |
+| 4 | 2 | 1 | 1 |
+| 5 | 2 | 2 | 1 |
+
+Two colours give a two-tone family. Themes are repaired, never refused: brows
+and antennae are darkened or lightened until they read on every body, and eyes
+turn light on a dark body.
+
+For full control, write the theme object yourself:
+
+```ts
+const night = {
+  name: 'night',
+  shells: { moon: '#e8e4f7', dusk: '#b9b3e6' },
+  accents: { ink: '#2b2350' },
+  backdrops: ['#2b2350', '#6a5acd'],   // containers on light pages
+  darkBackdrops: ['#15122b'],          // containers on dark pages
+} satisfies Theme
+```
+
+## Light and dark pages
+
+`mode` tells an avatar what page it sits on. The creature never changes; its
+container colour does, and so do the antennae where they would disappear into it.
+
+```tsx
+<Nurbling seed={user.id} background="circle" mode="dark" />
+<Nurbling seed={user.id} background="circle" mode="auto" />
+```
+
+`auto` needs no JavaScript. It follows the OS setting, and a `data-theme="dark"`
+or `.dark` class on any ancestor. A `data-theme="light"` or `.light` ancestor
+keeps it light.
+
+## Colour helpers for slots
+
+Most slot code is no longer needed once a theme exists. When a slot still
+recolours, `nurblings/themes` has the pieces:
+
+```ts
+import { contrast, ensureContrast, pickBy, readableOn, recolour, setFill, shade } from 'nurblings/themes'
 
 createNurblings({
-  // ...shells and accents as above
+  theme: brand,
   slots: {
-    backdrop: (ctx, base) =>
-      base().replace(/fill="#[0-9a-f]{6}"/i, `fill="${colours[ctx.traits.silhouette.grain % colours.length]}"`),
+    backdrop: (ctx, base) => setFill(base(), pickBy(['#264653', '#2a9d8f'], ctx.traits.silhouette.grain)),
+    brow: (ctx, base) => recolour(base(), ctx.traits.palette.accent, '#1b1b1b'),
   },
 })
 ```
+
+| Helper | Does |
+| --- | --- |
+| `contrast(a, b)` | The WCAG contrast ratio of two colours |
+| `ensureContrast(fg, bg, min)` | `fg`, moved until it reads on `bg` at `min`:1 |
+| `readableOn(ground, candidates, min?)` | The first candidate that reads on `ground` |
+| `shade(hex, k)` | Toward white for `k > 0`, toward black for `k < 0` |
+| `pickBy(list, n)` | One item per whole number, such as the seed's grain |
+| `recolour(markup, from, to)` | Swaps one colour in a slot's markup |
+| `setFill(markup, fill)` | Sets the first fill, such as the container's |

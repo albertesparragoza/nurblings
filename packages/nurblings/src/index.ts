@@ -7,6 +7,7 @@ export type {
   Nurblings,
   NurblingsConfig,
   SilhouetteShape,
+  Theme,
 } from './nurbling'
 export { contrast, createNurblings, nurbling, toDataUri, traits } from './nurbling'
 export { isFlagshipSeed } from './protect'
@@ -24,6 +25,7 @@ export type {
   Eyes,
   Frame,
   Generation,
+  Mode,
   Mood,
   Motion,
   Mouth,

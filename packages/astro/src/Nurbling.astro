@@ -1,16 +1,22 @@
 ---
-import { type NurblingOptions, type NurblingRenderer, nurbling } from 'nurblings'
+import type { NurblingOptions, NurblingRenderer, ShellName } from 'nurblings'
+import { renderNurbling, type Theme, type ThemeName } from 'nurblings/themes'
 
-export interface Props extends NurblingOptions {
+export interface Props extends Omit<NurblingOptions, 'shell'> {
   seed: string
+  /** a body colour by name; with a theme, one of that theme's names */
+  shell?: ShellName | (string & {})
   class?: string
   style?: string
+  /** a built-in theme by name, such as `"lagoon"`, or any theme object */
+  theme?: ThemeName | Theme
   /** render with an app-wide configuration from `createNurblings` */
   nurblings?: NurblingRenderer
 }
 
-const { seed, class: className, style, nurblings = { nurbling }, ...opts } = Astro.props
+const { seed, class: className, style, nurblings, theme, ...opts } = Astro.props
 const wrapperStyle = `display:inline-block;line-height:0${style ? `;${style}` : ''}`
+const svg = renderNurbling(nurblings, seed, opts, theme)
 ---
 
-<span class:list={[className]} style={wrapperStyle} set:html={nurblings.nurbling(seed, opts)} />
+<span class:list={[className]} style={wrapperStyle} set:html={svg} />

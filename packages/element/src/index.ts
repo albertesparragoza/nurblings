@@ -4,11 +4,13 @@
 // it like any other avatar.
 
 import { type NurblingOptions, type NurblingRenderer, nurbling } from 'nurblings'
+import { renderNurbling, type ThemeName } from 'nurblings/themes'
 
 const TEXT = [
   'background',
   'title',
   'frame',
+  'mode',
   'mood',
   'mouth',
   'extra',
@@ -25,12 +27,14 @@ const REFLECTED = [
   'seed',
   'background',
   'frame',
+  'mode',
   'mood',
   'mouth',
   'extra',
   'silhouette',
   'shell',
   'transition',
+  'theme',
   ...NUMBER,
 ] as const
 type Reflected = (typeof REFLECTED)[number]
@@ -58,9 +62,9 @@ export interface NurblingElement extends Record<Reflected, string | null> {}
 
 // biome-ignore lint/suspicious/noUnsafeDeclarationMerging: the interface types the reflected accessors defined on the prototype below
 export class NurblingElement extends Base {
-  static observedAttributes = ['seed', 'animate', ...TEXT, ...NUMBER]
+  static observedAttributes = ['seed', 'animate', 'theme', ...TEXT, ...NUMBER]
 
-  #renderer: NurblingRenderer = { nurbling }
+  #renderer: NurblingRenderer | undefined
 
   constructor() {
     super()
@@ -77,11 +81,11 @@ export class NurblingElement extends Base {
 
   /** A `createNurblings` instance to render with; the built-in family by default. */
   get nurblings(): NurblingRenderer {
-    return this.#renderer
+    return this.#renderer ?? { nurbling }
   }
 
   set nurblings(value: NurblingRenderer | undefined) {
-    this.#renderer = value ?? { nurbling }
+    this.#renderer = value
     this.#render()
   }
 
@@ -119,7 +123,8 @@ export class NurblingElement extends Base {
     }
     const animate = parseAnimate(this.getAttribute('animate'))
     if (animate !== undefined) opts.animate = animate
-    this.innerHTML = this.#renderer.nurbling(seed, opts)
+    const theme = (this.getAttribute('theme') || undefined) as ThemeName | undefined
+    this.innerHTML = renderNurbling(this.#renderer, seed, opts, theme)
   }
 }
 

@@ -78,10 +78,16 @@ export interface Palette {
   accent: string
   eye: string
   catchlight: string
-  /** extra fabric colour (scarf, hat, collar) */
+  /** extra fabric colour (scarf, badge, hat, collar) */
   wear: string
+  /** container colour on light pages */
   background: string
+  /** container colour on dark pages */
+  backgroundDark: string
 }
+
+/** The page an avatar sits on. `auto` follows the OS setting, or a `data-theme="dark"` or `.dark` ancestor, with CSS only. */
+export type Mode = 'light' | 'dark' | 'auto'
 
 export interface Traits {
   gen: Generation
@@ -118,6 +124,7 @@ export interface NurblingRenderer {
     opts?: Omit<import('./nurbling').NurblingOptions, 'silhouette' | 'shell'> & {
       silhouette?: string
       shell?: string
+      theme?: import('./nurbling').Theme
     },
   ): string
 }
@@ -149,6 +156,12 @@ export interface RenderOptions {
   animate?: boolean | Motion
   /** framing inside the square; defaults to `auto` */
   frame?: Frame
+  /**
+   * The page it sits on: `light` (default), `dark`, or `auto`. The creature stays
+   * the same; the container colour changes, and the antennae where they would
+   * vanish into it.
+   */
+  mode?: Mode
   /**
    * A key for `morph` from `nurblings/transition`: when the same key appears
    * in two places, the avatar moves between them instead of jumping.

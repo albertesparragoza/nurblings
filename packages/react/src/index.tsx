@@ -1,15 +1,19 @@
-import { type NurblingOptions, type NurblingRenderer, nurbling } from 'nurblings'
+import type { NurblingOptions, NurblingRenderer, ShellName } from 'nurblings'
+import { renderNurbling, type Theme, type ThemeName } from 'nurblings/themes'
 import type { CSSProperties } from 'react'
 
 export type NurblingProps = {
   seed: string
   className?: string
   style?: CSSProperties
+  /** a built-in theme by name, such as `"lagoon"`, or any theme object */
+  theme?: ThemeName | Theme
   /** render with an app-wide configuration from `createNurblings` */
   nurblings?: NurblingRenderer
-} & NurblingOptions
-
-const defaults: NurblingRenderer = { nurbling }
+} & Omit<NurblingOptions, 'shell'> & {
+    /** a body colour by name; with a theme, one of that theme's names */
+    shell?: ShellName | (string & {})
+  }
 
 /**
  * A deterministic avatar rendered as inline SVG. A valid React Server
@@ -17,8 +21,8 @@ const defaults: NurblingRenderer = { nurbling }
  * The same seed always renders the same markup on the server and the client.
  */
 export function Nurbling(props: NurblingProps) {
-  const { seed, className, style, nurblings = defaults, ...options } = props
-  const svg = nurblings.nurbling(seed, options)
+  const { seed, className, style, nurblings, theme, ...options } = props
+  const svg = renderNurbling(nurblings, seed, options, theme)
   return (
     <span
       className={className}

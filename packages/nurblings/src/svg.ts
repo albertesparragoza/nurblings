@@ -8,17 +8,21 @@
 // - no ids: several avatars on one page must not collide, so nothing here
 //   uses clipPath, mask, gradients or url(#...) references.
 
+import { contrast, ensureContrast, shade } from './colour'
 import { NURBI_BELLY, NURBI_PROFILE } from './profile'
 import type {
   Antennae,
   Background,
   Eyes,
   Frame,
+  Mode,
   PlateZone,
   RenderOptions,
   Silhouette,
   Traits,
 } from './types'
+
+export { shade }
 
 const CX = 50
 const BASE_Y = 93
@@ -45,18 +49,6 @@ export function cosDeg(deg: number): number {
 }
 
 type Pt = readonly [number, number]
-
-/** A hex colour moved toward black (k < 0) or white (k > 0), integer channels only. */
-export function shade(hex: string, k: number): string {
-  const v = Number.parseInt(hex.slice(1), 16)
-  const target = k < 0 ? 0 : 255
-  const f = Math.min(1, Math.abs(k))
-  const ch = (c: number) =>
-    Math.round(c + (target - c) * f)
-      .toString(16)
-      .padStart(2, '0')
-  return `#${ch(v >> 16)}${ch((v >> 8) & 255)}${ch(v & 255)}`
-}
 
 /** Resolution of the smooth outline, matching the measured profile. */
 const STEPS = 32
@@ -321,14 +313,14 @@ function stems(g: BodyGeometry, a: Antennae): Stem[] {
   return [one(-1, false), one(1, false)]
 }
 
-function antennaSvg(g: BodyGeometry, a: Antennae, s: Stem, accent: string): string {
+function antennaSvg(g: BodyGeometry, a: Antennae, s: Stem, accent: string, cls: string): string {
   const side = a.tip * g.bw
   const stem =
     a.bend === 0
       ? `<path d="M${pt(s.root)}L${pt(s.tip)}"/>`
       : `<path d="M${pt(s.root)}Q${pt(s.mid)} ${pt(s.tip)}"/>`
   const square = `<rect x="${n(s.tip[0] - side / 2)}" y="${n(s.tip[1] - side / 2)}" width="${n(side)}" height="${n(side)}" transform="rotate(${n(s.side * s.lean)} ${pt(s.tip)})" fill="${accent}"/>`
-  return `<g class="nb-a${s.side < 0 ? 'l' : 'r'}" stroke="${accent}" stroke-width="${n(0.034 * g.bw)}" fill="none">${stem}${square}</g>`
+  return `<g class="nb-a${s.side < 0 ? 'l' : 'r'}${cls}" stroke="${accent}" stroke-width="${n(0.034 * g.bw)}" fill="none">${stem}${square}</g>`
 }
 
 const OPEN: Record<Traits['mood'], number> = {
@@ -480,15 +472,16 @@ function frameBox(g: BodyGeometry, t: Traits, frame: 'full' | 'portrait'): Box {
   return { x: (minX + maxX) / 2 - s / 2, y: (minY + maxY) / 2 - s / 2, s }
 }
 
-export function backdrop(kind: Background, fill: string, box: Box): string {
+export function backdrop(kind: Background, fill: string, box: Box, cls = ''): string {
   const { x, y, s } = box
+  const paint = `${cls} fill="${fill}"`
   switch (kind) {
     case 'circle':
-      return `<circle cx="${n(x + s / 2)}" cy="${n(y + s / 2)}" r="${n(s / 2)}" fill="${fill}"/>`
+      return `<circle cx="${n(x + s / 2)}" cy="${n(y + s / 2)}" r="${n(s / 2)}"${paint}/>`
     case 'square':
-      return `<rect x="${n(x)}" y="${n(y)}" width="${n(s)}" height="${n(s)}" fill="${fill}"/>`
+      return `<rect x="${n(x)}" y="${n(y)}" width="${n(s)}" height="${n(s)}"${paint}/>`
     case 'squircle':
-      return `<rect x="${n(x)}" y="${n(y)}" width="${n(s)}" height="${n(s)}" rx="${n(s * 0.3)}" fill="${fill}"/>`
+      return `<rect x="${n(x)}" y="${n(y)}" width="${n(s)}" height="${n(s)}" rx="${n(s * 0.3)}"${paint}/>`
     default:
       return ''
   }
@@ -508,6 +501,18 @@ export const MOTION =
   '<style>@media (prefers-reduced-motion:no-preference){.nb-f,.nb-e,.nb-al,.nb-ar{transform-box:fill-box;transform-origin:50% 100%}.nb-e{transform-origin:50% 50%}.nb-mb .nb-f{animation:nb-b var(--nb-b) ease-in-out var(--nb-o) infinite}.nb-ma .nb-al{animation:nb-l var(--nb-l) ease-in-out var(--nb-o) infinite}.nb-ma .nb-ar{animation:nb-r var(--nb-r) ease-in-out var(--nb-o) infinite}.nb-mk .nb-e{animation:nb-k var(--nb-k) linear var(--nb-o) infinite}.nb-mh:hover .nb-al{animation:nb-l .9s ease-in-out infinite}.nb-mh:hover .nb-ar{animation:nb-r .9s ease-in-out infinite}@keyframes nb-b{50%{transform:scale(.98,1.03)}}@keyframes nb-l{50%{transform:rotate(-4deg)}}@keyframes nb-r{50%{transform:rotate(4deg)}}@keyframes nb-k{0%,95%,100%{transform:none}97.5%{transform:scaleY(.1)}}}</style>'
 
 const LAYERS = { mb: 'breath', mk: 'blink', ma: 'antennae', mh: 'hover' } as const
+
+// `mode: 'auto'`: light colours are attributes, dark ones custom properties on
+// the root, swapped by the OS setting unless a page marks itself light, or by a
+// `data-theme="dark"` or `.dark` ancestor unless a light marker sits closer.
+// Identical text in every avatar.
+const AUTO_DARK = '.nb-auto:not([data-theme=light] *,.light *)'
+const AUTO_RULES = (at: string) =>
+  `${at} .nb-g{fill:var(--nb-g)}${at} .nb-c{stroke:var(--nb-c)}${at} .nb-c rect{fill:var(--nb-c)}`
+export const AUTO = `<style>@media (prefers-color-scheme:dark){${AUTO_RULES(AUTO_DARK)}}${AUTO_RULES(':is([data-theme=dark],.dark) .nb-auto:not(:is([data-theme=dark],.dark) :is([data-theme=light],.light) *)')}</style>`
+
+/** Page grounds an antenna stands on when there is no container. */
+const PAGE = { light: '#f7f5f2', dark: '#16161a' }
 
 /** The root attribute `morph` looks for; nothing when no key is set. */
 export const tagFor = (opts: RenderOptions) =>
@@ -587,6 +592,8 @@ export interface SlotContext {
   readonly size: number
   /** true at 32 px and below, where the built-in mouth and extras are dropped */
   readonly small: boolean
+  /** the page appearance this avatar is drawn for */
+  readonly mode: Mode
 }
 
 /**
@@ -616,11 +623,27 @@ export function render(t: Traits, opts: RenderOptions = {}, slots: Slots = {}): 
   const box = frameBox(g, t, resolveFrame(opts.frame, size))
   const face = eyes(g, t, small)
   const title = esc(opts.title ?? 'Nurbling')
+  const mode = opts.mode ?? 'light'
+  if (mode !== 'light' && mode !== 'dark' && mode !== 'auto') {
+    throw new RangeError(`nurblings: unknown mode ${String(mode)}`)
+  }
+  const kind = opts.background ?? 'none'
+  const p = t.palette
+  // antenna tips stand on the container, or on the page: keep them readable there
+  const antenna = (dark: boolean) => {
+    const ground =
+      kind === 'none' ? PAGE[dark ? 'dark' : 'light'] : dark ? p.backgroundDark : p.background
+    return contrast(p.accent, ground) >= 2 ? p.accent : ensureContrast(p.accent, ground, 2)
+  }
+  const dark = mode === 'dark'
+  const auto = mode === 'auto'
+  const tip = antenna(dark)
   const built: Record<SlotName, () => string> = {
-    backdrop: () => backdrop(opts.background ?? 'none', t.palette.background, box),
+    backdrop: () =>
+      backdrop(kind, dark ? p.backgroundDark : p.background, box, auto ? ' class="nb-g"' : ''),
     antennae: () =>
       stems(g, t.antennae)
-        .map((s) => antennaSvg(g, t.antennae, s, t.palette.accent))
+        .map((s) => antennaSvg(g, t.antennae, s, tip, auto ? ' nb-c' : ''))
         .join(''),
     body: () => `<path d="${outlinePath(g)}" fill="${t.palette.shell}"/>`,
     plates: () => plates(g, t.silhouette, t.palette.shell, small),
@@ -629,7 +652,7 @@ export function render(t: Traits, opts: RenderOptions = {}, slots: Slots = {}): 
     brow: () => brow(g, t, face.top, face.outer, small),
     mouth: () => (small ? '' : mouth(t, face.y, g)),
   }
-  const ctx: SlotContext = { traits: t, geometry: g, size, small }
+  const ctx: SlotContext = { traits: t, geometry: g, size, small, mode }
   const live = motion(t.silhouette.grain, t.mood === 'sleepy', opts.animate, small)
   const [backdropSvg, ...figure] = SLOTS.map((name) => {
     const slot = slots[name]
@@ -639,7 +662,8 @@ export function render(t: Traits, opts: RenderOptions = {}, slots: Slots = {}): 
   })
   const drawn = live ? `<g class="nb-f">${figure.join('')}</g>` : figure.join('')
   const vb = `${n(box.x)} ${n(box.y)} ${n(box.s)} ${n(box.s)}`
-  const style = [live?.style, clipFor(opts.background)].filter(Boolean).join(';')
-  const root = `class="nb${live?.cls ?? ''}"${style ? ` style="${style}"` : ''}${tagFor(opts)}`
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${n(size)}" height="${n(size)}" role="img" aria-label="${title}" ${root}>${live ? MOTION : ''}<title>${title}</title>${backdropSvg}${drawn}</svg>`
+  const vars = auto ? `--nb-g:${p.backgroundDark};--nb-c:${antenna(true)}` : ''
+  const style = [live?.style, vars, clipFor(opts.background)].filter(Boolean).join(';')
+  const root = `class="nb${live?.cls ?? ''}${auto ? ' nb-auto' : ''}"${style ? ` style="${style}"` : ''}${tagFor(opts)}`
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${n(size)}" height="${n(size)}" role="img" aria-label="${title}" ${root}>${live ? MOTION : ''}${auto ? AUTO : ''}<title>${title}</title>${backdropSvg}${drawn}</svg>`
 }
