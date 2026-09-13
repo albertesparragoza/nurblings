@@ -47,7 +47,7 @@ markup on the server and the client.
 | `frame` | `'auto' \| 'full' \| 'portrait'` | `'auto'` | Portrait crops closer on the face for small round avatars; full shows the whole figure. Auto picks portrait at 48 px and below. |
 | `gen` | `1` | `1` | Trait generation; pins the ruleset an avatar is drawn from. |
 | `mood` | `'neutral' \| 'curious' \| 'pleased' \| 'thinking' \| 'sleepy'` | (from seed) | Locks the mood trait. |
-| `mouth` | `'none' \| 'dot' \| 'line' \| 'smile'` | (from seed) | Locks the mouth trait. |
+| `mouth` | `'none' \| 'line' \| 'smile'` | (from seed) | Locks the mouth trait. |
 | `extra` | `'none' \| 'scarf' \| 'hat' \| 'collar'` | (from seed) | Locks the extra trait. |
 | `silhouette` | `'classic' \| 'basketball' \| 'squat' \| 'firm' \| 'round' \| 'bell' \| 'wide' \| 'smooth' \| 'pear' \| 'tall'` | (from seed) | Locks the body design; each seed still varies it slightly. |
 | `shell` | `'mint' \| 'sky' \| 'butter' \| 'peach' \| 'lilac' \| 'sage' \| 'cloud' \| 'blush' \| 'lemon'` | (from seed) | Locks the shell colour trait. |

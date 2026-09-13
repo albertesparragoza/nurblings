@@ -138,9 +138,9 @@ container colour does, and so do the antennae where they would disappear into it
 <Nurbling seed={user.id} background="circle" mode="auto" />
 ```
 
-`auto` needs no JavaScript. It follows the OS setting, and a `data-theme="dark"`
-or `.dark` class on any ancestor. A `data-theme="light"` or `.light` ancestor
-keeps it light.
+`auto` needs no JavaScript. The nearest `data-theme="dark"` or `.dark` ancestor
+turns it dark, the nearest `data-theme="light"` or `.light` one keeps it light,
+at any depth, and with neither the OS setting decides.
 
 ## Colour helpers for slots
 
