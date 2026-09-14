@@ -18,10 +18,19 @@ function repoLinks() {
   return () => visit
 }
 
+// Each doc opens with a `# title` for GitHub; Starlight prints the title
+// itself, so the site drops the heading from the body.
+function dropTitle() {
+  return () => (tree) => {
+    const i = tree.children.findIndex((node) => node.type === 'heading' && node.depth === 1)
+    if (i !== -1) tree.children.splice(i, 1)
+  }
+}
+
 export default defineConfig({
   // ponytail: no `site` until the domain is chosen; add it then for canonical URLs and the sitemap.
   redirects: { '/docs': '/docs/getting-started/', '/brand': '/nurbi/' },
-  markdown: { remarkPlugins: [repoLinks()] },
+  markdown: { remarkPlugins: [repoLinks(), dropTitle()] },
   integrations: [
     starlight({
       title: 'Nurblings',

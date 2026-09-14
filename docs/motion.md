@@ -1,7 +1,4 @@
----
-title: Motion and transitions
-description: Every Nurbling is alive by default. Tune or turn off its motion, and move avatars smoothly between places with morph().
----
+# Motion and transitions
 
 Every Nurbling breathes, blinks and sways its antennae. The motion is CSS
 inside the SVG: no script and no ids, so it works in server components, in an
