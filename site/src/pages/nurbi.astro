@@ -17,7 +17,7 @@ const chapters = [
     title: 'The first to wake',
     body: [
       'The handles did the only thing handles know. They bent. A body curled into being beneath them, soft below and armoured above, and two dark eyes opened on the empty page.',
-      'He had no name, and did not know he needed one. We call him Nurbi.',
+      'He had no name, and did not know he needed one. The white page whispered one anyway: Nurbi.',
     ],
   },
   {
@@ -82,7 +82,10 @@ const chapters = [
           <span class="sr-only">Chapter VI. </span>
           Speak a name
         </h2>
-        <p class="tale">He is listening.</p>
+        <p class="tale">
+          Every shape that no name holds drifts back into the white. Speak a name, and one of his kin keeps its
+          shape for good.
+        </p>
         <form class="name-form" id="name-form">
           <label for="nurbi-name">A name</label>
           <div class="name-field">
@@ -91,8 +94,9 @@ const chapters = [
           </div>
         </form>
         <p class="result-line" id="result-line" aria-live="polite"></p>
+        <p class="tale">Help them stay: give every account in your app a Nurbling of its own.</p>
         <div class="actions">
-          <a class="btn" href="/docs/getting-started/">Get started</a>
+          <a class="btn" href="/docs/getting-started/">Adopt your Nurblings</a>
           <a class="btn btn-ghost" href="/playground/">Open the playground</a>
         </div>
       </section>
@@ -108,30 +112,6 @@ const chapters = [
   import { reducedMotion } from '../lib/client'
 
   const stage = document.getElementById('nurbi-stage') as HTMLElement
-  const NS = 'http://www.w3.org/2000/svg'
-
-  // I. a few curves, drawn at random on every visit, each with its two handles
-  const scribbles = stage.querySelector('.scribbles')
-  const [vx, vy, vs] = (stage.dataset.viewbox ?? '0 0 640 640').split(' ').map(Number) as [number, number, number]
-  const at = (from: number, to: number) => from + Math.random() * (to - from)
-  const point = () => [at(vx + vs * 0.12, vx + vs * 0.88), at(vy + vs * 0.12, vy + vs * 0.88)] as const
-  const make = (tag: string, attrs: Record<string, string | number>, i: number) => {
-    const el = document.createElementNS(NS, tag)
-    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v))
-    el.setAttribute('style', `--i:${i}`)
-    scribbles?.append(el)
-  }
-  for (let i = 0; i < 3; i++) {
-    const [p0, c1, c2, p3] = [point(), point(), point(), point()]
-    make('path', { class: 'curve', d: `M${p0}C${c1} ${c2} ${p3}`, pathLength: 1 }, i)
-    for (const [from, to] of [
-      [p0, c1],
-      [p3, c2],
-    ] as const) {
-      make('path', { class: 'arm', d: `M${from}L${to}`, pathLength: 1 }, i)
-      make('rect', { x: to[0] - 9, y: to[1] - 9, width: 18, height: 18 }, i)
-    }
-  }
 
   // III. while he wonders, one shape at a time
   const shapes = [...stage.querySelectorAll<HTMLElement>('.flicker span')]
