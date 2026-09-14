@@ -1,27 +1,21 @@
 version: 2
 updates:
-  # the library: packages, examples and the root toolchain
+  # One entry for the whole pnpm workspace: pnpm cannot update a workspace
+  # from a subdirectory, so the site cannot have an entry of its own. Its
+  # packages still come as one pull request, apart from the library's.
   - package-ecosystem: npm
-    directories: [/, /packages/*, /examples/*]
+    directory: /
     target-branch: develop
     schedule:
       interval: weekly
     groups:
+      # first match wins: only packages nothing outside site/ uses
+      site:
+        patterns: ['@astrojs/starlight', '@astrojs/markdown-remark', '@fontsource-variable/*']
       dev-dependencies:
         dependency-type: development
       dependencies:
         dependency-type: production
-  # the website: one monthly pull request of its own
-  - package-ecosystem: npm
-    directory: /site
-    target-branch: develop
-    schedule:
-      interval: monthly
-    commit-message:
-      prefix: chore(site)
-    groups:
-      site:
-        patterns: ['*']
   - package-ecosystem: github-actions
     directory: /
     target-branch: develop
