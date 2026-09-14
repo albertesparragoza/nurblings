@@ -1,7 +1,4 @@
----
-title: Customising
-description: Bring your brand palette, add or drop body designs, and replace any drawn part with createNurblings.
----
+# Customising
 
 `createNurblings(config)` makes an instance with your palette, body designs,
 drawn parts and defaults. Configure it once and use it everywhere:
