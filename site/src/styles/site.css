@@ -383,8 +383,11 @@ main :is(p, li) a:not([class]):hover {
   transition: transform 0.3s var(--spring);
 }
 
-.chip:hover {
-  transform: scale(1.12);
+/* only where there is a pointer to hover: on a phone a tap would leave it grown */
+@media (hover: hover) {
+  .chip:hover {
+    transform: scale(1.12);
+  }
 }
 
 .chip[aria-pressed="true"] {
