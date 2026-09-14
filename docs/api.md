@@ -111,7 +111,7 @@ part positions and slot names are checked, at setup. See
 | --- | --- |
 | `theme` | A colour set for every avatar |
 | `shells`, `accents` | Body and mark colours, replacing the built-in ones |
-| `silhouettes` | Body designs; spread `SILHOUETTES` to extend the built-in set |
+| `silhouettes`, `eyes`, `mouths`, `extras` | Lists the seed picks from. New names are added to the built-in ones, `false` drops one, and `weight` sets how often each comes up. New eyes, mouths and extras draw themselves with `draw(ctx)` |
 | `slots` | Replace, wrap or drop any part by name, built in or added |
 | `parts` | New parts, each `{ after?, small?, draw(ctx) }` |
 | `props` | Data every slot and part reads as `ctx.props`; a call's `props` win |

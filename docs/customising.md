@@ -9,15 +9,13 @@ drawn parts and defaults. Configure it once and use it everywhere:
 ```ts
 import { createNurblings, SILHOUETTES } from 'nurblings'
 
-const { pear, ...designs } = SILHOUETTES
-
 export const avatars = createNurblings({
   // brand colours replace the built-in palette
   shells: { mist: '#e4ebf2', sand: '#f1e4cf' },
   accents: { ink: '#2c5fd9', coral: '#c94f38', forest: '#2e7d4f' },
-  // spread the built-in designs to extend them; leave names out to drop them
+  // designs are added to the built-in ones; false drops one
   silhouettes: {
-    ...designs,
+    pear: false,
     robot: { hw: 1.1, width: 0.9, belly: 0.3, tip: 0.9, rows: 4, cols: 2, plates: 'side', weight: 2 },
   },
   slots: {
@@ -145,7 +143,7 @@ const pin = {
   slots: {
     extra: ({ anchors: a, small, n }) => {
       if (small) return ''
-      const x = a.chest.x + (a.band(0.2).right - a.chest.x) * 0.4
+      const x = a.chest.x + (a.band(0.2).right - a.chest.x) * 0.25
       const y = a.band(0.2).y
       return `<path d="M${n(x)} ${n(y + 2.6)}l-3-3a1.8 1.8 0 0 1 3-2.4
         a1.8 1.8 0 0 1 3 2.4z" fill="#e63972"/>`
@@ -206,6 +204,51 @@ avatars.nurbling(user.id, { props: { status: user.online ? 'online' : 'away' } }
 A slot for a name that is no part, or a part placed after one that does not
 exist, throws a `RangeError` at setup. Antennae and brows can be slotted too,
 but they carry the family look, so wrap them rather than replace them.
+
+### Collections: new eyes, mouths and extras
+
+The seed picks each avatar's eye shape, mouth and extra from a list. `eyes`,
+`mouths` and `extras` add to those lists, the same way `silhouettes` adds body
+designs, so a season's accessories are one preset:
+
+- A new name joins the list and draws itself with `draw(ctx)`. `weight` sets
+  how often it comes up: 1 by default, where each built-in extra weighs 1 and
+  `none` 6.
+- `false` drops a built-in choice. Drop them all to wear only your own.
+- A built-in name with `draw` gets a new look; with `weight`, a new share.
+- New mouths and extras step aside at 32 px and below; eyes always show.
+- Only that trait changes. Every other trait of a seed stays as it was.
+
+```ts
+const winter = {
+  extras: {
+    beanie: {
+      draw: ({ anchors: a, colours, n }) => {
+        const rows = [0.62, 0.68, 0.74, 0.8, 0.85].map((f) => a.band(f))
+        const right = rows.map((r) => `${n(r.right)},${n(r.y)}`)
+        const left = rows.map((r) => `${n(r.left)},${n(r.y)}`).reverse()
+        return `<path d="M${[...right, ...left].join('L')}Z" fill="${colours.wear}"/>`
+      },
+    },
+    bowtie: {
+      weight: 2,
+      draw: ({ anchors: { chest: c }, colours, n }) =>
+        `<path d="M${n(c.x)},${n(c.y)}l-5,-3v6zM${n(c.x)},${n(c.y)}l5,-3v6z"
+          fill="${colours.accent}"/>`,
+    },
+  },
+}
+
+// add them to the extras
+createNurblings({ use: [winter] })
+// or wear only the new season
+createNurblings({ use: [winter], extras: { none: false, scarf: false, hat: false, collar: false } })
+
+avatars.nurbling(user.id, { extra: 'beanie' }) // new names can be pinned, and are typed
+```
+
+Body designs follow the same rule: `silhouettes: { robot: {...}, pear: false }`
+adds one and drops another.
 
 ## Use it everywhere
 

@@ -123,6 +123,9 @@ they combine. Place markup on `ctx.anchors` (eyes, brow, mouth, chest, crown,
 `band(f)`) and colour it with `ctx.paint(role)` or `ctx.colours`, never with
 fixed coordinates or the raw palette, so it fits every body, theme and
 `mode`. Per-call data goes in `props`; put any text from it through `ctx.esc`.
+New eyes, mouths or extras (a season's accessories) go in `eyes`, `mouths` or
+`extras`: each new name with a `draw(ctx)` joins the list the seed picks from,
+and `false` drops a built-in one. Body designs in `silhouettes` work the same.
 
 ## Light and dark pages
 
