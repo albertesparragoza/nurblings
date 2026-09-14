@@ -94,7 +94,9 @@ describe('createNurblings', () => {
     expect(nb.nurbling('ada', { size: 64 })).toContain('width="64"')
   })
 
-  it('leaves Nurbi to the default renderer', () => {
-    expect(createNurblings({}).nurbling('albertesparragoza')).not.toContain('#efe9df')
+  it('draws the stored Nurbi like the default renderer, whatever the config', () => {
+    expect(createNurblings({}).nurbling('nurbi')).toBe(nurbling('nurbi'))
+    const branded = createNurblings({ ...BRAND, defaults: { size: 40 } })
+    expect(branded.nurbling('nurbi')).toBe(nurbling('nurbi', { size: 40 }))
   })
 })

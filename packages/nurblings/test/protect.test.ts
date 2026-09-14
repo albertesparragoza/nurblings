@@ -2,19 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { isFlagshipSeed, renderFlagship } from '../src/protect'
 
 describe('flagship', () => {
-  it.each([
-    'albertesparragoza',
-    'Albert Esparragoza',
-    'albert.esparragoza',
-    'NURBI',
-    'Nurbi',
-    'albert-labs',
-    'Albert Labs',
-  ])('%j resolves to Nurbi', (seed) => {
+  it.each(['nurbi', 'NURBI', 'Nurbi', 'n.u.r.b.i', ' Nurbi '])('%j resolves to Nurbi', (seed) => {
     expect(isFlagshipSeed(seed)).toBe(true)
   })
 
-  it.each(['albert', 'esparragoza', 'nurbling', 'nurbi2', 'labs'])('%j does not', (seed) => {
+  it.each(['nurbling', 'nurbi2', 'nurb', 'nurbis'])('%j does not', (seed) => {
     expect(isFlagshipSeed(seed)).toBe(false)
   })
 

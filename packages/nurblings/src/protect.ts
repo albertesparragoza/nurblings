@@ -1,5 +1,5 @@
-// Flagship protection: a short list of reserved seeds renders the stored
-// drawing of Nurbi. Nothing else ever does, and the generator never produces it.
+// Flagship protection: the reserved seed `nurbi` renders the stored drawing of
+// Nurbi. Nothing else ever does, and the generator never produces it.
 
 import { FLAGSHIP_BODY } from './flagship'
 import { normaliseSeed } from './seed'
@@ -18,7 +18,7 @@ import {
 import type { Frame, RenderOptions } from './types'
 
 /** Normalised seeds that resolve to Nurbi. */
-export const FLAGSHIP_SEEDS: readonly string[] = ['albertesparragoza', 'nurbi', 'albertlabs']
+export const FLAGSHIP_SEEDS: readonly string[] = ['nurbi']
 
 const FLAGSHIP_BACKGROUND = '#15151a'
 

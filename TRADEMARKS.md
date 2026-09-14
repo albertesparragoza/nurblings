@@ -8,7 +8,12 @@ Albert Esparragoza:
 
 - the names **Nurbi** and **Nurblings**, used as the name of
   a product, character, library or service
-- the flagship character Nurbi and its artwork
+- the flagship character Nurbi and its artwork, which the library returns for
+  the seed `nurbi`
+
+Every other avatar the library generates is public domain under CC0. The
+generator never produces Nurbi's look, so no generated avatar can infringe
+it.
 
 What is fine without asking:
 

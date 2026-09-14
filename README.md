@@ -171,8 +171,8 @@ far a deterministic avatar can go.
 ## License
 
 - Code: [MIT](LICENSE).
-- Generated avatars: public domain under
+- Generated avatars: every one is public domain under
   [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Use them
   anywhere, no attribution needed.
-- The names Nurbi and Nurblings and the flagship artwork are reserved; see
-  [TRADEMARKS.md](TRADEMARKS.md).
+- Reserved: the names Nurbi and Nurblings, and Nurbi's artwork, which the seed
+  `nurbi` returns; see [TRADEMARKS.md](TRADEMARKS.md).
