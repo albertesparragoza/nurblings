@@ -4,8 +4,7 @@
 
 import { contrast, ensureContrast, shade } from './colour'
 import type { NurblingRenderer } from './index'
-import { createNurblings, type Hex, type NurblingOptions, nurbling, type Theme } from './nurbling'
-import { isFlagshipSeed } from './protect'
+import { type Hex, type NurblingOptions, nurbling, type Theme, themedNurbling } from './nurbling'
 
 export type { Hex, Theme }
 export { contrast, ensureContrast, shade }
@@ -173,11 +172,10 @@ export function themed(theme: ThemeName | Theme): NurblingRenderer {
   const t = themeOf(theme)
   const cached = instances.get(t)
   if (cached) return cached
-  const family: NurblingRenderer = createNurblings({ theme: t })
-  // Nurbi stays Nurbi: a theme recolours the family, never the flagship
+  // colours only, over the built-in designs: no createNurblings, so the
+  // extension and validation code stays out of every component's bundle
   const instance: NurblingRenderer = {
-    nurbling: (seed, opts) =>
-      isFlagshipSeed(seed) ? nurbling(seed, opts as NurblingOptions) : family.nurbling(seed, opts),
+    nurbling: (seed, opts) => themedNurbling(seed, (opts ?? {}) as NurblingOptions, t),
   }
   instances.set(t, instance)
   return instance
