@@ -332,17 +332,6 @@ main :is(p, li) a:not([class]):hover {
   max-width: 100%;
 }
 
-.picker-name {
-  font-size: 13px;
-  font-weight: 700;
-  /* a fixed width, so the pill keeps its size whatever the theme is called */
-  width: 14ch;
-  padding: 0 6px 0 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* stacked: one group per row, for narrow panels */
 .picker-rows {
   display: grid;
@@ -371,14 +360,16 @@ main :is(p, li) a:not([class]):hover {
   gap: 4px;
 }
 
-.picker > span {
+/* wide screens lay the chips straight into the pill */
+.picker-scroll {
+  display: contents;
+}
+
+.picker-scroll > span {
   font-size: 12px;
   font-weight: 600;
   color: var(--muted);
   padding: 0 6px 0 10px;
-}
-
-.picker > span:not(:first-child) {
   border-left: 1px solid var(--line);
   margin-left: 6px;
 }
@@ -392,8 +383,11 @@ main :is(p, li) a:not([class]):hover {
   transition: transform 0.3s var(--spring);
 }
 
-.chip:hover {
-  transform: scale(1.12);
+/* only where there is a pointer to hover: on a phone a tap would leave it grown */
+@media (hover: hover) {
+  .chip:hover {
+    transform: scale(1.12);
+  }
 }
 
 .chip[aria-pressed="true"] {

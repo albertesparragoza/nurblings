@@ -203,9 +203,15 @@ const traits = [
   }
 
   @media (max-width: 900px) {
+    /* minmax(0, …) lets the one column shrink below its content, such as Nurbi's figure */
     .brandp .brand-hero,
     .brandp .rules {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .brandp figure .av svg {
+      width: min(280px, 100%);
+      height: auto;
     }
   }
 

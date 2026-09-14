@@ -49,6 +49,17 @@ export function applyTheme(id: string) {
   for (const chip of document.querySelectorAll<HTMLElement>('[data-theme-chip]')) {
     chip.setAttribute('aria-pressed', String(chip.dataset.themeChip === next))
   }
+  // phones: bring the chosen chip to the middle of the scrolling bar, clear of its fading edge
+  const bar = document.querySelector<HTMLElement>('.picker-row .picker-scroll')
+  const chosen = bar?.querySelector<HTMLElement>('[aria-pressed="true"]')
+  if (bar && chosen && bar.scrollWidth > bar.clientWidth) {
+    const b = bar.getBoundingClientRect()
+    const c = chosen.getBoundingClientRect()
+    bar.scrollBy({
+      left: c.left + c.width / 2 - (b.left + b.width / 2),
+      behavior: reducedMotion() ? 'auto' : 'smooth',
+    })
+  }
   for (const name of document.querySelectorAll('[data-theme-name]'))
     name.textContent = theme().label
   paint()
@@ -105,6 +116,25 @@ export function boot() {
 
   for (const el of document.querySelectorAll<HTMLElement>('[data-origin]')) {
     el.textContent = (el.textContent ?? '').replaceAll('{origin}', location.origin)
+  }
+
+  // the scrolling theme bar on phones: tell the CSS which sides have more chips
+  const bar = document.querySelector<HTMLElement>('.picker-row .picker-scroll')
+  if (bar) {
+    const edges = () => {
+      const end = bar.scrollWidth - bar.clientWidth
+      bar.dataset.at =
+        end <= 1
+          ? 'all'
+          : bar.scrollLeft <= 1
+            ? 'start'
+            : bar.scrollLeft >= end - 1
+              ? 'end'
+              : 'middle'
+    }
+    bar.addEventListener('scroll', edges, { passive: true })
+    addEventListener('resize', edges)
+    edges()
   }
 
   const header = document.querySelector('.site-header')
