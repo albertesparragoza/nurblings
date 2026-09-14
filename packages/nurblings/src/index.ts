@@ -9,6 +9,8 @@ export type {
   Slot,
   SlotContext,
   Slots,
+  Variant,
+  Variants,
 } from './extend'
 export { compose } from './extend'
 export type { AccentName, ShellName, SilhouetteName } from './gen1'

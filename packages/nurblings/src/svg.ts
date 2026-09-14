@@ -344,7 +344,8 @@ function eyes(g: BodyGeometry, t: Traits): Face {
   const e = t.eyes
   const y = g.top + e.depth * g.height
   const rx = (e.size * g.bw) / 2
-  const ry = rx * RATIO[e.shape]
+  // a shape a config adds has the proportions of a round eye
+  const ry = rx * ((RATIO as Record<string, number>)[e.shape] ?? 1)
   const open = OPEN[t.mood] ?? 1
   const oy = ry * open
   const cy = y + (ry - oy)

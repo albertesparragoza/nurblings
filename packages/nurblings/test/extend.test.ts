@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { compose, type SlotContext } from '../src/extend'
+import { SILHOUETTES as SILHOUETTES_FOR_TEST } from '../src/gen1'
 import {
   createNurblings,
   type NurblingsConfig,
@@ -230,6 +231,112 @@ describe('what every part reads', () => {
     }).nurbling('ada', { props: { name: hostile } })
     expect(svg).not.toContain('<script>')
     expect(svg).toContain('&lt;script&gt;')
+  })
+})
+
+describe('collections: eyes, mouths and extras', () => {
+  const MANY = Array.from({ length: 300 }, (_, i) => `user-${i}`)
+  const winter = {
+    extras: {
+      beanie: { draw: () => '<circle class="beanie"/>' },
+      bowtie: { weight: 2, draw: () => '<circle class="bowtie"/>' },
+    },
+  } satisfies NurblingsConfig
+
+  it('changes nothing when a list is given but nothing in it changes', () => {
+    const nb = createNurblings({ extras: {}, mouths: {}, silhouettes: {} })
+    for (const seed of SEEDS) expect(nb.nurbling(seed)).toBe(nurbling(seed))
+  })
+
+  it('adds new choices to the built-in ones, and the seed picks among them all', () => {
+    const nb = createNurblings({ ...still, use: [winter] })
+    const worn = new Set(MANY.map((seed) => nb.traits(seed).extra))
+    for (const name of ['none', 'scarf', 'hat', 'collar', 'beanie', 'bowtie']) {
+      expect(worn).toContain(name)
+    }
+    const seed = MANY.find((s) => nb.traits(s).extra === 'bowtie') as string
+    expect(nb.nurbling(seed)).toContain('<circle class="bowtie"/>')
+    // every other trait is drawn exactly as before
+    const { extra: _a, ...rest } = nb.traits(seed)
+    const { extra: _b, ...plain } = traits(seed)
+    expect(rest).toEqual(plain)
+  })
+
+  it('drops originals with false, and pins any name the instance has', () => {
+    const nb = createNurblings({
+      use: [winter],
+      extras: { hat: false, scarf: false, collar: false },
+    })
+    for (const seed of MANY) expect(['none', 'beanie', 'bowtie']).toContain(nb.traits(seed).extra)
+    expect(nb.traits('ada', { extra: 'beanie' }).extra).toBe('beanie')
+    // @ts-expect-error hat was dropped, so it is no longer a valid name
+    expect(() => nb.traits('ada', { extra: 'hat' })).toThrow(RangeError)
+  })
+
+  it('reweighs a built-in choice, or gives it a new look', () => {
+    const bare = createNurblings({ extras: { none: { weight: 0 } } })
+    for (const seed of MANY) expect(bare.traits(seed).extra).not.toBe('none')
+    const hats = createNurblings({ extras: { hat: { draw: () => '<circle class="my-hat"/>' } } })
+    expect(hats.nurbling('ada', { extra: 'hat' })).toContain('<circle class="my-hat"/>')
+    expect(hats.nurbling('ada', { extra: 'scarf' })).not.toContain('my-hat')
+  })
+
+  it('adds eye shapes and mouths, drawn on the same anchors', () => {
+    const nb = createNurblings({
+      eyes: {
+        star: {
+          weight: 20,
+          draw: ({ anchors, n }) =>
+            anchors.eyes
+              .map((e) => `<circle class="star" cx="${n(e.x)}" cy="${n(e.y)}"/>`)
+              .join(''),
+        },
+      },
+      mouths: { grin: { weight: 50, draw: () => '<circle class="grin"/>' } },
+    })
+    const seed = MANY.find((s) => nb.traits(s).eyes.shape === 'star') as string
+    const svg = nb.nurbling(seed, { animate: false })
+    expect(svg.match(/class="star"/g)).toHaveLength(2)
+    expect(svg).not.toContain('<ellipse')
+    expect(MANY.filter((s) => nb.traits(s).mouth === 'grin').length).toBeGreaterThan(200)
+  })
+
+  it('keeps new mouths and extras off small avatars, but never the eyes', () => {
+    const nb = createNurblings({
+      use: [winter],
+      eyes: { dot: { weight: 1000, draw: () => '<circle class="dot"/>' } },
+    })
+    const svg = nb.nurbling('ada', { extra: 'bowtie', size: 32 })
+    expect(svg).not.toContain('bowtie')
+    expect(svg).toContain('class="dot"')
+  })
+
+  it('refuses a new name without a draw, or a list left with nothing to pick', () => {
+    expect(() => createNurblings({ extras: { beanie: {} } })).toThrow(/beanie/)
+    expect(() => createNurblings({ mouths: { none: false, line: false, smile: false } })).toThrow(
+      /weight/,
+    )
+  })
+
+  it('combine across presets: one adds, a later one drops or brings back', () => {
+    const nb = createNurblings({ use: [winter, { extras: { beanie: false } }] })
+    const worn = new Set(MANY.map((seed) => nb.traits(seed).extra))
+    expect(worn).not.toContain('beanie')
+    expect(worn).toContain('bowtie')
+    const back = createNurblings(compose({ extras: { hat: false } }, { extras: { hat: {} } }))
+    expect(back.traits('ada', { extra: 'hat' }).extra).toBe('hat')
+  })
+
+  it('adds, replaces and drops body designs the same way', () => {
+    const { classic } = SILHOUETTES_FOR_TEST
+    const nb = createNurblings({
+      silhouettes: { pear: false, robot: { ...classic, plates: 'side' } },
+    })
+    const shapes = new Set(MANY.map((seed) => nb.traits(seed).silhouette.plates))
+    expect(shapes).toContain('side')
+    // @ts-expect-error pear was dropped
+    expect(() => nb.traits('ada', { silhouette: 'pear' })).toThrow(RangeError)
+    expect(nb.traits('ada', { silhouette: 'tall' }).silhouette.hw).toBeGreaterThan(1)
   })
 })
 

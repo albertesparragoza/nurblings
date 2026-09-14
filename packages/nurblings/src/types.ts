@@ -50,8 +50,11 @@ export interface Antennae {
 export type EyeShape = 'round' | 'tall' | 'wide' | 'almond'
 export type Catchlight = 'none' | 'dot' | 'pair' | 'asymmetric'
 
+/** A built-in name, or one a `createNurblings` config adds to that list. */
+export type Named<T extends string> = T | (string & Record<never, never>)
+
 export interface Eyes {
-  shape: EyeShape
+  shape: Named<EyeShape>
   /** eye width in body widths */
   size: number
   /** centre-to-centre distance in body widths (fixed face zone: 0.34..0.44) */
@@ -96,8 +99,8 @@ export interface Traits {
   antennae: Antennae
   eyes: Eyes
   brow: Brow
-  mouth: Mouth
-  extra: Extra
+  mouth: Named<Mouth>
+  extra: Named<Extra>
   mood: Mood
   palette: Palette
 }

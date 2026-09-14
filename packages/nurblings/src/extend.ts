@@ -1,9 +1,10 @@
 // Extensions for createNurblings. Every drawn part, built in or added by a
 // config, is one named layer in paint order, and every extension is a config:
 // presets combine with `use` or `compose`, slots chain so a later one wraps
-// what an earlier one drew, and added parts can be slotted like built-in ones.
-// Only createNurblings and renderTraits pull this in; the plain nurbling()
-// never carries it.
+// what an earlier one drew, added parts can be slotted like built-in ones, and
+// new eyes, mouths and extras join the lists the seed picks from. Only
+// createNurblings and renderTraits pull this in; the plain nurbling() never
+// carries it.
 
 import type { NurblingOptions, NurblingsConfig, Theme } from './nurbling'
 import { type Rng, stream } from './seed'
@@ -72,9 +73,14 @@ export interface Anchors {
 export type ColourRole = 'shell' | 'eye' | 'accent' | 'mark' | 'wear' | 'ground'
 
 /** A call's options, after the config's defaults. The title stays with the renderer. */
-export type CallOptions = Omit<NurblingOptions, 'silhouette' | 'shell' | 'title'> & {
+export type CallOptions = Omit<
+  NurblingOptions,
+  'silhouette' | 'shell' | 'title' | 'mouth' | 'extra'
+> & {
   silhouette?: string
   shell?: string
+  mouth?: string
+  extra?: string
   theme?: Theme
   props?: Props
 }
@@ -128,6 +134,21 @@ export interface Part {
   draw(ctx: SlotContext): string
 }
 
+/**
+ * One choice in a list the seed picks from: an eye shape, a mouth or an extra.
+ * A new name needs `draw`; a built-in one can take a new `weight`, a new look
+ * through `draw`, or both. New mouths and extras step aside at 32 px, as the
+ * built-in ones do.
+ */
+export interface Variant {
+  /** how often the seed picks it, relative to the rest of the list; defaults to 1 */
+  weight?: number
+  draw?: (ctx: SlotContext) => string
+}
+
+/** Choices merged over a built-in list: new names are added, `false` drops one. */
+export type Variants = Readonly<Record<string, Variant | false>>
+
 /** A later slot wraps an earlier one: its `base()` is what the earlier one drew. */
 const chain = (prev: Slot | undefined, next: Slot): Slot =>
   next === false || prev === undefined
@@ -136,9 +157,10 @@ const chain = (prev: Slot | undefined, next: Slot): Slot =>
 
 /**
  * Configs combined into one, in order. Slots chain, each later one wrapping
- * the earlier; parts, designs, colours and props merge by name, later names
- * winning; the theme is the last one given; defaults merge. A config's own
- * `use` presets come before it.
+ * the earlier; parts, body designs, eyes, mouths, extras, colours and props
+ * merge by name, later names winning (a later `false` drops, a later choice
+ * brings back); the theme is the last one given; defaults merge. A config's
+ * own `use` presets come before it.
  */
 export function compose(...configs: readonly NurblingsConfig[]): NurblingsConfig {
   const flat: NurblingsConfig[] = []
@@ -154,6 +176,9 @@ export function compose(...configs: readonly NurblingsConfig[]): NurblingsConfig
     if (c.shells) out.shells = { ...out.shells, ...c.shells }
     if (c.accents) out.accents = { ...out.accents, ...c.accents }
     if (c.silhouettes) out.silhouettes = { ...out.silhouettes, ...c.silhouettes }
+    if (c.eyes) out.eyes = { ...out.eyes, ...c.eyes }
+    if (c.mouths) out.mouths = { ...out.mouths, ...c.mouths }
+    if (c.extras) out.extras = { ...out.extras, ...c.extras }
     if (c.parts) out.parts = { ...out.parts, ...c.parts }
     if (c.props) out.props = { ...out.props, ...c.props }
     if (c.defaults) out.defaults = { ...out.defaults, ...c.defaults }
@@ -257,16 +282,33 @@ function context(s: Scene, config: NurblingsConfig, used: Set<string>): SlotCont
   }
 }
 
+/** The choice a trait resolved to, when the config gives it a look of its own. */
+function lookOf(name: string, t: Traits, config: NurblingsConfig): Variant['draw'] {
+  const choice =
+    name === 'eyes'
+      ? config.eyes?.[t.eyes.shape]
+      : name === 'mouth'
+        ? config.mouths?.[t.mouth]
+        : name === 'extra'
+          ? config.extras?.[t.extra]
+          : undefined
+  return choice ? choice.draw : undefined
+}
+
+const drawsAny = (list: Variants | undefined) =>
+  Object.values(list ?? {}).some((choice) => choice !== false && choice.draw !== undefined)
+
 /**
- * The extension for a composed config: its slots and parts, drawn in paint
- * order with one shared context. Nothing when the config changes no part, so
- * such an instance draws exactly what `nurbling()` does. Unknown slot names and
- * part positions throw here, at setup.
+ * The extension for a composed config: its slots, parts and choice looks,
+ * drawn in paint order with one shared context. Nothing when the config draws
+ * nothing of its own, so such an instance draws exactly what `nurbling()` does.
+ * Unknown slot names and part positions throw here, at setup.
  */
 export function extension(config: NurblingsConfig): Extension | undefined {
   const slots: Slots = config.slots ?? {}
   const parts = config.parts ?? {}
-  if (!Object.keys(slots).length && !Object.keys(parts).length) return
+  const looks = drawsAny(config.eyes) || drawsAny(config.mouths) || drawsAny(config.extras)
+  if (!Object.keys(slots).length && !Object.keys(parts).length && !looks) return
   const order = paintOrder(parts)
   for (const name of Object.keys(slots)) {
     if (!order.includes(name)) throw new RangeError(`nurblings: no part named ${name} to slot into`)
@@ -277,8 +319,11 @@ export function extension(config: NurblingsConfig): Extension | undefined {
     const ctx = context(scene, config, used)
     const draw = (name: string) => {
       const part = parts[name]
-      if (!part) return scene.built[name as SlotName]()
-      return scene.small && !part.small ? '' : part.draw(ctx)
+      if (part) return scene.small && !part.small ? '' : part.draw(ctx)
+      const look = lookOf(name, scene.traits, config)
+      // eyes always show; a mouth or extra of your own steps aside when small, like the built-in ones
+      if (look) return scene.small && name !== 'eyes' ? '' : look(ctx)
+      return scene.built[name as SlotName]()
     }
     const layers = order.map((name) => {
       const slot = slots[name]
