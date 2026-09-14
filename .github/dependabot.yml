@@ -1,15 +1,32 @@
 version: 2
 updates:
+  # the library: packages, examples and the root toolchain
   - package-ecosystem: npm
-    directory: /
+    directories: [/, /packages/*, /examples/*]
     target-branch: develop
     schedule:
       interval: weekly
     groups:
       dev-dependencies:
         dependency-type: development
+      dependencies:
+        dependency-type: production
+  # the website: one monthly pull request of its own
+  - package-ecosystem: npm
+    directory: /site
+    target-branch: develop
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore(site)
+    groups:
+      site:
+        patterns: ['*']
   - package-ecosystem: github-actions
     directory: /
     target-branch: develop
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
