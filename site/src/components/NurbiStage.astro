@@ -255,8 +255,10 @@ const family = [
       opacity 0s linear calc(0.1s + var(--i) * 0.08s);
   }
 
+  /* as specific as chapter I's dimming rule, and later, so everything that is not him fades */
   .nurbi-stage.at-2 .chaos,
-  .nurbi-stage.at-2 .ghosts {
+  .nurbi-stage.at-2 .ghosts.early,
+  .nurbi-stage.at-2 .ghosts.late {
     animation: nurbi-fade-out 0.8s var(--ease) 2.4s both;
   }
 
