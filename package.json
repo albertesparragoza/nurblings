@@ -18,7 +18,8 @@
     "attw": "pnpm -r --filter \"./packages/*\" --filter \"!@nurblings/astro\" exec attw --pack . --profile esm-only",
     "size": "size-limit",
     "sheet": "tsup scripts/container-sheet.ts --format esm --out-dir wip/.sheet --silent && node wip/.sheet/container-sheet.js",
-    "changeset": "changeset"
+    "changeset": "changeset",
+    "knip": "knip"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
@@ -26,6 +27,7 @@
     "@changesets/cli": "^3.0.2",
     "@size-limit/preset-small-lib": "^13.0.3",
     "@vitest/coverage-v8": "^5.0.0",
+    "knip": "6.35.1",
     "publint": "^0.3.24",
     "size-limit": "^13.0.3",
     "tsup": "^8.5.1",
