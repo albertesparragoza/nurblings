@@ -65,7 +65,8 @@ const chapters = [
         chapters.map((chapter, i) => (
           <section class="beat" data-step={i + 1}>
             <h2 class="mark">
-              <span>{chapter.mark}</span>
+              <span class="numeral" aria-hidden="true">{chapter.mark}</span>
+              <span class="sr-only">Chapter {chapter.mark}. </span>
               {chapter.title}
             </h2>
             {chapter.body.map((line) => (
@@ -77,7 +78,8 @@ const chapters = [
       }
       <section class="beat final" data-step="6">
         <h2 class="mark">
-          <span>VI</span>
+          <span class="numeral" aria-hidden="true">VI</span>
+          <span class="sr-only">Chapter VI. </span>
           Speak a name
         </h2>
         <p class="tale">He is listening.</p>
@@ -251,7 +253,7 @@ const chapters = [
     color: var(--ink);
   }
 
-  .story .mark span {
+  .story .mark .numeral {
     display: inline-grid;
     place-items: center;
     min-width: 2.1em;
