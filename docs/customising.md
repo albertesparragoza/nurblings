@@ -43,8 +43,8 @@ avatars.traits('user-42', { silhouette: 'robot' }) // custom names are typed
 - **Custom body designs** need finite numbers, a positive `hw` and `width`, a
   known `plates` zone, and at most 12 plate rows and 12 columns. Setup throws a
   `RangeError` naming the design and the field otherwise.
-- The same config and seed always render the same avatar. Only the default
-  `nurbling()` draws Nurbi for its reserved seeds.
+- The same config and seed always render the same avatar. No seed draws
+  Nurbi: he is `nurbi()` from `nurblings/nurbi`.
 
 ## Extending parts
 

@@ -30,6 +30,7 @@ paths.
 | `pnpm typecheck` | Type-checks every package |
 | `pnpm build` | Builds every package |
 | `pnpm size` | Checks every package against its size budget |
+| `pnpm knip` | Finds unused files, exports and dependencies (CI runs it too) |
 | `pnpm sheet` | Renders the trait sheet to `wip/trait-sheet.html` |
 
 ## Layout
