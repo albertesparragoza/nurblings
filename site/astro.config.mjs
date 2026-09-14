@@ -31,12 +31,12 @@ export default defineConfig({
       social: [{ icon: 'github', label: 'GitHub', href: REPO }],
       editLink: { baseUrl: `${REPO}/edit/develop/` },
       // preloads the site fonts on docs pages too, so text never blinks in
-      // the header, theme switch and footer are the marketing pages' own
+      // the header and theme switch are the marketing pages' own; the docs end
+      // at Starlight's own footer (edit link, previous and next page)
       components: {
         Head: './src/components/DocsHead.astro',
         Header: './src/components/DocsHeader.astro',
         ThemeSelect: './src/components/ModeToggle.astro',
-        PageFrame: './src/components/DocsPageFrame.astro',
       },
       customCss: [
         './src/styles/fonts.css',
