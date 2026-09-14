@@ -344,17 +344,23 @@ function resolve(seed: string, opts: Pins, tables: Tables): Traits {
   return t
 }
 
-// built once per theme object, however many avatars use it
+// A theme over the built-in designs and faces: only the colours change. Built
+// once per theme object, however many avatars use it, and never through
+// buildTables, so a themed avatar carries no design validation.
 const themed = new WeakMap<Theme, Tables>()
-function themeTables(theme: Theme, base: NurblingsConfig = {}): Tables {
-  const { silhouettes, eyes, mouths, extras } = base
-  const plain = !silhouettes && !eyes && !mouths && !extras
-  let tables = plain ? themed.get(theme) : undefined
+function plainThemeTables(theme: Theme): Tables {
+  let tables = themed.get(theme)
   if (!tables) {
-    tables = buildTables({ silhouettes, eyes, mouths, extras, theme } as NurblingsConfig)
-    if (plain) themed.set(theme, tables)
+    tables = { ...DEFAULT_TABLES, shells: shellTable({ theme }), themed: true }
+    themed.set(theme, tables)
   }
   return tables
+}
+
+function themeTables(theme: Theme, base: NurblingsConfig = {}): Tables {
+  const { silhouettes, eyes, mouths, extras } = base
+  if (!silhouettes && !eyes && !mouths && !extras) return plainThemeTables(theme)
+  return buildTables({ silhouettes, eyes, mouths, extras, theme } as NurblingsConfig)
 }
 
 /** The traits a seed resolves to, before rendering. */
@@ -366,6 +372,21 @@ export function traits(seed: string, opts: NurblingOptions = {}): Traits {
 export function nurbling(seed: string, opts: NurblingOptions = {}): string {
   if (isFlagshipSeed(seed)) return renderFlagship(opts)
   return render(traits(seed, opts), opts)
+}
+
+/**
+ * `nurbling()` in a theme: the built-in designs and faces in the theme's
+ * colours. What `themed()` and the framework components draw with, so a
+ * themed avatar never pulls in the extension or validation code.
+ */
+export function themedNurbling(
+  seed: string,
+  opts: NurblingOptions & { theme?: Theme },
+  theme: Theme,
+): string {
+  // Nurbi stays Nurbi: a theme recolours the family, never the flagship
+  if (isFlagshipSeed(seed)) return renderFlagship(opts)
+  return render(resolve(seed, opts, plainThemeTables(opts.theme ?? theme)), opts)
 }
 
 /**
@@ -485,11 +506,23 @@ function buildTables(config: NurblingsConfig): Tables {
         }
       : {}),
   }
-  const theme = config.theme
-  if (!config.shells && !config.accents && !theme) {
+  if (!config.shells && !config.accents && !config.theme) {
     return { ...DEFAULT_TABLES, silhouettes, weights, ...lists }
   }
+  return {
+    shells: shellTable(config),
+    silhouettes,
+    weights,
+    ...lists,
+    themed: Boolean(config.theme),
+  }
+}
 
+/** A config's colours as shells, each paired by contrast as buildTables describes. */
+function shellTable(
+  config: Pick<NurblingsConfig, 'shells' | 'accents' | 'theme'>,
+): Record<string, ShellEntry> {
+  const theme = config.theme
   const all = hexes(config.accents ?? theme?.accents ?? ACCENTS)
   const accents = theme
     ? all
@@ -542,7 +575,7 @@ function buildTables(config: NurblingsConfig): Tables {
       darkBackdrops: pool(theme?.darkBackdrops, shell, night(shell)),
     }
   }
-  return { shells: table, silhouettes, weights, ...lists, themed: Boolean(theme) }
+  return table
 }
 
 /**
