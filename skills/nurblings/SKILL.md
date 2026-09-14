@@ -150,7 +150,8 @@ container colour does, so pair `mode` with `background`.
 ## Check your work
 
 - The avatar renders on the server (view source shows the `<svg>`).
-- Every avatar has a meaningful `title`.
+- Every avatar has a meaningful `title`, or `decorative` when the name is
+  written right beside it.
 - A list with 50+ avatars uses a reduced motion setting or `animate={false}`.
 - Tests: same seed and options always produce the same string, so snapshot
   tests are stable.
