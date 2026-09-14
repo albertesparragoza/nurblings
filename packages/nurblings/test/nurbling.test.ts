@@ -201,8 +201,8 @@ describe('protected region', () => {
 })
 
 describe('nurbling', () => {
-  it('returns the stored Nurbi for reserved seeds', () => {
-    for (const seed of ['albertesparragoza', 'Nurbi', 'Albert Labs']) {
+  it('returns the stored Nurbi for the reserved seed', () => {
+    for (const seed of ['nurbi', 'Nurbi', 'NURBI']) {
       const svg = nurbling(seed)
       expect(svg).toContain('#efe9df')
       expect(svg).toContain('aria-label="Nurbi"')

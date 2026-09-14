@@ -18,7 +18,7 @@ async function digest(svg: string): Promise<string> {
 describe('generation 1 golden fixtures', () => {
   it('covers a spread of seeds at two sizes, the reserved seed included', () => {
     expect(Object.keys(GEN1_GOLDEN).length).toBeGreaterThanOrEqual(82)
-    expect(GEN1_GOLDEN[JSON.stringify(['albertesparragoza', 128])]).toBeDefined()
+    expect(GEN1_GOLDEN[JSON.stringify(['nurbi', 128])]).toBeDefined()
   })
 
   it.each(Object.entries(GEN1_GOLDEN))('%s renders exactly as recorded', async (key, expected) => {

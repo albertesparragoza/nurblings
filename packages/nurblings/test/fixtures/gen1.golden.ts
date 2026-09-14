@@ -84,6 +84,6 @@ export const GEN1_GOLDEN: Record<string, string> = {
   '["undefined",128]': 'e3bbb6fc914d57c8',
   '["Σίσυφος",24]': '59631b94123dba5c',
   '["Σίσυφος",128]': '6c391f6f2a400d4d',
-  '["albertesparragoza",24]': 'a1c5e43cc44fd1e7',
-  '["albertesparragoza",128]': '5215f3582c7a303d',
+  '["nurbi",24]': 'a1c5e43cc44fd1e7',
+  '["nurbi",128]': '5215f3582c7a303d',
 }
