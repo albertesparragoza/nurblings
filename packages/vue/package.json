@@ -9,7 +9,7 @@
     "url": "git+https://github.com/albertesparragoza/nurblings.git",
     "directory": "packages/vue"
   },
-  "homepage": "https://github.com/albertesparragoza/nurblings#readme",
+  "homepage": "https://nurblings.com",
   "bugs": "https://github.com/albertesparragoza/nurblings/issues",
   "keywords": [
     "avatar",
