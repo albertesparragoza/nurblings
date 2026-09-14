@@ -1,14 +1,18 @@
 ---
 // Nurbi's story: the drawing beside the text. Its layers change as the reader
 // moves through the story; the page sets `at-N` (reached chapter N) and
-// `now-N` (on chapter N) on the stage. Nurbi's parts come from the library's
-// own drawing of him, split so each can arrive on its own: one curve whose two
-// handles sit exactly where his antennae will be, then a construction sketch
-// of him, then his traced outline, then his body and face.
+// `now-N` (on chapter N) on the stage.
+//
+// I and II are one restless drawing. Random strokes (added by the page, new
+// on every visit) cover the blank page, and among them are strokes that lie
+// exactly on Nurbi: his antennae, loose passes around his outline, the long
+// edges of his crown. The ones that are him stay and firm up; the rest fade,
+// and he is left behind. His parts come from the library's own drawing of him.
 import { nurbling } from 'nurblings'
 
 const match = (text: string, pattern: RegExp) => text.match(pattern) as RegExpMatchArray
 const f = (v: number) => Math.round(v * 100) / 100
+type Pt = readonly [number, number]
 
 const drawing = nurbling('nurbi', { animate: false, frame: 'full', size: 400 })
 const viewBox = match(drawing, /viewBox="([^"]+)"/)[1]
@@ -22,15 +26,20 @@ const place = match(bodyGroup as string, /^<g transform="([^"]*)">/)[1]
 const outline = match(bodyGroup as string, /<path d="([^"]+)"/)[1] as string
 const body = (bodyGroup as string).replace(/^<g[^>]*>/, '').replace(/<\/g>$/, '')
 
-// The construction sketch, in his own drawing units, measured from the outline.
-// Straight lines run along each plate edge of the crown and well past it; long
-// curves stand for the soft body; guides mark the centre and each plate band.
-type Pt = readonly [number, number]
-const pts: Pt[] = [...outline.matchAll(/([\d.]+),([\d.]+)/g)].map((m) => [
-  Number(m[1]),
-  Number(m[2]),
-])
-// the crown: the point before the first straight run, then every point of it
+/** A stroke along a to b that overshoots both ends, the way a quick hand draws. */
+const past = ([ax, ay]: Pt, [bx, by]: Pt, k: number) =>
+  `M${f(ax - (bx - ax) * k)},${f(ay - (by - ay) * k)}L${f(bx + (bx - ax) * k)},${f(by + (by - ay) * k)}`
+
+// his antennae: root to tip, from the stored drawing
+const antennae = [
+  ...(handles as string).matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)"/g),
+].map((m) => {
+  const [x1, y1, x2, y2] = m.slice(1).map(Number) as [number, number, number, number]
+  return { root: [x1, y1] as Pt, tip: [x2, y2] as Pt }
+})
+const knob = 20
+
+// the crown's flat edges: the point before the first straight run, then every point of it
 const run = match(outline, /([\d.]+),([\d.]+)((?:L[\d.]+,[\d.]+)+)/)
 const crown: Pt[] = [
   [Number(run[1]), Number(run[2])],
@@ -38,28 +47,14 @@ const crown: Pt[] = [
     (m): Pt => [Number(m[1]), Number(m[2])],
   ),
 ]
-const past = ([ax, ay]: Pt, [bx, by]: Pt, k = 1.6) =>
-  `M${f(ax - (bx - ax) * k)},${f(ay - (by - ay) * k)}L${f(bx + (bx - ax) * k)},${f(by + (by - ay) * k)}`
-const apexY = Math.min(...crown.map(([, y]) => y))
-const baseY = Math.max(...pts.map(([, y]) => y))
-const [wideX, wideY] = pts.reduce((a, b) => (b[0] > a[0] ? b : a))
-const ellipse = (cy: number, rx: number, ry: number) =>
-  `M${f(50 - rx)},${f(cy)}A${f(rx)},${f(ry)} 0 1 0 ${f(50 + rx)},${f(cy)}A${f(rx)},${f(ry)} 0 1 0 ${f(50 - rx)},${f(cy)}`
-const sketch = [
-  `M50,${f(apexY - 8)}L50,${f(baseY + 5)}`,
-  ...[...new Set(crown.map(([, y]) => y))].filter((y) => y !== apexY).map((y) => `M6,${y}L94,${y}`),
-  ...crown.slice(1).map((p, i) => past(crown[i] as Pt, p)),
-  ellipse(wideY, wideX - 50, baseY - wideY),
-  ellipse((apexY + baseY) / 2, (wideX - 50) * 1.04, (baseY - apexY) / 2),
-]
-
-// the first curve: anchored where his antennae root, bent by handles that end
-// where their square tips are, so the handles it leaves behind become them
-const [[r1x, r1y, t1x, t1y], [r2x, r2y, t2x, t2y]] = [
-  ...(handles as string).matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)"/g),
-].map((m) => m.slice(1).map(Number)) as [number[], number[]]
-const curve = `M${r1x},${r1y}C${t1x},${t1y} ${t2x},${t2y} ${r2x},${r2y}`
-const knob = 20
+const edges = crown.slice(1).map((p, i) => past(crown[i] as Pt, p, 0.9))
+// loose passes around his outline, each a little larger or smaller and turned
+const passes = [
+  [1.07, -4],
+  [0.94, 3],
+  [1.03, 5],
+  [0.97, -2],
+].map(([s, a]) => `translate(50 66) rotate(${a}) scale(${s}) translate(-50 -66)`)
 
 const still = { animate: false, frame: 'full', size: 400 } as const
 const flicker = ['grace', 'linus', 'radia', 'hedy', 'alan', 'joan', 'tim', 'margaret'].map((seed) =>
@@ -85,22 +80,26 @@ const family = [
 ].map((seed) => nurbling(seed, { size: 72, background: 'circle', animate: false, title: seed }))
 ---
 
-<div class="nurbi-stage" id="nurbi-stage" aria-hidden="true">
+<div class="nurbi-stage" id="nurbi-stage" data-viewbox={viewBox} aria-hidden="true">
   <div class="layer drawing">
     <svg viewBox={viewBox}>
-      <g class="first-curve">
-        <path class="stroke" d={curve} pathLength="1"></path>
-        <path class="arm" d={`M${r1x},${r1y}L${t1x},${t1y}`} pathLength="1"></path>
-        <path class="arm" d={`M${r2x},${r2y}L${t2x},${t2y}`} pathLength="1"></path>
-        <rect class="knob" x={t1x - knob / 2} y={t1y - knob / 2} width={knob} height={knob}></rect>
-        <rect class="knob" x={t2x - knob / 2} y={t2y - knob / 2} width={knob} height={knob}></rect>
+      <g class="chaos" data-chaos></g>
+      <g class="ghosts early">
+        {antennae.map((a, i) => <path d={past(a.root, a.tip, 0.7)} pathLength="1" style={`--i:${3 + i * 5}`} />)}
       </g>
       <g transform={place}>
-        <g class="sketch">{sketch.map((d, i) => <path d={d} pathLength="1" style={`--i:${i}`} />)}</g>
+        <g class="ghosts late">
+          {edges.map((d, i) => <path d={d} pathLength="1" style={`--i:${i}`} />)}
+          {passes.map((t, i) => <path d={outline} transform={t} pathLength="1" style={`--i:${i * 2 + 1}`} />)}
+        </g>
         <g class="body" set:html={body} />
-        <path class="trace" d={outline} pathLength="1"></path>
+        <path class="keep outline" d={outline} pathLength="1"></path>
       </g>
       <g class="face" set:html={face} />
+      <g class="keep-antennae">
+        {antennae.map((a) => <path class="keep" d={`M${a.root}L${a.tip}`} pathLength="1" />)}
+        {antennae.map((a) => <rect class="knob" x={a.tip[0] - knob / 2} y={a.tip[1] - knob / 2} width={knob} height={knob} />)}
+      </g>
       <g class="handles" set:html={handles} />
     </svg>
   </div>
@@ -166,125 +165,120 @@ const family = [
     opacity: 1;
   }
 
-  /* I. one curve draws itself, then its two handles; the curve fades, they stay */
-  .nurbi-stage .first-curve {
-    transition: opacity 0.3s var(--ease);
-  }
-
-  .nurbi-stage .first-curve path {
+  /* Every stroke is hidden until its own drawing starts: an undrawn dash can
+     still leave a speck. `--i` staggers them, `--d` sets each one's pace. */
+  .nurbi-stage .chaos path,
+  .nurbi-stage .ghosts path,
+  .nurbi-stage .keep {
     fill: none;
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
     stroke-linecap: butt;
+    opacity: 0;
   }
 
-  .nurbi-stage .first-curve .stroke {
-    stroke: var(--ink);
-    stroke-width: 4;
+  .nurbi-stage .chaos path,
+  .nurbi-stage .ghosts.early path {
+    stroke: var(--muted);
+    stroke-width: 2.5;
   }
 
-  .nurbi-stage .first-curve .arm {
+  .nurbi-stage .chaos path.pink {
     stroke: #ff2f6e;
+  }
+
+  /* in his own drawing units, which the stored art scales up about 7.7 times */
+  .nurbi-stage .ghosts.late path {
+    stroke: var(--muted);
+    stroke-width: 0.26;
+  }
+
+  /* I. a restless hand: strokes everywhere, two of them his antennae */
+  .nurbi-stage.at-1 .chaos .early,
+  .nurbi-stage.at-1 .ghosts.early path {
+    opacity: 1;
+    stroke-dashoffset: 0;
+    transition:
+      stroke-dashoffset var(--d, 0.7s) var(--ease) calc(var(--i) * 0.07s),
+      opacity 0s linear calc(var(--i) * 0.07s);
+  }
+
+  .nurbi-stage.at-1 .chaos,
+  .nurbi-stage.at-1 .ghosts.early {
+    animation: nurbi-dim 1s var(--ease) 2.4s both;
+  }
+
+  .nurbi-stage .keep-antennae .keep {
+    stroke: var(--ink);
     stroke-width: 3;
   }
 
-  .nurbi-stage .first-curve .knob {
+  .nurbi-stage .keep-antennae .knob {
     fill: #ff2f6e;
     opacity: 0;
   }
 
-  .nurbi-stage.at-1 .first-curve .stroke {
-    animation: nurbi-draw-then-dim 3s var(--ease) both;
-  }
-
-  .nurbi-stage.at-1 .first-curve .arm {
+  .nurbi-stage.at-1 .keep-antennae .keep {
+    opacity: 1;
     stroke-dashoffset: 0;
-    transition: stroke-dashoffset 0.6s var(--ease) 1.1s;
+    transition:
+      stroke-dashoffset 0.6s var(--ease) 0.9s,
+      opacity 0s linear 0.9s;
   }
 
-  .nurbi-stage.at-1 .first-curve .knob {
+  .nurbi-stage.at-1 .keep-antennae .knob {
     opacity: 1;
     transition: opacity 0.3s var(--ease) 1.6s;
   }
 
-  @keyframes nurbi-draw-then-dim {
-    0% {
-      stroke-dashoffset: 1;
-      opacity: 1;
-    }
-    45% {
-      stroke-dashoffset: 0;
-      opacity: 1;
-    }
-    100% {
-      stroke-dashoffset: 0;
-      opacity: 0.16;
-    }
-  }
-
-  /* II. the handles become his antennae; a sketch of him draws in, line after
-     line, his outline is traced over it, the sketch fades and he fills in */
-  .nurbi-stage.at-2 .first-curve {
-    opacity: 0;
-    transition: opacity 0.4s var(--ease);
-  }
-
+  /* the two strokes firm up into his antennae */
   .nurbi-stage .handles {
     opacity: 0;
   }
 
-  .nurbi-stage.at-2 .handles {
+  .nurbi-stage.at-1 .handles {
     opacity: 1;
-    transition: opacity 0.5s var(--ease) 0.2s;
+    transition: opacity 0.6s var(--ease) 2.1s;
   }
 
-  /* widths in his own drawing units, which the stored art scales up about 7.7 times */
-  .nurbi-stage .sketch path {
-    fill: none;
-    stroke: var(--muted);
-    stroke-width: 0.16;
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    stroke-linecap: butt;
+  .nurbi-stage.at-1 .keep-antennae {
+    animation: nurbi-fade-out 0.4s var(--ease) 2.6s both;
   }
 
-  .nurbi-stage.at-2 .sketch path {
+  /* II. more strokes, loose passes around his shape; one of them is him */
+  .nurbi-stage.at-2 .chaos .late,
+  .nurbi-stage.at-2 .ghosts.late path {
+    opacity: 1;
     stroke-dashoffset: 0;
-    /* each guide shows only as its own drawing starts */
     transition:
-      stroke-dashoffset 0.8s var(--ease) calc(0.3s + var(--i) * 0.09s),
-      opacity 0s linear calc(0.3s + var(--i) * 0.09s);
+      stroke-dashoffset var(--d, 0.8s) var(--ease) calc(0.1s + var(--i) * 0.08s),
+      opacity 0s linear calc(0.1s + var(--i) * 0.08s);
   }
 
-  .nurbi-stage.at-2 .sketch {
-    animation: nurbi-fade-out 0.7s var(--ease) 2.8s both;
+  .nurbi-stage.at-2 .chaos,
+  .nurbi-stage.at-2 .ghosts {
+    animation: nurbi-fade-out 0.8s var(--ease) 2.4s both;
   }
 
-  .nurbi-stage .trace {
-    fill: none;
+  .nurbi-stage .keep.outline {
     stroke: var(--ink);
     stroke-width: 0.42;
     stroke-linejoin: round;
-    stroke-linecap: butt;
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
   }
 
-  .nurbi-stage.at-2 .trace {
+  .nurbi-stage.at-2 .keep.outline {
+    opacity: 1;
     stroke-dashoffset: 0;
-    transition: stroke-dashoffset 1.3s var(--ease) 1.5s;
+    transition:
+      stroke-dashoffset 1.3s var(--ease) 1.1s,
+      opacity 0s linear 1.1s;
     animation: nurbi-fade-out 0.5s var(--ease) 3.6s both;
   }
 
-  /* hidden until drawn: an undrawn dash can still leave specks where arcs meet */
-  .nurbi-stage .sketch path,
-  .nurbi-stage .trace {
-    opacity: 0;
-  }
-
-  .nurbi-stage.at-2 .sketch path,
-  .nurbi-stage.at-2 .trace {
-    opacity: 1;
+  @keyframes nurbi-dim {
+    to {
+      opacity: 0.3;
+    }
   }
 
   @keyframes nurbi-fade-out {
@@ -300,12 +294,12 @@ const family = [
 
   .nurbi-stage.at-2 .body {
     opacity: 1;
-    transition: opacity 0.7s var(--ease) 3s;
+    transition: opacity 0.7s var(--ease) 2.9s;
   }
 
   .nurbi-stage.at-2 .face {
     opacity: 1;
-    transition: opacity 0.5s var(--ease) 3.5s;
+    transition: opacity 0.5s var(--ease) 3.4s;
   }
 
   /* III. one shape at a time, switched by the page; no fade, it flickers */

@@ -9,7 +9,7 @@ const chapters = [
     title: 'The blank page',
     body: [
       'In the beginning there was only white: a page no one had written on, waiting.',
-      'A hand drew one curve across it and was gone. Two handles were left behind, bright as embers. Everything that followed began with them.',
+      'A restless hand scribbled across it and was gone. Most of its lines faded. Two stayed behind, bright as embers. Everything that followed began with them.',
     ],
   },
   {
@@ -112,6 +112,32 @@ const chapters = [
   import { reducedMotion } from '../lib/client'
 
   const stage = document.getElementById('nurbi-stage') as HTMLElement
+
+  // I and II. a restless hand: random strokes, new on every visit. The first
+  // dozen fill chapter I, the rest arrive with chapter II; a few are pink.
+  const chaos = stage.querySelector('[data-chaos]')
+  const [vx, vy, vs] = (stage.dataset.viewbox ?? '0 0 640 640').split(' ').map(Number) as [number, number, number]
+  const rand = (from: number, to: number) => from + Math.random() * (to - from)
+  const point = () => `${Math.round(rand(vx + vs * 0.06, vx + vs * 0.94))},${Math.round(rand(vy + vs * 0.06, vy + vs * 0.94))}`
+  for (let i = 0; i < 22; i++) {
+    const shape = Math.random()
+    const d =
+      shape < 0.6
+        ? `M${point()}C${point()} ${point()} ${point()}`
+        : shape < 0.85
+          ? `M${point()}L${point()}`
+          : `M${point()}Q${point()} ${point()}`
+    const stroke = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    const early = i < 12
+    stroke.setAttribute('d', d)
+    stroke.setAttribute('pathLength', '1')
+    stroke.setAttribute('class', `${early ? 'early' : 'late'}${Math.random() < 0.18 ? ' pink' : ''}`)
+    stroke.setAttribute(
+      'style',
+      `--i:${early ? i : i - 12};--d:${rand(0.5, 1).toFixed(2)}s;stroke-width:${rand(1.5, 3.5).toFixed(1)}`,
+    )
+    chaos?.append(stroke)
+  }
 
   // III. while he wonders, one shape at a time
   const shapes = [...stage.querySelectorAll<HTMLElement>('.flicker span')]
