@@ -29,7 +29,9 @@ export default defineConfig({
       logo: { src: './src/assets/nurbi.svg', alt: 'Nurbi' },
       favicon: '/favicon.svg',
       social: [{ icon: 'github', label: 'GitHub', href: REPO }],
-      editLink: { baseUrl: `${REPO}/edit/develop/` },
+      // entries sit at `../docs/*.md` relative to site/, so the base points
+      // into site/ for the `..` to land back on the repository root
+      editLink: { baseUrl: `${REPO}/edit/develop/site/` },
       // preloads the site fonts on docs pages too, so text never blinks in
       // the header and theme switch are the marketing pages' own; the docs end
       // at Starlight's own footer (edit link, previous and next page)
