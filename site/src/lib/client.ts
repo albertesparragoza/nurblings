@@ -118,6 +118,25 @@ export function boot() {
     el.textContent = (el.textContent ?? '').replaceAll('{origin}', location.origin)
   }
 
+  // the scrolling theme bar on phones: tell the CSS which sides have more chips
+  const bar = document.querySelector<HTMLElement>('.picker-row .picker-scroll')
+  if (bar) {
+    const edges = () => {
+      const end = bar.scrollWidth - bar.clientWidth
+      bar.dataset.at =
+        end <= 1
+          ? 'all'
+          : bar.scrollLeft <= 1
+            ? 'start'
+            : bar.scrollLeft >= end - 1
+              ? 'end'
+              : 'middle'
+    }
+    bar.addEventListener('scroll', edges, { passive: true })
+    addEventListener('resize', edges)
+    edges()
+  }
+
   const header = document.querySelector('.site-header')
   const onScroll = () => header?.classList.toggle('scrolled', scrollY > 8)
   addEventListener('scroll', onScroll, { passive: true })

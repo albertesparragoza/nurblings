@@ -781,12 +781,24 @@ const prompt = `npx skills add albertesparragoza/nurblings
       min-width: 0;
       align-items: center;
       gap: 10px;
-      padding: 6px 28px 6px 12px;
-      scroll-padding-inline: 10px;
+      padding: 6px 12px;
+      scroll-padding-inline: 12px;
       overflow-x: auto;
       scrollbar-width: none;
       scroll-snap-type: x proximity;
-      mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+    }
+
+    /* a fade only on the side with more chips to scroll to (set by client.ts) */
+    .picker-row .picker-scroll[data-at="start"] {
+      mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent);
+    }
+
+    .picker-row .picker-scroll[data-at="middle"] {
+      mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+    }
+
+    .picker-row .picker-scroll[data-at="end"] {
+      mask-image: linear-gradient(90deg, transparent, #000 32px);
     }
 
     .picker-row .picker-scroll::-webkit-scrollbar {
