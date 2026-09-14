@@ -117,7 +117,7 @@ back with the right package, stable-id seeds and accessible names.
 - **Themes and dark mode.** Ten built-in themes by name, any 2 to 5 brand
   colours through `palette()`, and `mode="auto"` for light and dark pages with
   CSS alone.
-- **Small.** The core is about 8.5 KB compressed with no dependencies; each
+- **Small.** The core is under 9 KB compressed with no dependencies; each
   framework component adds well under 1 KB. Size limits run in CI.
 
 ## Make it yours

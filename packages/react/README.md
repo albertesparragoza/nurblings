@@ -38,6 +38,7 @@ export default function Avatar() {
 | `size` | `number` | `128` | Pixel size. At 32 or below the mouth and extras are dropped. |
 | `background` | `'none' \| 'circle' \| 'squircle' \| 'square'` | `'none'` | Background shape. |
 | `title` | `string` | `'Nurbling'` | Accessible name for the SVG. |
+| `decorative` | `boolean` | `false` | Hides the SVG from assistive technology, for an avatar beside a written name. |
 | `animate` | `boolean \| Motion` | `true` | Ambient life (breath, blink, antenna drift, hover wiggle). `false` for a still avatar, or an object such as `{ blink: false, speed: 0.5 }`. CSS only, so it still ships no JavaScript. |
 | `frame` | `'auto' \| 'full' \| 'portrait'` | `'auto'` | Portrait crops closer on the face for small round avatars; full shows the whole figure. Auto picks portrait at 48 px and below. |
 | `gen` | `1` | `1` | Trait generation. |
