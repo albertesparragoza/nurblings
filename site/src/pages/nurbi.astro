@@ -64,23 +64,22 @@ const chapters = [
       {
         chapters.map((chapter, i) => (
           <section class="beat" data-step={i + 1}>
-            <p class="mark">
+            <h2 class="mark">
               <span>{chapter.mark}</span>
               {chapter.title}
-            </p>
-            {chapter.body.map((line, j) => (
-              <p class:list={['tale', { first: i === 0 && j === 0 }]}>{line}</p>
+            </h2>
+            {chapter.body.map((line) => (
+              <p class="tale">{line}</p>
             ))}
             {chapter.aside && <p class="aside">{chapter.aside}</p>}
           </section>
         ))
       }
       <section class="beat final" data-step="6">
-        <p class="mark">
+        <h2 class="mark">
           <span>VI</span>
-          Your name
-        </p>
-        <h2>Speak a name.</h2>
+          Speak a name
+        </h2>
         <p class="tale">He is listening.</p>
         <form class="name-form" id="name-form">
           <label for="nurbi-name">A name</label>
@@ -234,13 +233,6 @@ const chapters = [
     color: var(--ink);
   }
 
-  .story .beat p.tale.first::first-letter {
-    float: left;
-    font: 800 3.4em / 0.82 var(--display);
-    color: var(--accent-text);
-    padding: 0.06em 0.1em 0 0;
-  }
-
   .story .eyebrow {
     font: 700 13px / 1 var(--text);
     letter-spacing: 0.08em;
@@ -248,12 +240,12 @@ const chapters = [
     color: var(--accent-text);
   }
 
-  /* chapter marks: a numeral, a hairline, the chapter's name */
-  .story .beat p.mark {
+  /* chapter headings: a numeral, a hairline, the chapter's name */
+  .story .beat .mark {
     display: flex;
     align-items: center;
     gap: 14px;
-    max-width: none;
+    margin: 0;
     font: 700 clamp(24px, 2.6vw, 34px) / 1.1 var(--display);
     letter-spacing: -0.02em;
     color: var(--ink);
@@ -276,12 +268,6 @@ const chapters = [
     letter-spacing: -0.045em;
     line-height: 0.95;
     max-width: 10ch;
-  }
-
-  .story h2 {
-    font-size: clamp(30px, 3.6vw, 48px);
-    font-weight: 800;
-    max-width: 16ch;
   }
 
   .story .beat p.lead {
