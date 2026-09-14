@@ -2,79 +2,85 @@
 import NurbiStage from '../components/NurbiStage.astro'
 import Site from '../layouts/Site.astro'
 
-const beats = [
+const chapters = [
   {
-    title: 'It started with a curve.',
+    num: 'I',
+    title: 'The blank page',
     body: [
-      'Someone drew a curve and moved on. A curve comes with two handles, the small lines you drag to bend it, and they should have disappeared with the rest of the tool.',
-      'These two stayed. Nobody noticed, except the handles.',
+      'In the beginning there was only white: a page no one had written on, waiting.',
+      'A hand drew one curve across it and was gone. Two handles were left behind, bright as embers. Everything that followed began with them.',
     ],
   },
   {
-    title: 'Two handles, wondering.',
+    num: 'II',
+    title: 'The first to wake',
     body: [
-      'Handles bend things, so they did what they knew. A body curved into shape beneath them: soft at the bottom, plated at the top. Two eyes opened.',
-      'That was Nurbi, and he had no idea what he was.',
+      'The handles did the only thing handles know. They bent. A body curled into being beneath them, soft below and armoured above, and two dark eyes opened on the empty page.',
+      'He had no name, and did not know he needed one. We call him Nurbi.',
     ],
   },
   {
-    title: 'Every question changed his shape.',
+    num: 'III',
+    title: 'The wondering',
     body: [
-      'Was he tall? For a moment, he was tall. Round, sleepy, curious, wrapped in a scarf: each question pulled his handles into a new curve.',
-      'Every curve was almost him.',
+      'Alone on the page, he began to wonder what he was, and every question reshaped him.',
+      'Taller. Rounder. Sleepier. Wrapped in a scarf against a cold that was not there. He wore a thousand bodies and could keep none of them.',
     ],
   },
   {
-    title: 'Then he heard a name.',
+    num: 'IV',
+    title: 'The first name',
     body: [
-      'He thought about one person, and the flickering stopped. The shape he was holding stayed with that name: the same body, the same colours, the same blink, every time the name came back.',
-      'It stepped away and became someone of its own.',
+      'Then, from far off, came a name. He held it, and for the first time he held still.',
+      'The shape he wore stayed with that name, and when he let go, it stayed on its own: the first of his kin.',
     ],
-    aside: 'It still works this way. The same name always settles into the same Nurbling.',
+    lore: 'And so it has been ever since. A name, once spoken, keeps its shape.',
   },
   {
-    title: 'Thousands of names later.',
+    num: 'V',
+    title: 'The kin',
     body: [
-      'The family grew one name at a time: scarves and hats, pears and bells, every mood from curious to sleepy. Each one carries his two handles, square tips and all.',
-      'None of them is him. There is only one Nurbi, and he is still wondering.',
+      'Names came like rain after that, and each one kept a shape: scarves and hats, pears and bells, the curious and the sleepy.',
+      'Every one of them carries his mark, two handles crowned with squares. None of them is him. There is only one Nurbi, and he is still wondering.',
     ],
   },
 ]
 ---
 
 <Site
-  title="Nurbi's story"
-  description="How two stray handles in a drawing became Nurbi, and why every name hatches one of his relatives."
+  title="The one who wondered"
+  description="The legend of Nurbi, who woke on a blank page, and of the kin every spoken name has given him since."
   class="story"
 >
   <div class="wrap story-grid">
     <div class="story-text">
       <header class="beat opening" data-step="0">
-        <p class="eyebrow">Nurbi's story</p>
-        <h1>The stray handle</h1>
-        <p class="lead">How a leftover piece of a drawing became a creature, and then a family.</p>
-        <p class="hint">Scroll to read</p>
+        <p class="eyebrow">A Nurblings legend</p>
+        <h1>The one who wondered</h1>
+        <p class="lead">Before there were Nurblings, there was a blank page, and a curve that no one finished.</p>
+        <p class="hint">Scroll to begin</p>
       </header>
       {
-        beats.map((beat, i) => (
+        chapters.map((chapter, i) => (
           <section class="beat" data-step={i + 1}>
-            <p class="num">{String(i + 1).padStart(2, '0')}</p>
-            <h2>{beat.title}</h2>
-            {beat.body.map((line) => (
+            <p class="num">{chapter.num}</p>
+            <h2>{chapter.title}</h2>
+            {chapter.body.map((line) => (
               <p>{line}</p>
             ))}
-            {beat.aside && <p class="aside">{beat.aside}</p>}
+            {chapter.lore && <p class="lore">{chapter.lore}</p>}
           </section>
         ))
       }
       <section class="beat final" data-step="6">
-        <p class="num">06</p>
-        <h2>Give him a name to think about.</h2>
+        <p class="num">VI</p>
+        <h2>Speak a name.</h2>
+        <p>He is listening.</p>
         <form class="name-form" id="name-form">
           <label for="nurbi-name">A name</label>
           <div class="name-field">
             <input id="nurbi-name" name="name" autocomplete="off" spellcheck="false" placeholder="ada, a username, an email" />
-            <button class="btn" type="submit">Think about it</button>
+            <button class="btn" type="submit">Speak it</button>
           </div>
         </form>
         <p class="result-line" id="result-line" aria-live="polite"></p>
@@ -82,9 +88,6 @@ const beats = [
           <a class="btn" href="/docs/getting-started/">Get started</a>
           <a class="btn btn-ghost" href="/playground/">Open the playground</a>
         </div>
-        <p class="legal">
-          Using the name or the artwork in your own project? Read <a href="/using-the-name/">using the name and artwork</a>.
-        </p>
       </section>
     </div>
     <div class="story-stage">
@@ -100,7 +103,7 @@ const beats = [
   const stage = document.getElementById('nurbi-stage') as HTMLElement
   const NS = 'http://www.w3.org/2000/svg'
 
-  // 1. a few curves, drawn at random on every visit, each with its two handles
+  // I. a few curves, drawn at random on every visit, each with its two handles
   const scribbles = stage.querySelector('.scribbles')
   const [vx, vy, vs] = (stage.dataset.viewbox ?? '0 0 640 640').split(' ').map(Number) as [number, number, number]
   const at = (from: number, to: number) => from + Math.random() * (to - from)
@@ -114,13 +117,16 @@ const beats = [
   for (let i = 0; i < 3; i++) {
     const [p0, c1, c2, p3] = [point(), point(), point(), point()]
     make('path', { class: 'curve', d: `M${p0}C${c1} ${c2} ${p3}`, pathLength: 1 }, i)
-    for (const [from, to] of [[p0, c1], [p3, c2]] as const) {
+    for (const [from, to] of [
+      [p0, c1],
+      [p3, c2],
+    ] as const) {
       make('path', { class: 'arm', d: `M${from}L${to}`, pathLength: 1 }, i)
       make('rect', { x: to[0] - 9, y: to[1] - 9, width: 18, height: 18 }, i)
     }
   }
 
-  // 3. while he wonders, one shape at a time
+  // III. while he wonders, one shape at a time
   const shapes = [...stage.querySelectorAll<HTMLElement>('.flicker span')]
   let shown = 0
   let timer: ReturnType<typeof setInterval> | undefined
@@ -146,7 +152,7 @@ const beats = [
     wonder(next === 3)
   }
 
-  // the part of the story in the middle of what can be read sets the drawing;
+  // the chapter in the middle of what can be read sets the drawing;
   // on narrow screens the drawing covers the top half, so read below it
   const narrow = matchMedia('(max-width: 860px)').matches
   const io = new IntersectionObserver(
@@ -160,7 +166,7 @@ const beats = [
   for (const beat of document.querySelectorAll('.story .beat')) io.observe(beat)
   go(0)
 
-  // 6. he thinks about the name: a short flicker, then it settles
+  // VI. he holds the name: a short flicker, then it keeps its shape
   const form = document.getElementById('name-form') as HTMLFormElement
   const input = document.getElementById('nurbi-name') as HTMLInputElement
   const result = document.getElementById('nurbi-result') as HTMLElement
@@ -179,8 +185,8 @@ const beats = [
       }
       result.innerHTML = nurbling(name, { ...still, title: name })
       line.textContent = isFlagshipSeed(name)
-        ? 'That name is taken. It is Nurbi himself.'
-        : 'Say hello. This name looks like this wherever it goes.'
+        ? 'He knows that name. It is his own.'
+        : 'It has kept its shape. It will look like this wherever the name goes.'
     }
     tick()
   })
@@ -206,23 +212,31 @@ const beats = [
     min-height: 78svh;
     display: grid;
     align-content: center;
-    gap: 14px;
+    gap: 16px;
     padding-block: 40px;
   }
 
   .story .beat p {
     margin: 0;
-    max-width: 36ch;
-    font-size: clamp(17px, 1.5vw, 20px);
+    max-width: 34ch;
+    font-size: clamp(18px, 1.6vw, 21px);
+    line-height: 1.65;
     color: var(--muted);
   }
 
-  .story .eyebrow,
-  .story .num {
+  .story .eyebrow {
     font: 700 13px / 1 var(--text);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--accent-text);
+  }
+
+  /* chapter numbers, set like a book's */
+  .story .beat p.num {
+    font: 800 clamp(28px, 3vw, 40px) / 1 var(--display);
+    letter-spacing: 0.04em;
+    color: var(--accent-text);
+    opacity: 0.55;
   }
 
   .story h1 {
@@ -230,17 +244,18 @@ const beats = [
     font-weight: 800;
     letter-spacing: -0.045em;
     line-height: 0.95;
+    max-width: 10ch;
   }
 
   .story h2 {
-    font-size: clamp(30px, 3.6vw, 48px);
+    font-size: clamp(32px, 3.8vw, 52px);
     font-weight: 800;
-    max-width: 16ch;
+    max-width: 14ch;
   }
 
   .story .beat p.lead {
     color: var(--ink);
-    font-size: clamp(19px, 1.8vw, 23px);
+    font-size: clamp(20px, 1.9vw, 24px);
   }
 
   .story .beat p.hint {
@@ -248,11 +263,13 @@ const beats = [
     font-weight: 600;
   }
 
-  .story .beat p.aside {
+  /* the one line of lore that is still true */
+  .story .beat p.lore {
     color: var(--ink);
-    font-weight: 600;
+    font: 700 clamp(19px, 1.8vw, 23px) / 1.45 var(--display);
+    letter-spacing: -0.01em;
     border-left: 3px solid var(--accent);
-    padding-left: 14px;
+    padding-left: 16px;
   }
 
   .story .final {
@@ -295,13 +312,9 @@ const beats = [
   }
 
   .story .beat p.result-line {
-    min-height: 1.5em;
+    min-height: 1.6em;
     color: var(--ink);
     font-weight: 600;
-  }
-
-  .story .beat p.legal {
-    font-size: 14px;
   }
 
   /* phones and narrow windows: the drawing stays at the top, the story scrolls under it */

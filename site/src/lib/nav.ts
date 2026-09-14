@@ -36,7 +36,7 @@ export const FOOTER = [
       ['GitHub', REPO],
       ['Releases', `${REPO}/releases`],
       ['Security', `${REPO}/blob/develop/SECURITY.md`],
-      ['Using the name', '/using-the-name/'],
+      ['Trademarks', `${REPO}/blob/develop/TRADEMARKS.md`],
     ],
   },
 ] as const
