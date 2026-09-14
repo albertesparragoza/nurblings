@@ -27,7 +27,7 @@ export const FOOTER = [
       ['Playground', '/playground/'],
       ['Gallery', '/gallery/'],
       ['AI skill', '/ai/'],
-      ['Meet Nurbi', '/brand/'],
+      ["Nurbi's story", '/nurbi/'],
     ],
   },
   {
@@ -36,7 +36,7 @@ export const FOOTER = [
       ['GitHub', REPO],
       ['Releases', `${REPO}/releases`],
       ['Security', `${REPO}/blob/develop/SECURITY.md`],
-      ['Trademarks', `${REPO}/blob/develop/TRADEMARKS.md`],
+      ['Using the name', '/using-the-name/'],
     ],
   },
 ] as const

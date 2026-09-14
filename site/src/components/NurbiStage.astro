@@ -1,0 +1,304 @@
+---
+// Nurbi's story: the drawing beside the text. Its layers change as the reader
+// moves through the story; the page sets `at-N` (reached step N) and `now-N`
+// (on step N) on the stage. Nurbi's parts come from the library's own drawing
+// of him, split so each can arrive on its own: the stray handles, one side of
+// his outline that revolves into the whole body, then his face.
+import { nurbling } from 'nurblings'
+
+const match = (text: string, pattern: RegExp) => text.match(pattern) as RegExpMatchArray
+
+const drawing = nurbling('nurbi', { animate: false, frame: 'full', size: 400 })
+const viewBox = match(drawing, /viewBox="([^"]+)"/)[1]
+const inner = drawing.slice(drawing.indexOf('</title>') + 8, drawing.lastIndexOf('</svg>'))
+// the stored drawing: two antennae (a line and a square each), the body group, then the face
+const [, handles, bodyGroup, face] = match(
+  inner,
+  /^((?:<line[^>]*\/><rect[^>]*\/>){2})(<g transform="[^"]*">.*?<\/g>)(.*)$/s,
+)
+const place = match(bodyGroup as string, /^<g transform="([^"]*)">/)[1]
+const outline = match(bodyGroup as string, /<path d="([^"]+)"/)[1] as string
+// his right side: from the middle of the base up to the tip of the crown
+const apex = 'L50,39.75'
+const side = outline.slice(0, outline.indexOf(apex) + apex.length)
+const body = (bodyGroup as string).replace(/^<g[^>]*>/, '').replace(/<\/g>$/, '')
+
+const still = { animate: false, frame: 'full', size: 400 } as const
+const flicker = ['grace', 'linus', 'radia', 'hedy', 'alan', 'joan', 'tim', 'margaret'].map((seed) =>
+  nurbling(seed, { ...still, title: seed }),
+)
+const family = [
+  'ada',
+  'grace',
+  'linus',
+  'radia',
+  'hedy',
+  'alan',
+  'joan',
+  'tim',
+  'margaret',
+  'dennis',
+  'barbara',
+  'frances',
+  'guido',
+  'sophie',
+  'anders',
+  'katherine',
+].map((seed) => nurbling(seed, { size: 72, background: 'circle', animate: false, title: seed }))
+---
+
+<div class="nurbi-stage" id="nurbi-stage" data-viewbox={viewBox} aria-hidden="true">
+  <div class="layer drawing">
+    <svg viewBox={viewBox}>
+      <g class="scribbles"></g>
+      <g transform={place}>
+        <path class="contour side" d={side} pathLength="1"></path>
+        <path class="contour mirror" d={side}></path>
+        <g class="body" set:html={body} />
+      </g>
+      <g class="face" set:html={face} />
+      <g class="handles" set:html={handles} />
+    </svg>
+  </div>
+  <div class="layer flicker">{flicker.map((svg) => <span set:html={svg} />)}</div>
+  <figure class="layer settled">
+    <span set:html={nurbling('ada', { ...still, title: 'ada' })} />
+    <figcaption>ada</figcaption>
+  </figure>
+  <div class="layer family">{family.map((svg) => <span set:html={svg} />)}</div>
+  <div class="layer result" id="nurbi-result" set:html={nurbling('nurbi', { ...still, title: 'Nurbi' })} />
+</div>
+
+<style is:global>
+  .nurbi-stage {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    aspect-ratio: 1;
+    margin-inline: auto;
+    border-radius: var(--r-xl);
+    /* a drawing tool's artboard: a faint dot grid */
+    background:
+      radial-gradient(color-mix(in srgb, var(--ink) 14%, transparent) 1px, transparent 1.5px) 0 0 / 22px
+        22px,
+      var(--tint);
+    overflow: hidden;
+    transition: background-color 0.4s var(--ease);
+  }
+
+  .nurbi-stage .layer {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 0.5s var(--ease);
+  }
+
+  .nurbi-stage .layer svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* which layer shows when */
+  .nurbi-stage .drawing {
+    opacity: 1;
+  }
+
+  .nurbi-stage.at-3 .drawing {
+    opacity: 0;
+  }
+
+  .nurbi-stage.now-3 .flicker,
+  .nurbi-stage.now-4 .settled,
+  .nurbi-stage.now-5 .family,
+  .nurbi-stage.now-6 .result {
+    opacity: 1;
+  }
+
+  /* 1. curves draw themselves, handles and all, then leave two handles behind */
+  .nurbi-stage .scribbles {
+    transition: opacity 0.6s var(--ease);
+  }
+
+  /* widths in drawing units: a stroke that ignores scaling breaks pathLength dashes */
+  .nurbi-stage .scribbles path {
+    fill: none;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.9s var(--ease) calc(var(--i) * 0.25s);
+  }
+
+  .nurbi-stage .scribbles .curve {
+    stroke: var(--muted);
+    stroke-width: 3.5;
+  }
+
+  .nurbi-stage .scribbles .arm {
+    stroke: #ff2f6e;
+    stroke-width: 2.5;
+  }
+
+  .nurbi-stage .scribbles rect {
+    fill: #ff2f6e;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease) calc(var(--i) * 0.25s + 0.7s);
+  }
+
+  .nurbi-stage.at-1 .scribbles path {
+    stroke-dashoffset: 0;
+  }
+
+  .nurbi-stage.at-1 .scribbles rect {
+    opacity: 1;
+  }
+
+  .nurbi-stage.at-2 .scribbles {
+    opacity: 0;
+  }
+
+  .nurbi-stage .handles {
+    opacity: 0;
+    transition: opacity 0.6s var(--ease) 0.4s;
+  }
+
+  .nurbi-stage.at-1 .handles {
+    opacity: 1;
+  }
+
+  /* 2. one side of him draws in, revolves into the whole outline, then fills */
+  /* in his own drawing units, which the stored art scales up about 7.7 times */
+  .nurbi-stage .contour {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 0.42;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .nurbi-stage .side {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 0.9s var(--ease);
+  }
+
+  .nurbi-stage.at-2 .side {
+    stroke-dashoffset: 0;
+    animation: nurbi-fade-out 0.5s var(--ease) 2.6s both;
+  }
+
+  /* the mirrored side turns on the centre line, the left edge of its own box */
+  .nurbi-stage .mirror {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: 0 50%;
+  }
+
+  .nurbi-stage.at-2 .mirror {
+    animation: nurbi-revolve 2.2s var(--ease) 0.9s both;
+  }
+
+  @keyframes nurbi-revolve {
+    0% {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+    60% {
+      opacity: 1;
+      transform: scaleX(-1);
+    }
+    100% {
+      opacity: 0;
+      transform: scaleX(-1);
+    }
+  }
+
+  @keyframes nurbi-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  .nurbi-stage .body {
+    opacity: 0;
+    transition: opacity 0.6s var(--ease) 2.2s;
+  }
+
+  .nurbi-stage .face {
+    opacity: 0;
+    transition: opacity 0.5s var(--ease) 2.7s;
+  }
+
+  .nurbi-stage.at-2 .body,
+  .nurbi-stage.at-2 .face {
+    opacity: 1;
+  }
+
+  /* 3. one shape at a time, switched by the page; no fade, it flickers */
+  .nurbi-stage .flicker span {
+    grid-area: 1 / 1;
+    width: 100%;
+    opacity: 0;
+    line-height: 0;
+  }
+
+  .nurbi-stage .flicker span.on {
+    opacity: 1;
+  }
+
+  /* 4. one name holds one shape */
+  .nurbi-stage .settled {
+    align-content: center;
+    gap: 4px;
+  }
+
+  .nurbi-stage .settled span {
+    width: 78%;
+    justify-self: center;
+    line-height: 0;
+  }
+
+  .nurbi-stage .settled figcaption {
+    justify-self: center;
+    font: 700 16px / 1 var(--text);
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 16px;
+  }
+
+  /* 5. the family */
+  .nurbi-stage .family {
+    grid-template-columns: repeat(4, 1fr);
+    align-content: center;
+    gap: 6%;
+    padding: 10%;
+  }
+
+  .nurbi-stage .family span {
+    line-height: 0;
+  }
+
+  /* 6. the name the reader gives him */
+  .nurbi-stage .result {
+    padding: 0;
+  }
+
+  /* flat ends: a round cap paints a dot even while none of the line is drawn yet */
+  .nurbi-stage .scribbles path,
+  .nurbi-stage .side {
+    stroke-linecap: butt;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nurbi-stage,
+    .nurbi-stage * {
+      transition-delay: 0s !important;
+      animation-delay: 0s !important;
+    }
+  }
+</style>

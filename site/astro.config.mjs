@@ -20,7 +20,7 @@ function repoLinks() {
 
 export default defineConfig({
   // ponytail: no `site` until the domain is chosen; add it then for canonical URLs and the sitemap.
-  redirects: { '/docs': '/docs/getting-started/' },
+  redirects: { '/docs': '/docs/getting-started/', '/brand': '/nurbi/' },
   markdown: { remarkPlugins: [repoLinks()] },
   integrations: [
     starlight({
@@ -54,7 +54,7 @@ export default defineConfig({
             { label: 'Playground', link: '/playground/' },
             { label: 'Gallery', link: '/gallery/' },
             { label: 'AI skill', link: '/ai/' },
-            { label: 'Meet Nurbi', link: '/brand/' },
+            { label: "Nurbi's story", link: '/nurbi/' },
           ],
         },
       ],

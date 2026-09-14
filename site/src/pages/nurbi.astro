@@ -1,0 +1,331 @@
+---
+import NurbiStage from '../components/NurbiStage.astro'
+import Site from '../layouts/Site.astro'
+
+const beats = [
+  {
+    title: 'It started with a curve.',
+    body: [
+      'Someone drew a curve and moved on. A curve comes with two handles, the small lines you drag to bend it, and they should have disappeared with the rest of the tool.',
+      'These two stayed. Nobody noticed, except the handles.',
+    ],
+  },
+  {
+    title: 'Two handles, wondering.',
+    body: [
+      'Handles bend things, so they did what they knew. A body curved into shape beneath them: soft at the bottom, plated at the top. Two eyes opened.',
+      'That was Nurbi, and he had no idea what he was.',
+    ],
+  },
+  {
+    title: 'Every question changed his shape.',
+    body: [
+      'Was he tall? For a moment, he was tall. Round, sleepy, curious, wrapped in a scarf: each question pulled his handles into a new curve.',
+      'Every curve was almost him.',
+    ],
+  },
+  {
+    title: 'Then he heard a name.',
+    body: [
+      'He thought about one person, and the flickering stopped. The shape he was holding stayed with that name: the same body, the same colours, the same blink, every time the name came back.',
+      'It stepped away and became someone of its own.',
+    ],
+    aside: 'It still works this way. The same name always settles into the same Nurbling.',
+  },
+  {
+    title: 'Thousands of names later.',
+    body: [
+      'The family grew one name at a time: scarves and hats, pears and bells, every mood from curious to sleepy. Each one carries his two handles, square tips and all.',
+      'None of them is him. There is only one Nurbi, and he is still wondering.',
+    ],
+  },
+]
+---
+
+<Site
+  title="Nurbi's story"
+  description="How two stray handles in a drawing became Nurbi, and why every name hatches one of his relatives."
+  class="story"
+>
+  <div class="wrap story-grid">
+    <div class="story-text">
+      <header class="beat opening" data-step="0">
+        <p class="eyebrow">Nurbi's story</p>
+        <h1>The stray handle</h1>
+        <p class="lead">How a leftover piece of a drawing became a creature, and then a family.</p>
+        <p class="hint">Scroll to read</p>
+      </header>
+      {
+        beats.map((beat, i) => (
+          <section class="beat" data-step={i + 1}>
+            <p class="num">{String(i + 1).padStart(2, '0')}</p>
+            <h2>{beat.title}</h2>
+            {beat.body.map((line) => (
+              <p>{line}</p>
+            ))}
+            {beat.aside && <p class="aside">{beat.aside}</p>}
+          </section>
+        ))
+      }
+      <section class="beat final" data-step="6">
+        <p class="num">06</p>
+        <h2>Give him a name to think about.</h2>
+        <form class="name-form" id="name-form">
+          <label for="nurbi-name">A name</label>
+          <div class="name-field">
+            <input id="nurbi-name" name="name" autocomplete="off" spellcheck="false" placeholder="ada, a username, an email" />
+            <button class="btn" type="submit">Think about it</button>
+          </div>
+        </form>
+        <p class="result-line" id="result-line" aria-live="polite"></p>
+        <div class="actions">
+          <a class="btn" href="/docs/getting-started/">Get started</a>
+          <a class="btn btn-ghost" href="/playground/">Open the playground</a>
+        </div>
+        <p class="legal">
+          Using the name or the artwork in your own project? Read <a href="/using-the-name/">using the name and artwork</a>.
+        </p>
+      </section>
+    </div>
+    <div class="story-stage">
+      <NurbiStage />
+    </div>
+  </div>
+</Site>
+
+<script>
+  import { isFlagshipSeed, nurbling } from 'nurblings'
+  import { reducedMotion } from '../lib/client'
+
+  const stage = document.getElementById('nurbi-stage') as HTMLElement
+  const NS = 'http://www.w3.org/2000/svg'
+
+  // 1. a few curves, drawn at random on every visit, each with its two handles
+  const scribbles = stage.querySelector('.scribbles')
+  const [vx, vy, vs] = (stage.dataset.viewbox ?? '0 0 640 640').split(' ').map(Number) as [number, number, number]
+  const at = (from: number, to: number) => from + Math.random() * (to - from)
+  const point = () => [at(vx + vs * 0.12, vx + vs * 0.88), at(vy + vs * 0.12, vy + vs * 0.88)] as const
+  const make = (tag: string, attrs: Record<string, string | number>, i: number) => {
+    const el = document.createElementNS(NS, tag)
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v))
+    el.setAttribute('style', `--i:${i}`)
+    scribbles?.append(el)
+  }
+  for (let i = 0; i < 3; i++) {
+    const [p0, c1, c2, p3] = [point(), point(), point(), point()]
+    make('path', { class: 'curve', d: `M${p0}C${c1} ${c2} ${p3}`, pathLength: 1 }, i)
+    for (const [from, to] of [[p0, c1], [p3, c2]] as const) {
+      make('path', { class: 'arm', d: `M${from}L${to}`, pathLength: 1 }, i)
+      make('rect', { x: to[0] - 9, y: to[1] - 9, width: 18, height: 18 }, i)
+    }
+  }
+
+  // 3. while he wonders, one shape at a time
+  const shapes = [...stage.querySelectorAll<HTMLElement>('.flicker span')]
+  let shown = 0
+  let timer: ReturnType<typeof setInterval> | undefined
+  const wonder = (on: boolean) => {
+    clearInterval(timer)
+    shapes.forEach((s, i) => s.classList.toggle('on', i === 0))
+    if (!on || reducedMotion()) return
+    timer = setInterval(() => {
+      shapes[shown]?.classList.remove('on')
+      shown = (shown + 1) % shapes.length
+      shapes[shown]?.classList.add('on')
+    }, 620)
+  }
+
+  let step = -1
+  const go = (next: number) => {
+    if (next === step) return
+    step = next
+    for (let k = 0; k <= 6; k++) {
+      stage.classList.toggle(`at-${k}`, next >= k)
+      stage.classList.toggle(`now-${k}`, next === k)
+    }
+    wonder(next === 3)
+  }
+
+  // the part of the story in the middle of what can be read sets the drawing;
+  // on narrow screens the drawing covers the top half, so read below it
+  const narrow = matchMedia('(max-width: 860px)').matches
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) go(Number((entry.target as HTMLElement).dataset.step))
+      }
+    },
+    { rootMargin: narrow ? '-68% 0px -28% 0px' : '-45% 0px -50% 0px' },
+  )
+  for (const beat of document.querySelectorAll('.story .beat')) io.observe(beat)
+  go(0)
+
+  // 6. he thinks about the name: a short flicker, then it settles
+  const form = document.getElementById('name-form') as HTMLFormElement
+  const input = document.getElementById('nurbi-name') as HTMLInputElement
+  const result = document.getElementById('nurbi-result') as HTMLElement
+  const line = document.getElementById('result-line') as HTMLElement
+  const still = { animate: false, frame: 'full', size: 400 } as const
+  form.addEventListener('submit', (event) => {
+    event.preventDefault()
+    const name = input.value.trim() || 'ada'
+    go(6)
+    let frames = reducedMotion() ? 0 : 6
+    const tick = () => {
+      if (frames-- > 0) {
+        result.innerHTML = nurbling(Math.random().toString(36).slice(2), still)
+        setTimeout(tick, 110)
+        return
+      }
+      result.innerHTML = nurbling(name, { ...still, title: name })
+      line.textContent = isFlagshipSeed(name)
+        ? 'That name is taken. It is Nurbi himself.'
+        : 'Say hello. This name looks like this wherever it goes.'
+    }
+    tick()
+  })
+</script>
+
+<style is:global>
+  .story .story-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(24px, 5vw, 72px);
+  }
+
+  .story .story-stage {
+    position: sticky;
+    top: 92px;
+    align-self: start;
+    display: grid;
+    place-items: center;
+    height: calc(100svh - 124px);
+  }
+
+  .story .beat {
+    min-height: 78svh;
+    display: grid;
+    align-content: center;
+    gap: 14px;
+    padding-block: 40px;
+  }
+
+  .story .beat p {
+    margin: 0;
+    max-width: 36ch;
+    font-size: clamp(17px, 1.5vw, 20px);
+    color: var(--muted);
+  }
+
+  .story .eyebrow,
+  .story .num {
+    font: 700 13px / 1 var(--text);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-text);
+  }
+
+  .story h1 {
+    font-size: clamp(48px, 7vw, 96px);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+  }
+
+  .story h2 {
+    font-size: clamp(30px, 3.6vw, 48px);
+    font-weight: 800;
+    max-width: 16ch;
+  }
+
+  .story .beat p.lead {
+    color: var(--ink);
+    font-size: clamp(19px, 1.8vw, 23px);
+  }
+
+  .story .beat p.hint {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .story .beat p.aside {
+    color: var(--ink);
+    font-weight: 600;
+    border-left: 3px solid var(--accent);
+    padding-left: 14px;
+  }
+
+  .story .final {
+    min-height: 90svh;
+  }
+
+  .story .name-form {
+    display: grid;
+    gap: 8px;
+    max-width: 440px;
+  }
+
+  .story .name-form label {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .story .name-field {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 6px 6px 6px 16px;
+  }
+
+  .story .name-field:focus-within {
+    border-color: var(--accent);
+  }
+
+  .story .name-field input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: none;
+    font-size: 17px;
+    font-weight: 500;
+    outline: none;
+  }
+
+  .story .beat p.result-line {
+    min-height: 1.5em;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .story .beat p.legal {
+    font-size: 14px;
+  }
+
+  /* phones and narrow windows: the drawing stays at the top, the story scrolls under it */
+  @media (max-width: 860px) {
+    .story .story-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+
+    .story .story-stage {
+      order: -1;
+      top: 68px;
+      z-index: 5;
+      height: auto;
+      padding-block: 12px;
+      background: var(--paper);
+    }
+
+    .story .nurbi-stage {
+      width: min(100%, 42svh);
+    }
+
+    .story .beat {
+      min-height: 62svh;
+    }
+  }
+</style>
