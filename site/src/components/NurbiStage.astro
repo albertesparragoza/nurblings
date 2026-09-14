@@ -9,12 +9,13 @@
 // edges of his crown. The ones that are him stay and firm up; the rest fade,
 // and he is left behind. His parts come from the library's own drawing of him.
 import { nurbling } from 'nurblings'
+import { nurbi } from 'nurblings/nurbi'
 
 const match = (text: string, pattern: RegExp) => text.match(pattern) as RegExpMatchArray
 const f = (v: number) => Math.round(v * 100) / 100
 type Pt = readonly [number, number]
 
-const drawing = nurbling('nurbi', { animate: false, frame: 'full', size: 400 })
+const drawing = nurbi({ animate: false, frame: 'full', size: 400 })
 const viewBox = match(drawing, /viewBox="([^"]+)"/)[1]
 const inner = drawing.slice(drawing.indexOf('</title>') + 8, drawing.lastIndexOf('</svg>'))
 // the stored drawing: two antennae (a line and a square each), the body group, then the face
@@ -109,7 +110,7 @@ const family = [
     <figcaption>ada</figcaption>
   </figure>
   <div class="layer family">{family.map((svg) => <span set:html={svg} />)}</div>
-  <div class="layer result" id="nurbi-result" set:html={nurbling('nurbi', { ...still, title: 'Nurbi' })} />
+  <div class="layer result" id="nurbi-result" set:html={nurbi({ ...still, title: 'Nurbi' })} />
 </div>
 
 <style is:global>
