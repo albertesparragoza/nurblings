@@ -27,6 +27,8 @@ const {
 const pageTitle = title
   ? `${title} · Nurblings Avatars`
   : 'Nurblings Avatars · A small creature for every account'
+// the page's address on the real domain, whatever host serves this build
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined
 ---
 
 <!doctype html>
@@ -36,8 +38,10 @@ const pageTitle = title
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={textFont} as="font" type="font/woff2" crossorigin />
