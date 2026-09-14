@@ -118,7 +118,7 @@ export const RECIPES: Recipe[] = [
       slots: {
         extra: ({ anchors: a, small, n }) => {
           if (small) return ''
-          const x = a.chest.x + (a.band(0.2).right - a.chest.x) * 0.4
+          const x = a.chest.x + (a.band(0.2).right - a.chest.x) * 0.25
           const y = a.band(0.2).y
           return `<path d="M${n(x)} ${n(y + 2.6)}l-3-3a1.8 1.8 0 0 1 3-2.4a1.8 1.8 0 0 1 3 2.4z" fill="#e63972"/>`
         },
@@ -128,7 +128,7 @@ export const RECIPES: Recipe[] = [
   slots: {
     extra: ({ anchors: a, small, n }) => {
       if (small) return ''
-      const x = a.chest.x + (a.band(0.2).right - a.chest.x) * 0.4
+      const x = a.chest.x + (a.band(0.2).right - a.chest.x) * 0.25
       const y = a.band(0.2).y
       return \`<path d="M\${n(x)} \${n(y + 2.6)}l-3-3a1.8 1.8 0 0 1 3-2.4
         a1.8 1.8 0 0 1 3 2.4z" fill="#e63972"/>\`
@@ -173,6 +173,75 @@ export const RECIPES: Recipe[] = [
 avatars.nurbling(user.id, { props: { status: 'online' } })`,
   },
   {
+    id: 'collection',
+    label: 'Collection',
+    head: 'extras',
+    note: 'A season of new accessories, added to the list the seed picks from. Here the originals are dropped, so every avatar wears one of the new three.',
+    config: {
+      use: [
+        {
+          extras: {
+            beanie: {
+              draw: ({ anchors: a, colours, n }) => {
+                const rows = [0.62, 0.68, 0.74, 0.8, 0.85].map((f) => a.band(f))
+                const right = rows.map((r) => `${n(r.right)},${n(r.y)}`)
+                const left = rows.map((r) => `${n(r.left)},${n(r.y)}`).reverse()
+                return `<path d="M${[...right, ...left].join('L')}Z" fill="${colours.wear}"/>`
+              },
+            },
+            earmuffs: {
+              draw: ({ anchors: a, colours, n }) => {
+                const { left, right, y } = a.band(0.5)
+                return [left, right]
+                  .map(
+                    (x) => `<circle cx="${n(x)}" cy="${n(y)}" r="4.5" fill="${colours.accent}"/>`,
+                  )
+                  .join('')
+              },
+            },
+            bowtie: {
+              draw: ({ anchors: { chest: c }, colours, n }) =>
+                `<path d="M${n(c.x)},${n(c.y)}l-5,-3v6zM${n(c.x)},${n(c.y)}l5,-3v6z" fill="${colours.accent}"/>`,
+            },
+          },
+        },
+      ],
+      extras: { none: false, scarf: false, hat: false, collar: false },
+    },
+    code: `const winter = {
+  extras: {
+    beanie: {
+      draw: ({ anchors: a, colours, n }) => {
+        const rows = [0.62, 0.68, 0.74, 0.8, 0.85].map((f) => a.band(f))
+        const right = rows.map((r) => \`\${n(r.right)},\${n(r.y)}\`)
+        const left = rows.map((r) => \`\${n(r.left)},\${n(r.y)}\`).reverse()
+        return \`<path d="M\${[...right, ...left].join('L')}Z"
+          fill="\${colours.wear}"/>\`
+      },
+    },
+    earmuffs: {
+      draw: ({ anchors: a, colours, n }) => {
+        const { left, right, y } = a.band(0.5)
+        return [left, right].map((x) => \`<circle cx="\${n(x)}"
+          cy="\${n(y)}" r="4.5" fill="\${colours.accent}"/>\`).join('')
+      },
+    },
+    bowtie: {
+      draw: ({ anchors: { chest: c }, colours, n }) =>
+        \`<path d="M\${n(c.x)},\${n(c.y)}l-5,-3v6zM\${n(c.x)},\${n(c.y)}l5,-3v6z"
+          fill="\${colours.accent}"/>\`,
+    },
+  },
+}
+
+// add them to the built-in extras: use: [winter]
+// or wear only the new season:
+createNurblings({
+  use: [winter],
+  extras: { none: false, scarf: false, hat: false, collar: false },
+})`,
+  },
+  {
     id: 'backdrop',
     label: 'Backdrop',
     head: 'slots.backdrop',
@@ -198,9 +267,11 @@ avatars.nurbling(user.id, { props: { status: 'online' } })`,
   },
 ]
 
-// the last card combines every other recipe
+// the last card stacks the recipes its code names: every one but the collection
 const all = RECIPES.find((r) => r.id === 'all') as Recipe
-all.config = { use: RECIPES.filter((r) => r !== all).map((r) => r.config) }
+all.config = {
+  use: RECIPES.filter((r) => r !== all && r.id !== 'collection').map((r) => r.config),
+}
 
 const instances = new Map(RECIPES.map((r) => [r.id, createNurblings(r.config)]))
 
