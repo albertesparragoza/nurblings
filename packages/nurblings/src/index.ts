@@ -33,7 +33,6 @@ export {
   toDataUri,
   traits,
 } from './nurbling'
-export { isFlagshipSeed } from './protect'
 export type { Rng } from './seed'
 export { normaliseSeed } from './seed'
 export type { SlotName } from './svg'

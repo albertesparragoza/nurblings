@@ -6,7 +6,7 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { ACCENTS, CATCHLIGHT, EYE, SHELLS } from '../packages/nurblings/src/gen1'
-import { renderFlagship } from '../packages/nurblings/src/protect'
+import { nurbi as nurbiDrawing } from '../packages/nurblings/src/nurbi'
 import { render } from '../packages/nurblings/src/svg'
 import type { Antennae, Frame, Palette, Silhouette, Traits } from '../packages/nurblings/src/types'
 
@@ -257,10 +257,10 @@ function containerRow(label: string, draw: (size: number, frame: Frame) => strin
 const big = (svg: string, caption: string, size: number) =>
   `<figure style="width:${size}px">${svg}<figcaption>${caption}</figcaption></figure>`
 
-const nurbi = big(renderFlagship({ size: 220, frame: 'full' }), 'Nurbi', 220)
+const nurbi = big(nurbiDrawing({ size: 220, frame: 'full' }), 'Nurbi', 220)
 
 const rows = [
-  containerRow('Nurbi (flagship)', (size, frame) => renderFlagship({ size, frame }), '#2a2a31'),
+  containerRow('Nurbi (flagship)', (size, frame) => nurbiDrawing({ size, frame }), '#2a2a31'),
   ...CANDIDATES.map((c) => {
     const t = traits(c)
     return containerRow(c.name, (size, frame) => render(t, { size, frame }), t.palette.background)
@@ -268,7 +268,7 @@ const rows = [
 ].join('')
 
 const strip = [
-  big(renderFlagship({ size: 160, frame: 'full' }), 'Nurbi', 160),
+  big(nurbiDrawing({ size: 160, frame: 'full' }), 'Nurbi', 160),
   ...CANDIDATES.map((c) => big(render(traits(c), { size: 160, frame: 'full' }), c.name, 160)),
 ].join('')
 

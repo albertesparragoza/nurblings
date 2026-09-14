@@ -33,13 +33,6 @@ describe('built-in themes', () => {
     expect(nb.traits('ada', { shell: 'cream' }).palette.shell).toBe('#edecb3')
   })
 
-  it('never recolours Nurbi', () => {
-    expect(themed('lagoon').nurbling('nurbi', { size: 64 })).toBe(nurbling('nurbi', { size: 64 }))
-    expect(renderNurbling(undefined, 'nurbi', { size: 64 }, 'riso')).toBe(
-      nurbling('nurbi', { size: 64 }),
-    )
-  })
-
   it('hands out an img src in one call', () => {
     expect(nurblingSrc('ada', { size: 64 })).toBe(toDataUri(nurbling('ada', { size: 64 })))
     const nb = createNurblings({ theme: lagoon })

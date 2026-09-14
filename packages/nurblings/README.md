@@ -48,6 +48,7 @@ stops under `prefers-reduced-motion`. Pass `animate: false` for a still one.
 | `nurblings` | `nurbling`, `nurblingSrc`, `traits`, `renderTraits`, `createNurblings` and the types |
 | `nurblings/themes` | Ten named themes, `palette()` for your brand colours, and colour helpers |
 | `nurblings/transition` | `morph()`, which glides an avatar between the places it appears |
+| `nurblings/nurbi` | `nurbi()`: Nurbi himself, the family's flagship, as the stored drawing |
 
 ## Documentation
 

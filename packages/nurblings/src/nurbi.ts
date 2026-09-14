@@ -1,8 +1,8 @@
-// Flagship protection: the reserved seed `nurbi` renders the stored drawing of
-// Nurbi. Nothing else ever does, and the generator never produces it.
+// nurblings/nurbi: Nurbi, the family's flagship, as the stored drawing. An
+// entry of its own, so no other import carries his drawing; the generator
+// never produces him. Reserved artwork: see TRADEMARKS.md.
 
 import { FLAGSHIP_BODY } from './flagship'
-import { normaliseSeed } from './seed'
 import {
   type Box,
   backdrop,
@@ -16,9 +16,6 @@ import {
   tagFor,
 } from './svg'
 import type { Frame, RenderOptions } from './types'
-
-/** Normalised seeds that resolve to Nurbi. */
-const FLAGSHIP_SEEDS: readonly string[] = ['nurbi']
 
 const FLAGSHIP_BACKGROUND = '#15151a'
 
@@ -43,11 +40,8 @@ function flagshipBox(frame: Frame): Box {
   }
 }
 
-export function isFlagshipSeed(seed: string): boolean {
-  return FLAGSHIP_SEEDS.includes(normaliseSeed(seed))
-}
-
-export function renderFlagship(opts: RenderOptions = {}): string {
+/** Nurbi, the stored drawing, as an SVG string. Takes the rendering options. */
+export function nurbi(opts: RenderOptions = {}): string {
   const px = pixelSize(opts.size)
   const size = n(px)
   const [named, heading] = label(opts, 'Nurbi')

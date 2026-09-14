@@ -3,6 +3,7 @@
 // elements and attributes the renderer itself writes, or the call must throw.
 
 import { describe, expect, it } from 'vitest'
+import { nurbi } from '../src/nurbi'
 import { createNurblings, nurbling, renderTraits, traits } from '../src/nurbling'
 import { palette, renderNurbling, THEMES, themed, themeOf } from '../src/themes'
 import { transitionName } from '../src/transition'
@@ -78,7 +79,7 @@ describe('hostile input never becomes markup', () => {
     assertClean(nurbling('ada', { title: s, transition: s }))
     assertClean(nurbling('ada', { title: s, transition: s, mode: 'auto', background: 'circle' }))
     assertClean(themed('lagoon').nurbling('ada', { title: s, transition: s }))
-    assertClean(nurbling('nurbi', { title: s, transition: s }))
+    assertClean(nurbi({ title: s, transition: s }))
   })
 
   it.each(HOSTILE)('the seed %j only picks traits', (s) => {

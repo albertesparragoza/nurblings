@@ -23,7 +23,6 @@ import {
   SILHOUETTES,
   type SilhouetteName,
 } from './gen1'
-import { isFlagshipSeed, renderFlagship } from './protect'
 import { normaliseSeed, type Rng, stream } from './seed'
 import { render } from './svg'
 import type { Extra, Mood, Mouth, Palette, RenderOptions, Silhouette, Traits } from './types'
@@ -370,7 +369,6 @@ export function traits(seed: string, opts: NurblingOptions = {}): Traits {
 
 /** Any string in, a Nurbling out, as an SVG string. The same string always hatches the same one. */
 export function nurbling(seed: string, opts: NurblingOptions = {}): string {
-  if (isFlagshipSeed(seed)) return renderFlagship(opts)
   return render(traits(seed, opts), opts)
 }
 
@@ -384,8 +382,6 @@ export function themedNurbling(
   opts: NurblingOptions & { theme?: Theme },
   theme: Theme,
 ): string {
-  // Nurbi stays Nurbi: a theme recolours the family, never the flagship
-  if (isFlagshipSeed(seed)) return renderFlagship(opts)
   return render(resolve(seed, opts, plainThemeTables(opts.theme ?? theme)), opts)
 }
 
@@ -581,7 +577,6 @@ function shellTable(
 /**
  * An app-wide configured Nurblings: your palette, your body designs, your drawn
  * parts, your defaults. The same config and seed always give the same avatar.
- * Only the default `nurbling()` draws Nurbi for the reserved seeds.
  */
 export function createNurblings<const C extends NurblingsConfig>(input: C) {
   // presets in `use` come first; slots chain, and everything else merges by name
@@ -594,8 +589,6 @@ export function createNurblings<const C extends NurblingsConfig>(input: C) {
     o.theme && o.theme !== config.theme ? themeTables(o.theme, config) : tables
   const draw = (seed: string, opts: ConfiguredOptions<C> = {}): string => {
     const o = merge(opts)
-    // Nurbi is the same stored drawing in every renderer, whatever the config
-    if (isFlagshipSeed(seed)) return renderFlagship(o)
     return render(resolve(seed, o, tablesFor(o)), o, extend)
   }
   return {

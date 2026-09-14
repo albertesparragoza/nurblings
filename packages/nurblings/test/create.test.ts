@@ -94,9 +94,7 @@ describe('createNurblings', () => {
     expect(nb.nurbling('ada', { size: 64 })).toContain('width="64"')
   })
 
-  it('draws the stored Nurbi like the default renderer, whatever the config', () => {
+  it('treats the seed nurbi like any other seed', () => {
     expect(createNurblings({}).nurbling('nurbi')).toBe(nurbling('nurbi'))
-    const branded = createNurblings({ ...BRAND, defaults: { size: 40 } })
-    expect(branded.nurbling('nurbi')).toBe(nurbling('nurbi', { size: 40 }))
   })
 })
