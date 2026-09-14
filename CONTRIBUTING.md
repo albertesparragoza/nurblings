@@ -38,8 +38,11 @@ paths.
 | --- | --- |
 | `packages/nurblings` | The core: seeds, traits, the SVG renderer. No runtime dependencies. |
 | `packages/react`, `packages/vue`, `packages/astro` | Thin framework components over the core |
+| `packages/element` | The `<nurbling-avatar>` custom element, for any HTML |
 | `examples/` | Small apps that use the published packages, built in CI |
-| `docs/` | Guides and the API reference |
+| `docs/` | Guides and the API reference, plain Markdown |
+| `skills/nurblings` | The skill that teaches coding agents the library |
+| `site/` | The website; it renders `docs/` and has [its own README](site/README.md) |
 
 ## Branches (git flow)
 

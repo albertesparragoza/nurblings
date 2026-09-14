@@ -144,9 +144,11 @@ React has a `NurblingsProvider`, Vue a `NurblingsPlugin`; see
 | Path | What |
 | --- | --- |
 | [`packages/nurblings`](packages/nurblings) | Core: seed hashing, traits, SVG renderer |
-| [`packages/react`](packages/react), [`vue`](packages/vue), [`astro`](packages/astro) | Framework components |
+| [`packages/react`](packages/react), [`vue`](packages/vue), [`astro`](packages/astro), [`element`](packages/element) | Framework components and the custom element |
 | [`examples/`](examples) | Next.js, Nuxt and Astro apps, built in CI |
 | [`docs/`](docs) | Guides and API reference |
+| [`skills/nurblings`](skills/nurblings) | The coding agent skill |
+| [`site/`](site) | The website, apart from the library |
 
 ```sh
 pnpm install
