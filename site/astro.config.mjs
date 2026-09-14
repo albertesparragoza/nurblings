@@ -28,7 +28,8 @@ function dropTitle() {
 }
 
 export default defineConfig({
-  // ponytail: no `site` until the domain is chosen; add it then for canonical URLs and the sitemap.
+  // canonical URLs and the sitemap
+  site: 'https://nurblings.com',
   redirects: { '/docs': '/docs/getting-started/', '/brand': '/nurbi/' },
   markdown: { remarkPlugins: [repoLinks(), dropTitle()] },
   integrations: [
