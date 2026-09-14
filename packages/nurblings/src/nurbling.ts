@@ -2,6 +2,7 @@
 
 import { checkDesign, checkTraits } from './check'
 import { contrast, ensureContrast, shade } from './colour'
+import { compose, extension, type Part, type Props, type Slots, type Variants } from './extend'
 import {
   ACCENTS,
   ANTENNA_COUNTS,
@@ -24,7 +25,7 @@ import {
 } from './gen1'
 import { isFlagshipSeed, renderFlagship } from './protect'
 import { normaliseSeed, type Rng, stream } from './seed'
-import { render, type Slots } from './svg'
+import { render } from './svg'
 import type { Extra, Mood, Mouth, Palette, RenderOptions, Silhouette, Traits } from './types'
 
 export { contrast }
@@ -62,7 +63,11 @@ export interface NurblingOptions extends RenderOptions {
 /** A body design: a silhouette without its per-seed grain, and how often it is drawn. */
 export type SilhouetteShape = Omit<Silhouette, 'grain'> & { weight?: number }
 
-/** App-wide overrides for `createNurblings`. Each table replaces the built-in one. */
+/**
+ * App-wide overrides for `createNurblings`. Colour tables replace the built-in
+ * ones. Lists the seed picks from (body designs, eyes, mouths, extras) add to
+ * the built-in ones: a new name joins the list, `false` drops one.
+ */
 export interface NurblingsConfig {
   /** a colour set for every avatar; `shells` and `accents` below still win */
   theme?: Theme
@@ -70,16 +75,40 @@ export interface NurblingsConfig {
   shells?: Readonly<Record<string, Hex>>
   /** brow and antenna colours; ones that do not read on light and dark pages are never used */
   accents?: Readonly<Record<string, Hex>>
-  /** body designs; spread `SILHOUETTES` to extend the built-in set, leave names out to drop them */
-  silhouettes?: Readonly<Record<string, SilhouetteShape>>
-  /** replace, wrap or drop any drawn part */
+  /** body designs, added to the built-in ones; `false` drops one */
+  silhouettes?: Readonly<Record<string, SilhouetteShape | false>>
+  /** eye shapes, added to the built-in ones; `false` drops one */
+  eyes?: Variants
+  /** mouths, added to the built-in ones; `false` drops one */
+  mouths?: Variants
+  /** extras such as a season's accessories, added to the built-in ones; `false` drops one */
+  extras?: Variants
+  /** replace, wrap or drop any drawn part, built in or added by `parts` */
   slots?: Slots
+  /** new parts, each painted after the part it names */
+  parts?: Readonly<Record<string, Part>>
+  /** data every slot and part can read as `ctx.props`; a call's own props win */
+  props?: Props
+  /** presets applied before this config, in order: see `compose` */
+  use?: readonly NurblingsConfig[]
   /** options applied to every call */
   defaults?: Omit<NurblingOptions, 'silhouette' | 'shell'>
 }
 
-type NamesOf<T, Fallback extends string> =
-  T extends Readonly<Record<string, unknown>> ? Extract<keyof T, string> : Fallback
+type Keys<T> = T extends Readonly<Record<string, unknown>> ? Extract<keyof T, string> : never
+type Dropped<T> = { [K in keyof T]: T[K] extends false ? K : never }[keyof T]
+type ListKey = 'silhouettes' | 'mouths' | 'extras'
+/** Names the config's presets add to one list. */
+type PresetKeys<C, K extends ListKey> = C extends { readonly use?: readonly (infer P)[] }
+  ? P extends { readonly [k in K]?: infer T }
+    ? Keys<T>
+    : never
+  : never
+/** The names in one list: the built-in ones, the config's and its presets', less those it drops. */
+type ChoiceNames<C extends NurblingsConfig, K extends ListKey, Builtin extends string> = Exclude<
+  Builtin | Keys<C[K]> | PresetKeys<C, K>,
+  Dropped<NonNullable<C[K]>>
+>
 
 /** Body colour names: the config's own shells, else its theme's, else the built-in ones. */
 type ShellNamesOf<C extends NurblingsConfig> =
@@ -89,21 +118,28 @@ type ShellNamesOf<C extends NurblingsConfig> =
       ? Extract<keyof C['theme']['shells'], string>
       : ShellName
 
-/** Options for a configured instance: `silhouette` and `shell` name that instance's own tables. */
+/** Options for a configured instance: pinned names are that instance's own. */
 export type ConfiguredOptions<C extends NurblingsConfig> = Omit<
   NurblingOptions,
-  'silhouette' | 'shell'
+  'silhouette' | 'shell' | 'mouth' | 'extra'
 > & {
   /** colours for this call; the creature's shape and face stay the same */
   theme?: Theme
-  silhouette?: NamesOf<C['silhouettes'], SilhouetteName>
+  silhouette?: ChoiceNames<C, 'silhouettes', SilhouetteName>
   shell?: ShellNamesOf<C>
+  mouth?: ChoiceNames<C, 'mouths', Mouth>
+  extra?: ChoiceNames<C, 'extras', Extra>
+  /** data for this call's slots and parts, over the config's `props` */
+  props?: Props
 }
 
-type Pins = Omit<NurblingOptions, 'silhouette' | 'shell'> & {
+type Pins = Omit<NurblingOptions, 'silhouette' | 'shell' | 'mouth' | 'extra'> & {
   silhouette?: string
   shell?: string
+  mouth?: string
+  extra?: string
   theme?: Theme
+  props?: Props
 }
 
 interface ShellEntry {
@@ -116,10 +152,17 @@ interface ShellEntry {
   darkBackdrops: readonly string[]
 }
 
+/** Names with how often each is drawn. */
+type Weighted = readonly (readonly [string, number])[]
+
 interface Tables {
   shells: Readonly<Record<string, ShellEntry>>
   silhouettes: Readonly<Record<string, SilhouetteShape>>
-  weights: readonly (readonly [string, number])[]
+  weights: Weighted
+  /** eye shapes by weight; unset, the built-in four are picked evenly, as generation 1 always has */
+  eyeShapes?: Weighted
+  mouths: Weighted
+  extras: Weighted
   /** built from a theme: colours are drawn on top of the built-in shape and face */
   themed?: boolean
 }
@@ -142,18 +185,17 @@ const DEFAULT_TABLES: Tables = {
   ),
   silhouettes: SILHOUETTES,
   weights: SILHOUETTE_WEIGHTS,
+  mouths: MOUTHS,
+  extras: EXTRAS,
 }
 
 const round = (x: number) => Math.round(x * 100) / 100
+const names = (list: Weighted) => list.map(([name]) => name)
 
 /** Most rerolls before a seed stops trying to leave the protected region. */
 const MAX_REROLLS = 8
 
-const CHOICES: readonly (readonly [keyof Pins, readonly string[]])[] = [
-  ['mood', MOODS.map(([m]) => m)],
-  ['mouth', MOUTHS.map(([m]) => m)],
-  ['extra', EXTRAS.map(([e]) => e)],
-]
+const MOOD_NAMES = MOODS.map(([m]) => m)
 
 // Every trait is always drawn, then overridden by a pinned option, so pinning
 // one trait never shifts any other random draw. The one deliberate exception:
@@ -190,9 +232,11 @@ function draw(seed: string, attempt: number, opts: Pins, tables: Tables): Traits
   const tip = round(a.range(...RANGES.tip))
   const count = a.weighted(ANTENNA_COUNTS)
 
+  // each list draws exactly one value from its stream, whatever it holds, so a
+  // longer or shorter list never shifts any trait drawn after it
   const e = key('eyes')
   const eyes = {
-    shape: e.pick(EYE_SHAPES),
+    shape: tables.eyeShapes ? e.weighted(tables.eyeShapes) : e.pick(EYE_SHAPES),
     size: round(e.range(...RANGES.eyeSize)),
     spacing: round(e.range(...RANGES.eyeSpacing)),
     depth: round(e.range(...RANGES.eyeDepth)),
@@ -201,8 +245,8 @@ function draw(seed: string, attempt: number, opts: Pins, tables: Tables): Traits
 
   const f = key('face')
   const brow = { shape: f.pick(BROWS), tilt: f.int(2 * RANGES.browTilt + 1) - RANGES.browTilt }
-  const mouth = f.weighted(MOUTHS)
-  const extra = f.weighted(EXTRAS)
+  const mouth = f.weighted(tables.mouths)
+  const extra = f.weighted(tables.extras)
   const mood = f.weighted(MOODS)
 
   return {
@@ -269,7 +313,9 @@ function resolve(seed: string, opts: Pins, tables: Tables): Traits {
     throw new RangeError(`nurblings: unknown generation ${String(opts.gen)}`)
   }
   const pins: readonly (readonly [keyof Pins, readonly string[]])[] = [
-    ...CHOICES,
+    ['mood', MOOD_NAMES],
+    ['mouth', names(tables.mouths)],
+    ['extra', names(tables.extras)],
     ['silhouette', Object.keys(tables.silhouettes)],
     ['shell', Object.keys(tables.shells)],
   ]
@@ -283,9 +329,7 @@ function resolve(seed: string, opts: Pins, tables: Tables): Traits {
   // A theme changes colours only: shape and face are drawn with the built-in
   // colours, exactly as without a theme, and the theme's colours go on top.
   const { shell, ...unpinned } = opts
-  const base = tables.themed
-    ? { ...DEFAULT_TABLES, silhouettes: tables.silhouettes, weights: tables.weights }
-    : tables
+  const base = tables.themed ? { ...tables, shells: DEFAULT_TABLES.shells } : tables
   const baseOpts = tables.themed ? unpinned : opts
   let t = draw(normal, 0, baseOpts, base)
   for (let attempt = 1; attempt <= MAX_REROLLS && inProtectedRegion(t); attempt++) {
@@ -303,10 +347,12 @@ function resolve(seed: string, opts: Pins, tables: Tables): Traits {
 // built once per theme object, however many avatars use it
 const themed = new WeakMap<Theme, Tables>()
 function themeTables(theme: Theme, base: NurblingsConfig = {}): Tables {
-  let tables = base.silhouettes ? undefined : themed.get(theme)
+  const { silhouettes, eyes, mouths, extras } = base
+  const plain = !silhouettes && !eyes && !mouths && !extras
+  let tables = plain ? themed.get(theme) : undefined
   if (!tables) {
-    tables = buildTables({ silhouettes: base.silhouettes, theme } as NurblingsConfig)
-    if (!base.silhouettes) themed.set(theme, tables)
+    tables = buildTables({ silhouettes, eyes, mouths, extras, theme } as NurblingsConfig)
+    if (plain) themed.set(theme, tables)
   }
   return tables
 }
@@ -329,7 +375,7 @@ export function nurbling(seed: string, opts: NurblingOptions = {}): string {
  */
 export function renderTraits(t: Traits, opts: RenderOptions = {}, slots?: Slots): string {
   checkTraits(t)
-  return render(t, opts, slots)
+  return render(t, opts, slots && extension({ slots }))
 }
 
 /** An SVG string as a data URI, for an img src or a CSS background. */
@@ -357,6 +403,66 @@ function hexes(record: Readonly<Record<string, string>>): [string, string][] {
   })
 }
 
+const weightsOk = (list: Weighted) => list.every(([, w]) => w >= 0) && list.some(([, w]) => w > 0)
+
+/** Body designs: the built-in ones, with the config's added, replaced or dropped (`false`). */
+function designs(given: NurblingsConfig['silhouettes']): Pick<Tables, 'silhouettes' | 'weights'> {
+  if (!given) return { silhouettes: SILHOUETTES, weights: SILHOUETTE_WEIGHTS }
+  const silhouettes: Record<string, SilhouetteShape> = { ...SILHOUETTES }
+  const weights = new Map<string, number>(SILHOUETTE_WEIGHTS)
+  for (const [name, design] of Object.entries(given)) {
+    if (design === false) {
+      delete silhouettes[name]
+      weights.delete(name)
+      continue
+    }
+    checkDesign(name, design)
+    silhouettes[name] = design
+    weights.set(name, design.weight ?? weights.get(name) ?? 1)
+  }
+  if (!weights.size) throw new RangeError('nurblings: silhouettes needs at least one design')
+  const list = [...weights]
+  if (!weightsOk(list)) {
+    throw new RangeError('nurblings: silhouette weights must be 0 or more, at least one above 0')
+  }
+  return { silhouettes, weights: list }
+}
+
+/**
+ * A list the seed picks from: the built-in one with the config's choices merged
+ * over it. A new name joins the list and must draw itself, `false` drops a name,
+ * and a weight replaces a built-in one's. With nothing changed, the list, and so
+ * every seed's draw, stays exactly as it is.
+ */
+function choices(kind: string, builtIn: Weighted, given: Variants | undefined): Weighted {
+  if (!given) return builtIn
+  const known = new Set(names(builtIn))
+  const reweighted = new Set<string>()
+  const list: (readonly [string, number])[] = []
+  for (const [name, weight] of builtIn) {
+    const choice = given[name]
+    if (choice === false || reweighted.has(name)) continue
+    if (choice?.weight === undefined) {
+      list.push([name, weight])
+    } else {
+      // a retired duplicate folds into the one weight given
+      list.push([name, choice.weight])
+      reweighted.add(name)
+    }
+  }
+  for (const [name, choice] of Object.entries(given)) {
+    if (known.has(name) || choice === false) continue
+    if (typeof choice.draw !== 'function') {
+      throw new RangeError(`nurblings: the new ${kind} ${name} needs a draw function`)
+    }
+    list.push([name, choice.weight ?? 1])
+  }
+  if (!weightsOk(list)) {
+    throw new RangeError(`nurblings: ${kind} weights must be 0 or more, at least one above 0`)
+  }
+  return list
+}
+
 /**
  * The tables a config draws from. Colours are paired by contrast: an accent
  * must read on light and dark pages and at 3:1 on a shell to be paired with it,
@@ -365,22 +471,24 @@ function hexes(record: Readonly<Record<string, string>>): [string, string][] {
  * turn light on dark bodies, and antennae are kept readable at render time.
  */
 function buildTables(config: NurblingsConfig): Tables {
-  const silhouettes = config.silhouettes ?? SILHOUETTES
-  if (Object.keys(silhouettes).length === 0) {
-    throw new RangeError('nurblings: silhouettes needs at least one design')
-  }
-  const weights = config.silhouettes
-    ? Object.entries(config.silhouettes).map(([name, s]) => [name, s.weight ?? 1] as const)
-    : SILHOUETTE_WEIGHTS
-  if (weights.some(([, w]) => !(w >= 0)) || !weights.some(([, w]) => w > 0)) {
-    throw new RangeError('nurblings: silhouette weights must be 0 or more, at least one above 0')
-  }
-  if (config.silhouettes) {
-    for (const [name, design] of Object.entries(config.silhouettes)) checkDesign(name, design)
+  const { silhouettes, weights } = designs(config.silhouettes)
+  const lists = {
+    mouths: choices('mouth', MOUTHS, config.mouths),
+    extras: choices('extra', EXTRAS, config.extras),
+    ...(config.eyes
+      ? {
+          eyeShapes: choices(
+            'eye shape',
+            EYE_SHAPES.map((s) => [s, 1] as const),
+            config.eyes,
+          ),
+        }
+      : {}),
   }
   const theme = config.theme
-  if (!config.shells && !config.accents && !theme)
-    return { ...DEFAULT_TABLES, silhouettes, weights }
+  if (!config.shells && !config.accents && !theme) {
+    return { ...DEFAULT_TABLES, silhouettes, weights, ...lists }
+  }
 
   const all = hexes(config.accents ?? theme?.accents ?? ACCENTS)
   const accents = theme
@@ -434,7 +542,7 @@ function buildTables(config: NurblingsConfig): Tables {
       darkBackdrops: pool(theme?.darkBackdrops, shell, night(shell)),
     }
   }
-  return { shells: table, silhouettes, weights, themed: Boolean(theme) }
+  return { shells: table, silhouettes, weights, ...lists, themed: Boolean(theme) }
 }
 
 /**
@@ -442,15 +550,18 @@ function buildTables(config: NurblingsConfig): Tables {
  * parts, your defaults. The same config and seed always give the same avatar.
  * Only the default `nurbling()` draws Nurbi for the reserved seeds.
  */
-export function createNurblings<const C extends NurblingsConfig>(config: C) {
+export function createNurblings<const C extends NurblingsConfig>(input: C) {
+  // presets in `use` come first; slots chain, and everything else merges by name
+  const config = compose(input)
   const tables = buildTables(config)
+  const extend = extension(config)
   const merge = (opts: ConfiguredOptions<C>): Pins => ({ ...config.defaults, ...opts })
   // a theme on one call swaps the colours and keeps this instance's body designs
   const tablesFor = (o: Pins) =>
     o.theme && o.theme !== config.theme ? themeTables(o.theme, config) : tables
   const draw = (seed: string, opts: ConfiguredOptions<C> = {}): string => {
     const o = merge(opts)
-    return render(resolve(seed, o, tablesFor(o)), o, config.slots)
+    return render(resolve(seed, o, tablesFor(o)), o, extend)
   }
   return {
     traits: (seed: string, opts: ConfiguredOptions<C> = {}): Traits => {

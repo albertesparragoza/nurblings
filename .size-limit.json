@@ -9,7 +9,7 @@
     "name": "nurblings: everything, createNurblings included",
     "path": "packages/nurblings/dist/index.js",
     "import": "*",
-    "limit": "10.5 KB"
+    "limit": "12 KB"
   },
   {
     "name": "nurblings/transition: morph()",

@@ -42,9 +42,11 @@ describe('createNurblings', () => {
       }),
     ).toThrow(/sand/)
     const { classic } = SILHOUETTES
-    expect(() => createNurblings({ silhouettes: { a: { ...classic, weight: 0 } } })).toThrow(
+    expect(() => createNurblings({ silhouettes: { a: { ...classic, weight: -1 } } })).toThrow(
       /weight/,
     )
+    const none = Object.fromEntries(Object.keys(SILHOUETTES).map((name) => [name, false] as const))
+    expect(() => createNurblings({ silhouettes: none })).toThrow(/at least one/)
   })
 
   it('keeps slot context read-only in its types', () => {
@@ -60,10 +62,9 @@ describe('createNurblings', () => {
   })
 
   it('adds and drops designs, typed by name', () => {
-    const { pear: _pear, ...rest } = SILHOUETTES
     const nb = createNurblings({
       silhouettes: {
-        ...rest,
+        pear: false,
         robot: { hw: 1.1, width: 0.9, belly: 0.3, tip: 0.9, rows: 4, cols: 2, plates: 'side' },
       },
     })

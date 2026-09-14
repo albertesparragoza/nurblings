@@ -102,8 +102,36 @@ character. Every other seed is kept away from Nurbi's look.
 ## `createNurblings(config)`
 
 Makes an instance with your palette, body designs, drawn parts and defaults,
-returning `{ nurbling, traits }` with the same signatures as above. Colours are
-checked for contrast at setup. See [Customising](customising.md).
+returning `{ nurbling, traits, src }` with the same signatures as above. Its
+calls also take `theme` and `props`. Colours are checked for contrast, and
+part positions and slot names are checked, at setup. See
+[Customising](customising.md).
+
+| Config | What it does |
+| --- | --- |
+| `theme` | A colour set for every avatar |
+| `shells`, `accents` | Body and mark colours, replacing the built-in ones |
+| `silhouettes`, `eyes`, `mouths`, `extras` | Lists the seed picks from. New names are added to the built-in ones, `false` drops one, and `weight` sets how often each comes up. New eyes, mouths and extras draw themselves with `draw(ctx)` |
+| `slots` | Replace, wrap or drop any part by name, built in or added |
+| `parts` | New parts, each `{ after?, small?, draw(ctx) }` |
+| `props` | Data every slot and part reads as `ctx.props`; a call's `props` win |
+| `use` | Presets applied first, in order: each is a config like this one |
+| `defaults` | Options for every call |
+
+Every slot and part receives the same context: `anchors`, `colours`,
+`paint()`, `random()`, `theme`, `options`, `props`, `n()`, `esc()`, `small`,
+`size`, `mode`, `traits` and `geometry`. See
+[Extending parts](customising.md#extending-parts).
+
+## `compose(...configs)`
+
+Combines configs into one, the same way `use` does: slots chain, each later
+one wrapping what the earlier ones drew; parts, designs, colours and props
+merge by name, later names winning; the last theme wins; defaults merge.
+
+```ts
+const avatars = createNurblings(compose(brand, glasses, status))
+```
 
 ## `nurblings/themes`
 

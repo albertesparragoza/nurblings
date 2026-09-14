@@ -24,8 +24,9 @@ import type {
 
 export { shade }
 
-const CX = 50
-const BASE_Y = 93
+/** The body's centre line and the base it stands on, in drawing units. */
+export const CX = 50
+export const BASE_Y = 93
 /** The standard body width in drawing units; a silhouette's `width` scales it. */
 const BW = 52
 
@@ -339,28 +340,38 @@ const LIFT: Record<Traits['mood'], number> = {
 }
 const RATIO: Record<Eyes['shape'], number> = { round: 1, tall: 1.1, wide: 0.86, almond: 0.78 }
 
-function eyes(g: BodyGeometry, t: Traits): { svg: string; top: number; outer: number; y: number } {
+function eyes(g: BodyGeometry, t: Traits): Face {
   const e = t.eyes
   const y = g.top + e.depth * g.height
   const rx = (e.size * g.bw) / 2
-  const ry = rx * RATIO[e.shape]
+  // a shape a config adds has the proportions of a round eye
+  const ry = rx * ((RATIO as Record<string, number>)[e.shape] ?? 1)
   const open = OPEN[t.mood] ?? 1
   const oy = ry * open
   const cy = y + (ry - oy)
   const dx = (e.spacing * g.bw) / 2
   const p = t.palette
   let svg = ''
+  const boxes: EyeBox[] = []
   for (const side of [-1, 1] as const) {
     const cx = CX + side * dx
     const rot = e.shape === 'almond' ? ` transform="rotate(${-side * 8} ${n(cx)} ${n(cy)})"` : ''
     svg += `<ellipse cx="${n(cx)}" cy="${n(cy)}" rx="${n(rx)}" ry="${n(oy)}" fill="${p.eye}"${rot}/>`
+    boxes.push({ x: cx, y: cy, rx, ry: oy })
   }
-  return { svg, top: y - ry, outer: dx + rx, y }
+  const top = y - ry
+  return {
+    svg,
+    y,
+    top,
+    outer: dx + rx,
+    brow: top - 0.045 * g.bw - (LIFT[t.mood] ?? 0) * g.bw,
+    mouth: y + 0.17 * g.height,
+    eyes: boxes as unknown as Face['eyes'],
+  }
 }
 
-function brow(g: BodyGeometry, t: Traits, top: number, outer: number, small: boolean): string {
-  const lift = (LIFT[t.mood] ?? 0) * g.bw
-  const y = top - 0.045 * g.bw - lift
+function brow(g: BodyGeometry, t: Traits, y: number, outer: number, small: boolean): string {
   const w = t.brow.shape === 'bold' || small ? 0.034 * g.bw : 0.02 * g.bw
   const tilt = Math.max(-6, Math.min(6, t.brow.tilt))
   const l = CX - outer
@@ -379,8 +390,7 @@ function brow(g: BodyGeometry, t: Traits, top: number, outer: number, small: boo
   return `<path d="${d}" fill="none" stroke="${t.palette.accent}" stroke-width="${n(w)}" stroke-linecap="round" transform="rotate(${n(tilt)} ${n(CX)} ${n(y)})"/>`
 }
 
-function mouth(t: Traits, eyeY: number, g: BodyGeometry): string {
-  const y = eyeY + 0.17 * g.height
+function mouth(t: Traits, y: number, g: BodyGeometry): string {
   const c = t.palette.eye
   const u = g.bw
   switch (t.mouth) {
@@ -408,6 +418,12 @@ function crossing(pts: readonly Pt[], y: number): number {
   }
   return CX
 }
+
+/** The body's left and right edges at height y, each following its own side. */
+export const edgesAt = (g: BodyGeometry, y: number): [number, number] => [
+  crossing(side(g, -1), y),
+  crossing(side(g, 1), y),
+]
 
 /**
  * A band hugging the body between two heights (fractions of height from the
@@ -523,7 +539,10 @@ const LAYERS = { mb: 'breath', mk: 'blink', ma: 'antennae', mh: 'hover' } as con
 const AUTO_RULES =
   '.nb-auto .nb-g{fill:var(--nb-g)}.nb-auto .nb-c{stroke:var(--nb-c)}.nb-auto .nb-c rect{fill:var(--nb-c)}'
 const LIGHT = ':is([data-theme=light],.light)'
-export const AUTO = `<style>@media (prefers-color-scheme:dark){@scope (:root) to (${LIGHT}){${AUTO_RULES}}}@scope (:is([data-theme=dark],.dark)) to (${LIGHT}){${AUTO_RULES}}</style>`
+/** Rules that apply wherever the page is dark, the nearest marker winning. */
+export const autoCss = (rules: string) =>
+  `<style>@media (prefers-color-scheme:dark){@scope (:root) to (${LIGHT}){${rules}}}@scope (:is([data-theme=dark],.dark)) to (${LIGHT}){${rules}}</style>`
+export const AUTO = autoCss(AUTO_RULES)
 
 /** Page grounds an antenna stands on when there is no container. */
 const PAGE = { light: '#f7f5f2', dark: '#16161a' }
@@ -600,23 +619,52 @@ export type DeepReadonly<T> = T extends (...args: never[]) => unknown
     ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
     : T
 
-export interface SlotContext {
-  readonly traits: DeepReadonly<Traits>
-  readonly geometry: DeepReadonly<BodyGeometry>
-  readonly size: number
-  /** true at 32 px and below, where the built-in mouth and extras are dropped */
-  readonly small: boolean
-  /** the page appearance this avatar is drawn for */
-  readonly mode: Mode
+/** An eye as drawn: its centre and radii, the mood's openness included. */
+export interface EyeBox {
+  readonly x: number
+  readonly y: number
+  readonly rx: number
+  readonly ry: number
 }
 
-/**
- * A slot override: `false` drops the part; a function replaces it, or wraps it
- * by calling `base()` for the built-in markup. Output must stay id-free.
- */
-export type Slot = false | ((ctx: SlotContext, base: () => string) => string)
+/** Where the face sits: what the eyes, brow and mouth are drawn from. */
+export interface Face {
+  svg: string
+  /** the eye line, before the mood narrows the eyes */
+  y: number
+  top: number
+  outer: number
+  brow: number
+  mouth: number
+  eyes: readonly [EyeBox, EyeBox]
+}
 
-export type Slots = Partial<Record<SlotName, Slot>>
+/** Everything one avatar is drawn from: what an extension builds its context on. */
+export interface Scene {
+  traits: Traits
+  geometry: BodyGeometry
+  opts: RenderOptions
+  size: number
+  small: boolean
+  mode: Mode
+  box: Box
+  face: Face
+  /** the antenna colour, kept readable on a light or a dark ground */
+  mark(dark: boolean): string
+  /** the built-in parts */
+  built: Record<SlotName, () => string>
+}
+
+/** The parts to draw: the still backdrop layer, then the figure's parts in paint order. */
+export interface Drawn {
+  back: string
+  figure: readonly (readonly [string, string])[]
+  /** CSS the parts need, in a style element of its own */
+  style?: string | undefined
+}
+
+/** Draws the parts of a scene in an order of its own: see `extend.ts`. */
+export type Extension = (scene: Scene) => Drawn
 
 /**
  * Clips the avatar to a round container, so antenna tips never poke past it.
@@ -630,7 +678,7 @@ export const clipFor = (background: RenderOptions['background']) =>
       ? 'clip-path:inset(0 round 30%)'
       : ''
 
-export function render(t: Traits, opts: RenderOptions = {}, slots: Slots = {}): string {
+export function render(t: Traits, opts: RenderOptions = {}, extend?: Extension): string {
   const size = pixelSize(opts.size)
   const small = size <= 32
   const g = body(t.silhouette)
@@ -663,21 +711,23 @@ export function render(t: Traits, opts: RenderOptions = {}, slots: Slots = {}): 
     plates: () => plates(g, t.silhouette, t.palette.shell, small),
     extra: () => (small ? '' : extra(g, t)),
     eyes: () => face.svg,
-    brow: () => brow(g, t, face.top, face.outer, small),
-    mouth: () => (small ? '' : mouth(t, face.y, g)),
+    brow: () => brow(g, t, face.brow, face.outer, small),
+    mouth: () => (small ? '' : mouth(t, face.mouth, g)),
   }
-  const ctx: SlotContext = { traits: t, geometry: g, size, small, mode }
+  const out: Drawn = extend
+    ? extend({ traits: t, geometry: g, opts, size, small, mode, box, face, mark: antenna, built })
+    : {
+        back: built.backdrop(),
+        figure: SLOTS.slice(1).map((name) => [name, built[name]()] as const),
+      }
   const live = motion(t.silhouette.grain, t.mood === 'sleepy', opts.animate, small)
-  const [backdropSvg, ...figure] = SLOTS.map((name) => {
-    const slot = slots[name]
-    if (slot === false) return ''
-    const out = slot ? slot(ctx, built[name]) : built[name]()
-    return live && name === 'eyes' && out ? `<g class="nb-e">${out}</g>` : out
-  })
-  const drawn = live ? `<g class="nb-f">${figure.join('')}</g>` : figure.join('')
+  const figure = out.figure
+    .map(([name, svg]) => (live && name === 'eyes' && svg ? `<g class="nb-e">${svg}</g>` : svg))
+    .join('')
+  const drawn = live ? `<g class="nb-f">${figure}</g>` : figure
   const vb = `${n(box.x)} ${n(box.y)} ${n(box.s)} ${n(box.s)}`
   const vars = auto ? `--nb-g:${p.backgroundDark};--nb-c:${antenna(true)}` : ''
   const style = [live?.style, vars, clipFor(opts.background)].filter(Boolean).join(';')
   const root = `class="nb${live?.cls ?? ''}${auto ? ' nb-auto' : ''}"${style ? ` style="${style}"` : ''}${tagFor(opts)}`
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${n(size)}" height="${n(size)}" role="img" aria-label="${title}" ${root}>${live ? MOTION : ''}${auto ? AUTO : ''}<title>${title}</title>${backdropSvg}${drawn}</svg>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${n(size)}" height="${n(size)}" role="img" aria-label="${title}" ${root}>${live ? MOTION : ''}${auto ? AUTO : ''}${out.style ?? ''}<title>${title}</title>${out.back}${drawn}</svg>`
 }
