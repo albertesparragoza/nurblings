@@ -561,6 +561,8 @@ export function createNurblings<const C extends NurblingsConfig>(input: C) {
     o.theme && o.theme !== config.theme ? themeTables(o.theme, config) : tables
   const draw = (seed: string, opts: ConfiguredOptions<C> = {}): string => {
     const o = merge(opts)
+    // Nurbi is the same stored drawing in every renderer, whatever the config
+    if (isFlagshipSeed(seed)) return renderFlagship(o)
     return render(resolve(seed, o, tablesFor(o)), o, extend)
   }
   return {
