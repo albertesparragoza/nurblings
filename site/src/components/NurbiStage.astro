@@ -273,6 +273,17 @@ const family = [
     animation: nurbi-fade-out 0.5s var(--ease) 3.6s both;
   }
 
+  /* hidden until drawn: an undrawn dash can still leave specks where arcs meet */
+  .nurbi-stage .sketch path,
+  .nurbi-stage .trace {
+    opacity: 0;
+  }
+
+  .nurbi-stage.at-2 .sketch path,
+  .nurbi-stage.at-2 .trace {
+    opacity: 1;
+  }
+
   @keyframes nurbi-fade-out {
     to {
       opacity: 0;
