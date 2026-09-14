@@ -1,11 +1,11 @@
 ---
 // The site mark: Nurbi and the wordmark. The same in the marketing header, the
 // docs header and the footer.
-import { nurbling } from 'nurblings'
+import { nurbi } from 'nurblings/nurbi'
 ---
 
 <a class="brand" href="/" aria-label="Nurblings Avatars, home">
-  <span class="mark" set:html={nurbling('nurbi', { size: 40, frame: 'full', title: 'Nurbi' })} />
+  <span class="mark" set:html={nurbi({ size: 40, frame: 'full', title: 'Nurbi' })} />
   <b>nurblings</b><small>avatars</small>
 </a>
 

@@ -30,6 +30,12 @@
     "limit": "1.5 KB"
   },
   {
+    "name": "nurblings/nurbi: nurbi()",
+    "path": "packages/nurblings/dist/nurbi.js",
+    "import": "{ nurbi }",
+    "limit": "2.75 KB"
+  },
+  {
     "name": "@nurblings/element",
     "path": "packages/element/dist/index.js",
     "import": "*",

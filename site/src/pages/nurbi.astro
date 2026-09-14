@@ -108,7 +108,8 @@ const chapters = [
 </Site>
 
 <script>
-  import { isFlagshipSeed, nurbling } from 'nurblings'
+  import { normaliseSeed, nurbling } from 'nurblings'
+  import { nurbi } from 'nurblings/nurbi'
   import { reducedMotion } from '../lib/client'
 
   const stage = document.getElementById('nurbi-stage') as HTMLElement
@@ -196,8 +197,10 @@ const chapters = [
         setTimeout(tick, 110)
         return
       }
-      result.innerHTML = nurbling(name, { ...still, title: name })
-      line.textContent = isFlagshipSeed(name)
+      // his own name brings back the stored drawing, not a creature hatched from it
+      const his = normaliseSeed(name) === 'nurbi'
+      result.innerHTML = his ? nurbi({ ...still, title: name }) : nurbling(name, { ...still, title: name })
+      line.textContent = his
         ? 'He knows that name. It is his own.'
         : 'It has kept its shape. It will look like this wherever the name goes.'
     }

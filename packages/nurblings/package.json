@@ -33,6 +33,10 @@
       "types": "./dist/themes.d.ts",
       "default": "./dist/themes.js"
     },
+    "./nurbi": {
+      "types": "./dist/nurbi.d.ts",
+      "default": "./dist/nurbi.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
