@@ -250,7 +250,10 @@ const family = [
 
   .nurbi-stage.at-2 .sketch path {
     stroke-dashoffset: 0;
-    transition: stroke-dashoffset 0.8s var(--ease) calc(0.3s + var(--i) * 0.09s);
+    /* each guide shows only as its own drawing starts */
+    transition:
+      stroke-dashoffset 0.8s var(--ease) calc(0.3s + var(--i) * 0.09s),
+      opacity 0s linear calc(0.3s + var(--i) * 0.09s);
   }
 
   .nurbi-stage.at-2 .sketch {
