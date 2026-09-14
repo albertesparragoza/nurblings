@@ -2,9 +2,10 @@
 import NurbiStage from '../components/NurbiStage.astro'
 import Site from '../layouts/Site.astro'
 
+// Told as a legend: the mechanics are all here, as lore.
 const chapters = [
   {
-    num: 'I',
+    mark: 'I',
     title: 'The blank page',
     body: [
       'In the beginning there was only white: a page no one had written on, waiting.',
@@ -12,7 +13,7 @@ const chapters = [
     ],
   },
   {
-    num: 'II',
+    mark: 'II',
     title: 'The first to wake',
     body: [
       'The handles did the only thing handles know. They bent. A body curled into being beneath them, soft below and armoured above, and two dark eyes opened on the empty page.',
@@ -20,7 +21,7 @@ const chapters = [
     ],
   },
   {
-    num: 'III',
+    mark: 'III',
     title: 'The wondering',
     body: [
       'Alone on the page, he began to wonder what he was, and every question reshaped him.',
@@ -28,16 +29,16 @@ const chapters = [
     ],
   },
   {
-    num: 'IV',
+    mark: 'IV',
     title: 'The first name',
     body: [
       'Then, from far off, came a name. He held it, and for the first time he held still.',
       'The shape he wore stayed with that name, and when he let go, it stayed on its own: the first of his kin.',
     ],
-    lore: 'And so it has been ever since. A name, once spoken, keeps its shape.',
+    aside: 'And so it has been ever since. A name, once spoken, keeps its shape.',
   },
   {
-    num: 'V',
+    mark: 'V',
     title: 'The kin',
     body: [
       'Names came like rain after that, and each one kept a shape: scarves and hats, pears and bells, the curious and the sleepy.',
@@ -63,19 +64,24 @@ const chapters = [
       {
         chapters.map((chapter, i) => (
           <section class="beat" data-step={i + 1}>
-            <p class="num">{chapter.num}</p>
-            <h2>{chapter.title}</h2>
-            {chapter.body.map((line) => (
-              <p>{line}</p>
+            <p class="mark">
+              <span>{chapter.mark}</span>
+              {chapter.title}
+            </p>
+            {chapter.body.map((line, j) => (
+              <p class:list={['tale', { first: i === 0 && j === 0 }]}>{line}</p>
             ))}
-            {chapter.lore && <p class="lore">{chapter.lore}</p>}
+            {chapter.aside && <p class="aside">{chapter.aside}</p>}
           </section>
         ))
       }
       <section class="beat final" data-step="6">
-        <p class="num">VI</p>
+        <p class="mark">
+          <span>VI</span>
+          Your name
+        </p>
         <h2>Speak a name.</h2>
-        <p>He is listening.</p>
+        <p class="tale">He is listening.</p>
         <form class="name-form" id="name-form">
           <label for="nurbi-name">A name</label>
           <div class="name-field">
@@ -166,7 +172,7 @@ const chapters = [
   for (const beat of document.querySelectorAll('.story .beat')) io.observe(beat)
   go(0)
 
-  // VI. he holds the name: a short flicker, then it keeps its shape
+  // VI. he hears the name: a short flicker, then it settles
   const form = document.getElementById('name-form') as HTMLFormElement
   const input = document.getElementById('nurbi-name') as HTMLInputElement
   const result = document.getElementById('nurbi-result') as HTMLElement
@@ -219,28 +225,53 @@ const chapters = [
   .story .beat p {
     margin: 0;
     max-width: 34ch;
-    font-size: clamp(18px, 1.6vw, 21px);
-    line-height: 1.65;
-    color: var(--muted);
+  }
+
+  /* the tale reads like one: larger, in ink, not in the grey of help text */
+  .story .beat p.tale {
+    font-size: clamp(19px, 1.7vw, 22px);
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  .story .beat p.tale.first::first-letter {
+    float: left;
+    font: 800 3.4em / 0.82 var(--display);
+    color: var(--accent-text);
+    padding: 0.06em 0.1em 0 0;
   }
 
   .story .eyebrow {
     font: 700 13px / 1 var(--text);
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--accent-text);
   }
 
-  /* chapter numbers, set like a book's */
-  .story .beat p.num {
-    font: 800 clamp(28px, 3vw, 40px) / 1 var(--display);
+  /* chapter marks: a numeral, a hairline, the chapter's name */
+  .story .beat p.mark {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: none;
+    font: 700 clamp(24px, 2.6vw, 34px) / 1.1 var(--display);
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .story .mark span {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2.1em;
+    padding-right: 14px;
+    border-right: 1.5px solid var(--line);
+    font-size: 0.7em;
     letter-spacing: 0.04em;
     color: var(--accent-text);
-    opacity: 0.55;
   }
 
   .story h1 {
-    font-size: clamp(48px, 7vw, 96px);
+    font-size: clamp(48px, 6.4vw, 92px);
     font-weight: 800;
     letter-spacing: -0.045em;
     line-height: 0.95;
@@ -248,28 +279,28 @@ const chapters = [
   }
 
   .story h2 {
-    font-size: clamp(32px, 3.8vw, 52px);
+    font-size: clamp(30px, 3.6vw, 48px);
     font-weight: 800;
-    max-width: 14ch;
+    max-width: 16ch;
   }
 
   .story .beat p.lead {
     color: var(--ink);
-    font-size: clamp(20px, 1.9vw, 24px);
+    font-size: clamp(19px, 1.8vw, 23px);
   }
 
   .story .beat p.hint {
     font-size: 14px;
     font-weight: 600;
+    color: var(--muted);
   }
 
-  /* the one line of lore that is still true */
-  .story .beat p.lore {
+  .story .beat p.aside {
     color: var(--ink);
-    font: 700 clamp(19px, 1.8vw, 23px) / 1.45 var(--display);
-    letter-spacing: -0.01em;
+    font-weight: 600;
+    font-style: italic;
     border-left: 3px solid var(--accent);
-    padding-left: 16px;
+    padding-left: 14px;
   }
 
   .story .final {
@@ -312,12 +343,12 @@ const chapters = [
   }
 
   .story .beat p.result-line {
-    min-height: 1.6em;
+    min-height: 1.5em;
     color: var(--ink);
     font-weight: 600;
   }
 
-  /* phones and narrow windows: the drawing stays at the top, the story scrolls under it */
+  /* phones and narrow windows: the drawing stays at the top, the tale scrolls under it */
   @media (max-width: 860px) {
     .story .story-grid {
       grid-template-columns: minmax(0, 1fr);
