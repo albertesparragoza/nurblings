@@ -764,16 +764,47 @@ const prompt = `npx skills add albertesparragoza/nurblings
     padding: 10px var(--gutter);
   }
 
+  /* phones: the name keeps its place and the chips scroll beside it, fading
+     at the edge so the row reads as one that continues */
   @media (max-width: 720px) {
     .picker-row .picker {
       flex-wrap: nowrap;
       justify-content: flex-start;
-      overflow-x: auto;
-      scrollbar-width: none;
+      width: 100%;
+      padding-right: 0;
+      overflow: hidden;
     }
 
-    .picker-row .picker > span {
+    /* a fixed width, so the chips never shift when a longer name comes in */
+    .picker-row .picker-name {
+      width: 8.5ch;
+      padding-right: 6px;
+    }
+
+    .picker-row .picker-scroll {
+      display: flex;
+      flex: 1;
+      min-width: 0;
+      align-items: center;
+      gap: 2px;
+      padding-right: 24px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      scroll-snap-type: x proximity;
+      mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+    }
+
+    .picker-row .picker-scroll::-webkit-scrollbar {
       display: none;
+    }
+
+    .picker-row .picker-scroll > span {
+      display: none;
+    }
+
+    .picker-row .chip {
+      flex: none;
+      scroll-snap-align: start;
     }
   }
 
@@ -1024,15 +1055,6 @@ const prompt = `npx skills add albertesparragoza/nurblings
     transition: background-color 0.4s;
   }
 
-  .feature-art .picker {
-    gap: 2px;
-    padding: 4px 6px;
-  }
-
-  .feature-art .picker > span {
-    display: none;
-  }
-
   .feature-art.modes {
     gap: 0;
     padding: 0;
@@ -1182,11 +1204,18 @@ const prompt = `npx skills add albertesparragoza/nurblings
     }
   }
 
+  /* decorative avatars float past the hero's edge: never let them scroll the
+     page sideways (clip, unlike hidden, keeps the sticky picker working) */
+  .home main {
+    overflow-x: clip;
+  }
+
   @media (max-width: 960px) {
+    /* minmax(0, …) lets the one column shrink below its content, such as the seed field */
     .home .hero,
     .scene,
     .ai-band {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     .home .hero {
       min-height: 0;

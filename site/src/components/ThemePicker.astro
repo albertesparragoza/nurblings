@@ -36,14 +36,17 @@ const groups = [
       <b class="picker-name" data-theme-name>
         {THEMES.default?.label}
       </b>
-      {groups.map(([label, ids], i) => (
-        <Fragment>
-          {i > 0 && <span>{label}</span>}
-          {ids.map((id) => (
-            <ThemeChip id={id} />
-          ))}
-        </Fragment>
-      ))}
+      {/* one row on wide screens; on phones, a scroller of its own beside the name */}
+      <div class="picker-scroll">
+        {groups.map(([label, ids], i) => (
+          <Fragment>
+            {i > 0 && <span>{label}</span>}
+            {ids.map((id) => (
+              <ThemeChip id={id} />
+            ))}
+          </Fragment>
+        ))}
+      </div>
     </div>
   )
 }

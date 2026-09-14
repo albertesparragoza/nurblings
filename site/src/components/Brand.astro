@@ -35,4 +35,11 @@ import { nurbling } from 'nurblings'
     color: var(--muted);
     padding-top: 5px;
   }
+
+  /* the narrowest phones: the header needs the room for its buttons */
+  @media (max-width: 380px) {
+    small {
+      display: none;
+    }
+  }
 </style>
