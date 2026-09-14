@@ -92,11 +92,13 @@ The normalisation every seed goes through before hashing: Unicode NFKC, lower
 case, accents and other combining marks stripped, whitespace and punctuation
 removed. Emoji are kept, so an emoji seed still hatches its own Nurbling.
 
-## `isFlagshipSeed(seed)`
+## `nurbi(options?)`
 
-`true` for the reserved seed `nurbi` (in any case or spacing), which renders
-Nurbi, the family's flagship character, in every renderer and configuration.
-Every other seed is kept away from Nurbi's look.
+From `nurblings/nurbi`: Nurbi, the family's flagship character, as the stored
+drawing. It takes the rendering options: `size`, `background`, `title`,
+`decorative`, `animate`, `frame` and `transition`. He has an entry of his own
+so no other import carries his drawing. The seed `nurbi` is an ordinary
+Nurbling, and the generator keeps every seed away from his look.
 
 ## `createNurblings(config)`
 
@@ -196,6 +198,6 @@ passing `gen`.
 The code is MIT. Every avatar it generates is dedicated to the public domain
 under CC0: use them anywhere, commercially or not, without attribution. The
 generator never produces Nurbi's look, so no generated avatar can resemble the
-flagship. The one exception is Nurbi itself, the stored drawing the seed
-`nurbi` returns: the names Nurbi and Nurblings and that artwork are reserved,
-see [TRADEMARKS.md](../TRADEMARKS.md).
+flagship. The one exception is Nurbi himself, the stored drawing that
+`nurbi()` from `nurblings/nurbi` returns: the names Nurbi and Nurblings and
+that artwork are reserved, see [TRADEMARKS.md](../TRADEMARKS.md).

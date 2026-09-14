@@ -174,5 +174,5 @@ far a deterministic avatar can go.
 - Generated avatars: every one is public domain under
   [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Use them
   anywhere, no attribution needed.
-- Reserved: the names Nurbi and Nurblings, and Nurbi's artwork, which the seed
-  `nurbi` returns; see [TRADEMARKS.md](TRADEMARKS.md).
+- Reserved: the names Nurbi and Nurblings, and Nurbi's artwork, which
+  `nurbi()` from `nurblings/nurbi` returns; see [TRADEMARKS.md](TRADEMARKS.md).
