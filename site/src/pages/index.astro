@@ -764,21 +764,15 @@ const prompt = `npx skills add albertesparragoza/nurblings
     padding: 10px var(--gutter);
   }
 
-  /* phones: the name keeps its place and the chips scroll beside it, fading
-     at the edge so the row reads as one that continues */
+  /* phones: the chips scroll, fading at the edge so the row reads as one that
+     continues; the padding leaves room for the selected chip's ring */
   @media (max-width: 720px) {
     .picker-row .picker {
       flex-wrap: nowrap;
       justify-content: flex-start;
       width: 100%;
-      padding-right: 0;
+      padding: 0;
       overflow: hidden;
-    }
-
-    /* a fixed width, so the chips never shift when a longer name comes in */
-    .picker-row .picker-name {
-      width: 8.5ch;
-      padding-right: 6px;
     }
 
     .picker-row .picker-scroll {
@@ -787,7 +781,8 @@ const prompt = `npx skills add albertesparragoza/nurblings
       min-width: 0;
       align-items: center;
       gap: 2px;
-      padding-right: 24px;
+      padding: 6px 28px 6px 10px;
+      scroll-padding-inline: 10px;
       overflow-x: auto;
       scrollbar-width: none;
       scroll-snap-type: x proximity;

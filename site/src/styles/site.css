@@ -332,17 +332,6 @@ main :is(p, li) a:not([class]):hover {
   max-width: 100%;
 }
 
-.picker-name {
-  font-size: 13px;
-  font-weight: 700;
-  /* a fixed width, so the pill keeps its size whatever the theme is called */
-  width: 14ch;
-  padding: 0 6px 0 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* stacked: one group per row, for narrow panels */
 .picker-rows {
   display: grid;
@@ -374,10 +363,6 @@ main :is(p, li) a:not([class]):hover {
 /* wide screens lay the chips straight into the pill */
 .picker-scroll {
   display: contents;
-}
-
-.picker-name {
-  flex: none;
 }
 
 .picker-scroll > span {
