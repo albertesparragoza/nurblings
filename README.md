@@ -91,8 +91,8 @@ npx skills add albertesparragoza/nurblings
 ```
 
 The [Nurblings skill](skills/nurblings/SKILL.md) teaches Claude Code, Cursor,
-Codex and other agents the library, so "give every commenter an avatar" comes
-back with the right package, stable-id seeds and accessible names.
+Codex and other agents the library: which package fits the project, seeding
+with stable ids, accessible names, themes and motion.
 
 ## Why Nurblings
 
