@@ -8,11 +8,10 @@ let current = 'default'
 
 export const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches
 export const currentTheme = () => current
-export const theme = () =>
-  THEMES[current] ?? (THEMES.default as NonNullable<(typeof THEMES)['default']>)
+const theme = () => THEMES[current] ?? (THEMES.default as NonNullable<(typeof THEMES)['default']>)
 
 /** Options for an avatar placeholder, from its data attributes. */
-export function optionsOf(el: HTMLElement): RenderOptions {
+function optionsOf(el: HTMLElement): RenderOptions {
   const d = el.dataset
   const animate =
     d.still !== undefined
@@ -37,7 +36,7 @@ export function repaint(el: HTMLElement) {
   el.innerHTML = theme().render(el.dataset.seed || ' ', optionsOf(el))
 }
 
-export function paint(root: ParentNode = document) {
+function paint(root: ParentNode = document) {
   for (const el of root.querySelectorAll<HTMLElement>('[data-av]')) repaint(el)
 }
 

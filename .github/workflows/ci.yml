@@ -70,6 +70,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      # unused files, exports and dependencies, across every workspace
+      - run: pnpm knip
 
   test:
     needs: changes

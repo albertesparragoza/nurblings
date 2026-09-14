@@ -11,6 +11,3 @@ export const NURBI_PROFILE: readonly number[] = [
 
 /** Height of Nurbi's widest point, as a fraction of height from the base. */
 export const NURBI_BELLY = 0.313
-
-/** Nurbi's height over width. */
-export const NURBI_HW = 1.024
