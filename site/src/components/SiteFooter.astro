@@ -2,7 +2,7 @@
 // The footer for the marketing pages. It lays itself out by its own width (a
 // container query), so it fits any page it is placed in.
 import { nurbling } from 'nurblings'
-import { FOOTER } from '../lib/nav'
+import { FOOTER, REPO } from '../lib/nav'
 import Brand from './Brand.astro'
 
 interface Props {
@@ -41,7 +41,7 @@ const family = ['ada', 'grace', 'linus', 'radia', 'hedy', 'alan']
     </div>
     <p class="legal">
       Code under MIT. Generated avatars are public domain (CC0). The names Nurbi and Nurblings and the flagship
-      artwork are reserved.
+      artwork are reserved: <a href={`${REPO}/blob/develop/TRADEMARKS.md`}>read the trademark terms</a>.
     </p>
   </div>
 </footer>
@@ -126,6 +126,12 @@ const family = ['ada', 'grace', 'linus', 'radia', 'hedy', 'alan']
     padding-top: 20px;
     border-top: 1px solid var(--line);
     font-size: 13px;
+  }
+
+  /* the one link in running text: underlined, so it reads as a link */
+  .legal a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   @container (min-width: 520px) {

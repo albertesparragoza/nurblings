@@ -1,0 +1,360 @@
+---
+// Nurbi's story: the drawing beside the text. Its layers change as the reader
+// moves through the story; the page sets `at-N` (reached chapter N) and
+// `now-N` (on chapter N) on the stage.
+//
+// I and II are one restless drawing. Random strokes (added by the page, new
+// on every visit) cover the blank page, and among them are strokes that lie
+// exactly on Nurbi: his antennae, loose passes around his outline, the long
+// edges of his crown. The ones that are him stay and firm up; the rest fade,
+// and he is left behind. His parts come from the library's own drawing of him.
+import { nurbling } from 'nurblings'
+
+const match = (text: string, pattern: RegExp) => text.match(pattern) as RegExpMatchArray
+const f = (v: number) => Math.round(v * 100) / 100
+type Pt = readonly [number, number]
+
+const drawing = nurbling('nurbi', { animate: false, frame: 'full', size: 400 })
+const viewBox = match(drawing, /viewBox="([^"]+)"/)[1]
+const inner = drawing.slice(drawing.indexOf('</title>') + 8, drawing.lastIndexOf('</svg>'))
+// the stored drawing: two antennae (a line and a square each), the body group, then the face
+const [, handles, bodyGroup, face] = match(
+  inner,
+  /^((?:<line[^>]*\/><rect[^>]*\/>){2})(<g transform="[^"]*">.*?<\/g>)(.*)$/s,
+)
+const place = match(bodyGroup as string, /^<g transform="([^"]*)">/)[1]
+const outline = match(bodyGroup as string, /<path d="([^"]+)"/)[1] as string
+const body = (bodyGroup as string).replace(/^<g[^>]*>/, '').replace(/<\/g>$/, '')
+
+/** A stroke along a to b that overshoots both ends, the way a quick hand draws. */
+const past = ([ax, ay]: Pt, [bx, by]: Pt, k: number) =>
+  `M${f(ax - (bx - ax) * k)},${f(ay - (by - ay) * k)}L${f(bx + (bx - ax) * k)},${f(by + (by - ay) * k)}`
+
+// his antennae: root to tip, from the stored drawing
+const antennae = [
+  ...(handles as string).matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)"/g),
+].map((m) => {
+  const [x1, y1, x2, y2] = m.slice(1).map(Number) as [number, number, number, number]
+  return { root: [x1, y1] as Pt, tip: [x2, y2] as Pt }
+})
+const knob = 20
+
+// the crown's flat edges: the point before the first straight run, then every point of it
+const run = match(outline, /([\d.]+),([\d.]+)((?:L[\d.]+,[\d.]+)+)/)
+const crown: Pt[] = [
+  [Number(run[1]), Number(run[2])],
+  ...[...(run[3] as string).matchAll(/L([\d.]+),([\d.]+)/g)].map(
+    (m): Pt => [Number(m[1]), Number(m[2])],
+  ),
+]
+const edges = crown.slice(1).map((p, i) => past(crown[i] as Pt, p, 0.9))
+// loose passes around his outline, each a little larger or smaller and turned
+const passes = [
+  [1.07, -4],
+  [0.94, 3],
+  [1.03, 5],
+  [0.97, -2],
+].map(([s, a]) => `translate(50 66) rotate(${a}) scale(${s}) translate(-50 -66)`)
+
+const still = { animate: false, frame: 'full', size: 400 } as const
+const flicker = ['grace', 'linus', 'radia', 'hedy', 'alan', 'joan', 'tim', 'margaret'].map((seed) =>
+  nurbling(seed, { ...still, title: seed }),
+)
+const family = [
+  'ada',
+  'grace',
+  'linus',
+  'radia',
+  'hedy',
+  'alan',
+  'joan',
+  'tim',
+  'margaret',
+  'dennis',
+  'barbara',
+  'frances',
+  'guido',
+  'sophie',
+  'anders',
+  'katherine',
+].map((seed) => nurbling(seed, { size: 72, background: 'circle', animate: false, title: seed }))
+---
+
+<div class="nurbi-stage" id="nurbi-stage" data-viewbox={viewBox} aria-hidden="true">
+  <div class="layer drawing">
+    <svg viewBox={viewBox}>
+      <g class="chaos" data-chaos></g>
+      <g class="ghosts early">
+        {antennae.map((a, i) => <path d={past(a.root, a.tip, 0.7)} pathLength="1" style={`--i:${3 + i * 5}`} />)}
+      </g>
+      <g transform={place}>
+        <g class="ghosts late">
+          {edges.map((d, i) => <path d={d} pathLength="1" style={`--i:${i}`} />)}
+          {passes.map((t, i) => <path d={outline} transform={t} pathLength="1" style={`--i:${i * 2 + 1}`} />)}
+        </g>
+        <g class="body" set:html={body} />
+        <path class="keep outline" d={outline} pathLength="1"></path>
+      </g>
+      <g class="face" set:html={face} />
+      <g class="keep-antennae">
+        {antennae.map((a) => <path class="keep" d={`M${a.root}L${a.tip}`} pathLength="1" />)}
+        {antennae.map((a) => <rect class="knob" x={a.tip[0] - knob / 2} y={a.tip[1] - knob / 2} width={knob} height={knob} />)}
+      </g>
+      <g class="handles" set:html={handles} />
+    </svg>
+  </div>
+  <div class="layer flicker">{flicker.map((svg) => <span set:html={svg} />)}</div>
+  <figure class="layer settled">
+    <span set:html={nurbling('ada', { ...still, title: 'ada' })} />
+    <figcaption>ada</figcaption>
+  </figure>
+  <div class="layer family">{family.map((svg) => <span set:html={svg} />)}</div>
+  <div class="layer result" id="nurbi-result" set:html={nurbling('nurbi', { ...still, title: 'Nurbi' })} />
+</div>
+
+<style is:global>
+  .nurbi-stage {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    aspect-ratio: 1;
+    margin-inline: auto;
+    border-radius: var(--r-xl);
+    /* a blank page: a faint dot grid */
+    background:
+      radial-gradient(color-mix(in srgb, var(--ink) 14%, transparent) 1px, transparent 1.5px) 0 0 / 22px
+        22px,
+      var(--tint);
+    overflow: hidden;
+    transition: background-color 0.4s var(--ease);
+  }
+
+  /* Delays live only on the way in (the at-N and now-N rules): scrolling back
+     changes the drawing at once, so nothing lingers from a later chapter. */
+  .nurbi-stage .layer {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    opacity: 0;
+    /* a picture only: hidden layers must not catch the pointer or show titles */
+    pointer-events: none;
+    transition: opacity 0.4s var(--ease);
+  }
+
+  .nurbi-stage .layer svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* which layer shows when */
+  .nurbi-stage .drawing {
+    opacity: 1;
+  }
+
+  .nurbi-stage.at-3 .drawing {
+    opacity: 0;
+  }
+
+  .nurbi-stage.now-3 .flicker,
+  .nurbi-stage.now-4 .settled,
+  .nurbi-stage.now-5 .family,
+  .nurbi-stage.now-6 .result {
+    opacity: 1;
+  }
+
+  /* Every stroke is hidden until its own drawing starts: an undrawn dash can
+     still leave a speck. `--i` staggers them, `--d` sets each one's pace. */
+  .nurbi-stage .chaos path,
+  .nurbi-stage .ghosts path,
+  .nurbi-stage .keep {
+    fill: none;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    stroke-linecap: butt;
+    opacity: 0;
+  }
+
+  .nurbi-stage .chaos path,
+  .nurbi-stage .ghosts.early path {
+    stroke: var(--muted);
+    stroke-width: 2.5;
+  }
+
+  .nurbi-stage .chaos path.pink {
+    stroke: #ff2f6e;
+  }
+
+  /* in his own drawing units, which the stored art scales up about 7.7 times */
+  .nurbi-stage .ghosts.late path {
+    stroke: var(--muted);
+    stroke-width: 0.26;
+  }
+
+  /* I. a restless hand: strokes everywhere, two of them his antennae */
+  .nurbi-stage.at-1 .chaos .early,
+  .nurbi-stage.at-1 .ghosts.early path {
+    opacity: 1;
+    stroke-dashoffset: 0;
+    transition:
+      stroke-dashoffset var(--d, 0.7s) var(--ease) calc(var(--i) * 0.07s),
+      opacity 0s linear calc(var(--i) * 0.07s);
+  }
+
+  .nurbi-stage.at-1 .chaos,
+  .nurbi-stage.at-1 .ghosts.early {
+    animation: nurbi-dim 1s var(--ease) 2.4s both;
+  }
+
+  .nurbi-stage .keep-antennae .keep {
+    stroke: var(--ink);
+    stroke-width: 3;
+  }
+
+  .nurbi-stage .keep-antennae .knob {
+    fill: #ff2f6e;
+    opacity: 0;
+  }
+
+  .nurbi-stage.at-1 .keep-antennae .keep {
+    opacity: 1;
+    stroke-dashoffset: 0;
+    transition:
+      stroke-dashoffset 0.6s var(--ease) 0.9s,
+      opacity 0s linear 0.9s;
+  }
+
+  .nurbi-stage.at-1 .keep-antennae .knob {
+    opacity: 1;
+    transition: opacity 0.3s var(--ease) 1.6s;
+  }
+
+  /* the two strokes firm up into his antennae */
+  .nurbi-stage .handles {
+    opacity: 0;
+  }
+
+  .nurbi-stage.at-1 .handles {
+    opacity: 1;
+    transition: opacity 0.6s var(--ease) 2.1s;
+  }
+
+  .nurbi-stage.at-1 .keep-antennae {
+    animation: nurbi-fade-out 0.4s var(--ease) 2.6s both;
+  }
+
+  /* II. more strokes, loose passes around his shape; one of them is him */
+  .nurbi-stage.at-2 .chaos .late,
+  .nurbi-stage.at-2 .ghosts.late path {
+    opacity: 1;
+    stroke-dashoffset: 0;
+    transition:
+      stroke-dashoffset var(--d, 0.8s) var(--ease) calc(0.1s + var(--i) * 0.08s),
+      opacity 0s linear calc(0.1s + var(--i) * 0.08s);
+  }
+
+  /* as specific as chapter I's dimming rule, and later, so everything that is not him fades */
+  .nurbi-stage.at-2 .chaos,
+  .nurbi-stage.at-2 .ghosts.early,
+  .nurbi-stage.at-2 .ghosts.late {
+    animation: nurbi-fade-out 0.8s var(--ease) 2.4s both;
+  }
+
+  .nurbi-stage .keep.outline {
+    stroke: var(--ink);
+    stroke-width: 0.42;
+    stroke-linejoin: round;
+  }
+
+  .nurbi-stage.at-2 .keep.outline {
+    opacity: 1;
+    stroke-dashoffset: 0;
+    transition:
+      stroke-dashoffset 1.3s var(--ease) 1.1s,
+      opacity 0s linear 1.1s;
+    animation: nurbi-fade-out 0.5s var(--ease) 3.6s both;
+  }
+
+  @keyframes nurbi-dim {
+    to {
+      opacity: 0.3;
+    }
+  }
+
+  @keyframes nurbi-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  .nurbi-stage .body,
+  .nurbi-stage .face {
+    opacity: 0;
+  }
+
+  .nurbi-stage.at-2 .body {
+    opacity: 1;
+    transition: opacity 0.7s var(--ease) 2.9s;
+  }
+
+  .nurbi-stage.at-2 .face {
+    opacity: 1;
+    transition: opacity 0.5s var(--ease) 3.4s;
+  }
+
+  /* III. one shape at a time, switched by the page; no fade, it flickers */
+  .nurbi-stage .flicker span {
+    grid-area: 1 / 1;
+    width: 100%;
+    opacity: 0;
+    line-height: 0;
+  }
+
+  .nurbi-stage .flicker span.on {
+    opacity: 1;
+  }
+
+  /* IV. one name holds one shape */
+  .nurbi-stage .settled {
+    align-content: center;
+    gap: 4px;
+  }
+
+  .nurbi-stage .settled span {
+    width: 78%;
+    justify-self: center;
+    line-height: 0;
+  }
+
+  .nurbi-stage .settled figcaption {
+    justify-self: center;
+    font: 700 16px / 1 var(--text);
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 16px;
+  }
+
+  /* V. the kin */
+  .nurbi-stage .family {
+    grid-template-columns: repeat(4, 1fr);
+    align-content: center;
+    gap: 6%;
+    padding: 10%;
+  }
+
+  .nurbi-stage .family span {
+    line-height: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nurbi-stage,
+    .nurbi-stage * {
+      transition-delay: 0s !important;
+      animation-delay: 0s !important;
+    }
+  }
+</style>

@@ -27,7 +27,7 @@ export const FOOTER = [
       ['Playground', '/playground/'],
       ['Gallery', '/gallery/'],
       ['AI skill', '/ai/'],
-      ['Meet Nurbi', '/brand/'],
+      ["Nurbi's story", '/nurbi/'],
     ],
   },
   {

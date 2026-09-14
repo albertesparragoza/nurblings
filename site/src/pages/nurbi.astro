@@ -1,0 +1,369 @@
+---
+import NurbiStage from '../components/NurbiStage.astro'
+import Site from '../layouts/Site.astro'
+
+// Told as a legend: the mechanics are all here, as lore.
+const chapters = [
+  {
+    mark: 'I',
+    title: 'The blank page',
+    body: [
+      'In the beginning there was only white: a page no one had written on, waiting.',
+      'A restless hand scribbled across it and was gone. Most of its lines faded. Two stayed behind, bright as embers. Everything that followed began with them.',
+    ],
+  },
+  {
+    mark: 'II',
+    title: 'The first to wake',
+    body: [
+      'The handles did the only thing handles know. They bent. A body curled into being beneath them, soft below and armoured above, and two dark eyes opened on the empty page.',
+      'He had no name, and did not know he needed one. The white page whispered one anyway: Nurbi.',
+    ],
+  },
+  {
+    mark: 'III',
+    title: 'The wondering',
+    body: [
+      'Alone on the page, he began to wonder what he was, and every question reshaped him.',
+      'Taller. Rounder. Sleepier. Wrapped in a scarf against a cold that was not there. He wore a thousand bodies and could keep none of them.',
+    ],
+  },
+  {
+    mark: 'IV',
+    title: 'The first name',
+    body: [
+      'Then, from far off, came a name. He held it, and for the first time he held still.',
+      'The shape he wore stayed with that name, and when he let go, it stayed on its own: the first of his kin.',
+    ],
+    aside: 'And so it has been ever since. A name, once spoken, keeps its shape.',
+  },
+  {
+    mark: 'V',
+    title: 'The kin',
+    body: [
+      'Names came like rain after that, and each one kept a shape: scarves and hats, pears and bells, the curious and the sleepy.',
+      'Every one of them carries his mark, two handles crowned with squares. None of them is him. There is only one Nurbi, and he is still wondering.',
+    ],
+  },
+]
+---
+
+<Site
+  title="The one who wondered"
+  description="The legend of Nurbi, who woke on a blank page, and of the kin every spoken name has given him since."
+  class="story"
+>
+  <div class="wrap story-grid">
+    <div class="story-text">
+      <header class="beat opening" data-step="0">
+        <p class="eyebrow">A Nurblings legend</p>
+        <h1>The one who wondered</h1>
+        <p class="lead">Before there were Nurblings, there was a blank page, and a curve that no one finished.</p>
+        <p class="hint">Scroll to begin</p>
+      </header>
+      {
+        chapters.map((chapter, i) => (
+          <section class="beat" data-step={i + 1}>
+            <h2 class="mark">
+              <span class="numeral" aria-hidden="true">{chapter.mark}</span>
+              <span class="sr-only">Chapter {chapter.mark}. </span>
+              {chapter.title}
+            </h2>
+            {chapter.body.map((line) => (
+              <p class="tale">{line}</p>
+            ))}
+            {chapter.aside && <p class="aside">{chapter.aside}</p>}
+          </section>
+        ))
+      }
+      <section class="beat final" data-step="6">
+        <h2 class="mark">
+          <span class="numeral" aria-hidden="true">VI</span>
+          <span class="sr-only">Chapter VI. </span>
+          Speak a name
+        </h2>
+        <p class="tale">
+          Every shape that no name holds drifts back into the white. Speak a name, and one of his kin keeps its
+          shape for good.
+        </p>
+        <form class="name-form" id="name-form">
+          <label for="nurbi-name">A name</label>
+          <div class="name-field">
+            <input id="nurbi-name" name="name" autocomplete="off" spellcheck="false" placeholder="ada, a username, an email" />
+            <button class="btn" type="submit">Speak it</button>
+          </div>
+        </form>
+        <p class="result-line" id="result-line" aria-live="polite"></p>
+        <p class="tale">Help them stay: give every account in your app a Nurbling of its own.</p>
+        <div class="actions">
+          <a class="btn" href="/docs/getting-started/">Adopt your Nurblings</a>
+          <a class="btn btn-ghost" href="/playground/">Open the playground</a>
+        </div>
+      </section>
+    </div>
+    <div class="story-stage">
+      <NurbiStage />
+    </div>
+  </div>
+</Site>
+
+<script>
+  import { isFlagshipSeed, nurbling } from 'nurblings'
+  import { reducedMotion } from '../lib/client'
+
+  const stage = document.getElementById('nurbi-stage') as HTMLElement
+
+  // I and II. a restless hand: random strokes, new on every visit. The first
+  // dozen fill chapter I, the rest arrive with chapter II; a few are pink.
+  const chaos = stage.querySelector('[data-chaos]')
+  const [vx, vy, vs] = (stage.dataset.viewbox ?? '0 0 640 640').split(' ').map(Number) as [number, number, number]
+  const rand = (from: number, to: number) => from + Math.random() * (to - from)
+  const point = () => `${Math.round(rand(vx + vs * 0.06, vx + vs * 0.94))},${Math.round(rand(vy + vs * 0.06, vy + vs * 0.94))}`
+  for (let i = 0; i < 22; i++) {
+    const shape = Math.random()
+    const d =
+      shape < 0.6
+        ? `M${point()}C${point()} ${point()} ${point()}`
+        : shape < 0.85
+          ? `M${point()}L${point()}`
+          : `M${point()}Q${point()} ${point()}`
+    const stroke = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    const early = i < 12
+    stroke.setAttribute('d', d)
+    stroke.setAttribute('pathLength', '1')
+    stroke.setAttribute('class', `${early ? 'early' : 'late'}${Math.random() < 0.18 ? ' pink' : ''}`)
+    stroke.setAttribute(
+      'style',
+      `--i:${early ? i : i - 12};--d:${rand(0.5, 1).toFixed(2)}s;stroke-width:${rand(1.5, 3.5).toFixed(1)}`,
+    )
+    chaos?.append(stroke)
+  }
+
+  // III. while he wonders, one shape at a time
+  const shapes = [...stage.querySelectorAll<HTMLElement>('.flicker span')]
+  let shown = 0
+  let timer: ReturnType<typeof setInterval> | undefined
+  const wonder = (on: boolean) => {
+    clearInterval(timer)
+    shapes.forEach((s, i) => s.classList.toggle('on', i === 0))
+    if (!on || reducedMotion()) return
+    timer = setInterval(() => {
+      shapes[shown]?.classList.remove('on')
+      shown = (shown + 1) % shapes.length
+      shapes[shown]?.classList.add('on')
+    }, 620)
+  }
+
+  let step = -1
+  const go = (next: number) => {
+    if (next === step) return
+    step = next
+    for (let k = 0; k <= 6; k++) {
+      stage.classList.toggle(`at-${k}`, next >= k)
+      stage.classList.toggle(`now-${k}`, next === k)
+    }
+    wonder(next === 3)
+  }
+
+  // the chapter in the middle of what can be read sets the drawing;
+  // on narrow screens the drawing covers the top half, so read below it
+  const narrow = matchMedia('(max-width: 860px)').matches
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) go(Number((entry.target as HTMLElement).dataset.step))
+      }
+    },
+    { rootMargin: narrow ? '-68% 0px -28% 0px' : '-45% 0px -50% 0px' },
+  )
+  for (const beat of document.querySelectorAll('.story .beat')) io.observe(beat)
+  go(0)
+
+  // VI. he hears the name: a short flicker, then it settles
+  const form = document.getElementById('name-form') as HTMLFormElement
+  const input = document.getElementById('nurbi-name') as HTMLInputElement
+  const result = document.getElementById('nurbi-result') as HTMLElement
+  const line = document.getElementById('result-line') as HTMLElement
+  const still = { animate: false, frame: 'full', size: 400 } as const
+  form.addEventListener('submit', (event) => {
+    event.preventDefault()
+    const name = input.value.trim() || 'ada'
+    go(6)
+    let frames = reducedMotion() ? 0 : 6
+    const tick = () => {
+      if (frames-- > 0) {
+        result.innerHTML = nurbling(Math.random().toString(36).slice(2), still)
+        setTimeout(tick, 110)
+        return
+      }
+      result.innerHTML = nurbling(name, { ...still, title: name })
+      line.textContent = isFlagshipSeed(name)
+        ? 'He knows that name. It is his own.'
+        : 'It has kept its shape. It will look like this wherever the name goes.'
+    }
+    tick()
+  })
+</script>
+
+<style is:global>
+  .story .story-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(24px, 5vw, 72px);
+  }
+
+  .story .story-stage {
+    position: sticky;
+    top: 92px;
+    align-self: start;
+    display: grid;
+    place-items: center;
+    height: calc(100svh - 124px);
+  }
+
+  .story .beat {
+    min-height: 78svh;
+    display: grid;
+    align-content: center;
+    gap: 16px;
+    padding-block: 40px;
+  }
+
+  .story .beat p {
+    margin: 0;
+    max-width: 34ch;
+  }
+
+  /* the tale reads like one: larger, in ink, not in the grey of help text */
+  .story .beat p.tale {
+    font-size: clamp(19px, 1.7vw, 22px);
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  .story .eyebrow {
+    font: 700 13px / 1 var(--text);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-text);
+  }
+
+  /* chapter headings: a numeral, a hairline, the chapter's name */
+  .story .beat .mark {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0;
+    font: 700 clamp(24px, 2.6vw, 34px) / 1.1 var(--display);
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .story .mark .numeral {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2.1em;
+    padding-right: 14px;
+    border-right: 1.5px solid var(--line);
+    font-size: 0.7em;
+    letter-spacing: 0.04em;
+    color: var(--accent-text);
+  }
+
+  .story h1 {
+    font-size: clamp(48px, 6.4vw, 92px);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+    max-width: 10ch;
+  }
+
+  .story .beat p.lead {
+    color: var(--ink);
+    font-size: clamp(19px, 1.8vw, 23px);
+  }
+
+  .story .beat p.hint {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .story .beat p.aside {
+    color: var(--ink);
+    font-weight: 600;
+    font-style: italic;
+    border-left: 3px solid var(--accent);
+    padding-left: 14px;
+  }
+
+  .story .final {
+    min-height: 90svh;
+  }
+
+  .story .name-form {
+    display: grid;
+    gap: 8px;
+    max-width: 440px;
+  }
+
+  .story .name-form label {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .story .name-field {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 6px 6px 6px 16px;
+  }
+
+  .story .name-field:focus-within {
+    border-color: var(--accent);
+  }
+
+  .story .name-field input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: none;
+    font-size: 17px;
+    font-weight: 500;
+    outline: none;
+  }
+
+  .story .beat p.result-line {
+    min-height: 1.5em;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* phones and narrow windows: the drawing stays at the top, the tale scrolls under it */
+  @media (max-width: 860px) {
+    .story .story-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+
+    .story .story-stage {
+      order: -1;
+      top: 68px;
+      z-index: 5;
+      height: auto;
+      padding-block: 12px;
+      background: var(--paper);
+    }
+
+    .story .nurbi-stage {
+      width: min(100%, 42svh);
+    }
+
+    .story .beat {
+      min-height: 62svh;
+    }
+  }
+</style>
