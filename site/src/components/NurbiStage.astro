@@ -3,11 +3,12 @@
 // moves through the story; the page sets `at-N` (reached chapter N) and
 // `now-N` (on chapter N) on the stage. Nurbi's parts come from the library's
 // own drawing of him, split so each can arrive on its own: one curve whose two
-// handles sit exactly where his antennae will be, one side of his outline that
-// unfolds into the whole body, then his face.
+// handles sit exactly where his antennae will be, then a construction sketch
+// of him, then his traced outline, then his body and face.
 import { nurbling } from 'nurblings'
 
 const match = (text: string, pattern: RegExp) => text.match(pattern) as RegExpMatchArray
+const f = (v: number) => Math.round(v * 100) / 100
 
 const drawing = nurbling('nurbi', { animate: false, frame: 'full', size: 400 })
 const viewBox = match(drawing, /viewBox="([^"]+)"/)[1]
@@ -19,10 +20,38 @@ const [, handles, bodyGroup, face] = match(
 )
 const place = match(bodyGroup as string, /^<g transform="([^"]*)">/)[1]
 const outline = match(bodyGroup as string, /<path d="([^"]+)"/)[1] as string
-// his right side: from the middle of the base up to the tip of the crown
-const apex = 'L50,39.75'
-const side = outline.slice(0, outline.indexOf(apex) + apex.length)
 const body = (bodyGroup as string).replace(/^<g[^>]*>/, '').replace(/<\/g>$/, '')
+
+// The construction sketch, in his own drawing units, measured from the outline.
+// Straight lines run along each plate edge of the crown and well past it; long
+// curves stand for the soft body; guides mark the centre and each plate band.
+type Pt = readonly [number, number]
+const pts: Pt[] = [...outline.matchAll(/([\d.]+),([\d.]+)/g)].map((m) => [
+  Number(m[1]),
+  Number(m[2]),
+])
+// the crown: the point before the first straight run, then every point of it
+const run = match(outline, /([\d.]+),([\d.]+)((?:L[\d.]+,[\d.]+)+)/)
+const crown: Pt[] = [
+  [Number(run[1]), Number(run[2])],
+  ...[...(run[3] as string).matchAll(/L([\d.]+),([\d.]+)/g)].map(
+    (m): Pt => [Number(m[1]), Number(m[2])],
+  ),
+]
+const past = ([ax, ay]: Pt, [bx, by]: Pt, k = 1.6) =>
+  `M${f(ax - (bx - ax) * k)},${f(ay - (by - ay) * k)}L${f(bx + (bx - ax) * k)},${f(by + (by - ay) * k)}`
+const apexY = Math.min(...crown.map(([, y]) => y))
+const baseY = Math.max(...pts.map(([, y]) => y))
+const [wideX, wideY] = pts.reduce((a, b) => (b[0] > a[0] ? b : a))
+const ellipse = (cy: number, rx: number, ry: number) =>
+  `M${f(50 - rx)},${f(cy)}A${f(rx)},${f(ry)} 0 1 0 ${f(50 + rx)},${f(cy)}A${f(rx)},${f(ry)} 0 1 0 ${f(50 - rx)},${f(cy)}`
+const sketch = [
+  `M50,${f(apexY - 8)}L50,${f(baseY + 5)}`,
+  ...[...new Set(crown.map(([, y]) => y))].filter((y) => y !== apexY).map((y) => `M6,${y}L94,${y}`),
+  ...crown.slice(1).map((p, i) => past(crown[i] as Pt, p)),
+  ellipse(wideY, wideX - 50, baseY - wideY),
+  ellipse((apexY + baseY) / 2, (wideX - 50) * 1.04, (baseY - apexY) / 2),
+]
 
 // the first curve: anchored where his antennae root, bent by handles that end
 // where their square tips are, so the handles it leaves behind become them
@@ -67,9 +96,9 @@ const family = [
         <rect class="knob" x={t2x - knob / 2} y={t2y - knob / 2} width={knob} height={knob}></rect>
       </g>
       <g transform={place}>
-        <path class="contour side" d={side} pathLength="1"></path>
-        <path class="contour mirror" d={side}></path>
+        <g class="sketch">{sketch.map((d, i) => <path d={d} pathLength="1" style={`--i:${i}`} />)}</g>
         <g class="body" set:html={body} />
+        <path class="trace" d={outline} pathLength="1"></path>
       </g>
       <g class="face" set:html={face} />
       <g class="handles" set:html={handles} />
@@ -193,8 +222,8 @@ const family = [
     }
   }
 
-  /* II. the handles become his antennae, one side of him draws in and the other
-     unfolds from the centre line, then he fills in and opens his eyes */
+  /* II. the handles become his antennae; a sketch of him draws in, line after
+     line, his outline is traced over it, the sketch fades and he fills in */
   .nurbi-stage.at-2 .first-curve {
     opacity: 0;
     transition: opacity 0.4s var(--ease);
@@ -209,54 +238,39 @@ const family = [
     transition: opacity 0.5s var(--ease) 0.2s;
   }
 
-  /* in his own drawing units, which the stored art scales up about 7.7 times */
-  .nurbi-stage .contour {
+  /* widths in his own drawing units, which the stored art scales up about 7.7 times */
+  .nurbi-stage .sketch path {
     fill: none;
-    stroke: var(--ink);
-    stroke-width: 0.42;
-    stroke-linejoin: round;
-  }
-
-  .nurbi-stage .side {
+    stroke: var(--muted);
+    stroke-width: 0.16;
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
     stroke-linecap: butt;
   }
 
-  .nurbi-stage.at-2 .side {
+  .nurbi-stage.at-2 .sketch path {
     stroke-dashoffset: 0;
-    transition: stroke-dashoffset 0.9s var(--ease) 0.5s;
-    animation: nurbi-fade-out 0.5s var(--ease) 2.9s both;
+    transition: stroke-dashoffset 0.8s var(--ease) calc(0.3s + var(--i) * 0.09s);
   }
 
-  /* the mirrored side opens from the centre line, the left edge of its own box */
-  .nurbi-stage .mirror {
-    opacity: 0;
-    transform-box: fill-box;
-    transform-origin: 0 50%;
-    transform: scaleX(0);
+  .nurbi-stage.at-2 .sketch {
+    animation: nurbi-fade-out 0.7s var(--ease) 2.8s both;
   }
 
-  .nurbi-stage.at-2 .mirror {
-    animation: nurbi-unfold 2s var(--ease) 1.4s both;
+  .nurbi-stage .trace {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 0.42;
+    stroke-linejoin: round;
+    stroke-linecap: butt;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
   }
 
-  @keyframes nurbi-unfold {
-    0% {
-      opacity: 0;
-      transform: scaleX(-0.08);
-    }
-    15% {
-      opacity: 1;
-    }
-    55% {
-      opacity: 1;
-      transform: scaleX(-1);
-    }
-    100% {
-      opacity: 0;
-      transform: scaleX(-1);
-    }
+  .nurbi-stage.at-2 .trace {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1.3s var(--ease) 1.5s;
+    animation: nurbi-fade-out 0.5s var(--ease) 3.6s both;
   }
 
   @keyframes nurbi-fade-out {
@@ -272,12 +286,12 @@ const family = [
 
   .nurbi-stage.at-2 .body {
     opacity: 1;
-    transition: opacity 0.6s var(--ease) 2.4s;
+    transition: opacity 0.7s var(--ease) 3s;
   }
 
   .nurbi-stage.at-2 .face {
     opacity: 1;
-    transition: opacity 0.5s var(--ease) 2.9s;
+    transition: opacity 0.5s var(--ease) 3.5s;
   }
 
   /* III. one shape at a time, switched by the page; no fade, it flickers */
