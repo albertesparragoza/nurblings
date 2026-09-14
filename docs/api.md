@@ -96,8 +96,9 @@ removed. Emoji are kept, so an emoji seed still hatches its own Nurbling.
 
 ## `isFlagshipSeed(seed)`
 
-`true` for the few reserved seeds that render Nurbi, the family's flagship
-character. Every other seed is kept away from Nurbi's look.
+`true` for the reserved seed `nurbi` (in any case or spacing), which renders
+Nurbi, the family's flagship character, in every renderer and configuration.
+Every other seed is kept away from Nurbi's look.
 
 ## `createNurblings(config)`
 
@@ -173,7 +174,9 @@ passing `gen`.
 
 ## Licence of generated avatars
 
-The code is MIT. The avatars it generates are dedicated to the public domain
+The code is MIT. Every avatar it generates is dedicated to the public domain
 under CC0: use them anywhere, commercially or not, without attribution. The
-names Nurbi and Nurblings and the flagship artwork are reserved, see
-[TRADEMARKS.md](../TRADEMARKS.md).
+generator never produces Nurbi's look, so no generated avatar can resemble the
+flagship. The one exception is Nurbi itself, the stored drawing the seed
+`nurbi` returns: the names Nurbi and Nurblings and that artwork are reserved,
+see [TRADEMARKS.md](../TRADEMARKS.md).
