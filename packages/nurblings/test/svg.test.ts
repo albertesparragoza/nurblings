@@ -216,6 +216,12 @@ describe('render', () => {
     expect(out).not.toContain('<Ada')
   })
 
+  it('hides a decorative avatar from assistive technology, with no name to read', () => {
+    const out = render(TRAITS, { decorative: true, title: 'Ada' })
+    expect(out).toContain('aria-hidden="true"')
+    expect(out).not.toMatch(/role=|aria-label|<title>|Ada/)
+  })
+
   it('uses no ids, so many avatars can share a page', () => {
     expect(svg).not.toMatch(/\sid=/)
     expect(svg).not.toContain('url(#')

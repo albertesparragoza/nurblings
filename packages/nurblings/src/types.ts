@@ -153,6 +153,8 @@ export interface RenderOptions {
   background?: Background
   /** accessible name; defaults to "Nurbling" */
   title?: string
+  /** hides the avatar from assistive technology, for one beside a written name */
+  decorative?: boolean
   /**
    * Ambient life, on by default: `false` for a still drawing, or pick layers.
    * Never moves under prefers-reduced-motion, nor at 32 px and below.
