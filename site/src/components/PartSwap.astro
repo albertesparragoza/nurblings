@@ -11,8 +11,8 @@ const others = ['ada', 'linus', 'radia', 'hedy']
   <div class="section-head">
     <h2>Swap any part</h2>
     <p>
-      Body, eyes, mouth, extras and backdrop are all slots. Wrap one, replace it or drop it; the seed still decides
-      everything else.
+      Every part is a slot: wrap it, replace it or drop it. Add parts of your own, and stack presets that each change
+      something. The seed still decides everything else.
     </p>
   </div>
   <div class="tabs" role="tablist" aria-label="Part" data-swap-tabs>
@@ -39,7 +39,7 @@ const others = ['ada', 'linus', 'radia', 'hedy']
           <p>{r.note}</p>
           <div class="code-card">
             <div class="code-head">
-              <span>{r.id === 'original' ? 'nurblings' : `slots.${r.id}`}</span>
+              <span>{r.head}</span>
               <button type="button" data-copy={r.code}>
                 <span data-copy-label>Copy</span>
               </button>
