@@ -31,7 +31,7 @@ export function contrast(a: string, b: string): number {
 }
 
 /** True when a colour is closer to white than to black. */
-export const isLight = (hex: string) => contrast(hex, '#000000') >= contrast(hex, '#ffffff')
+const isLight = (hex: string) => contrast(hex, '#000000') >= contrast(hex, '#ffffff')
 
 /**
  * `fg`, moved away from `bg` in small steps until the two reach `min`:1. Moves

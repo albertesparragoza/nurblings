@@ -8,7 +8,7 @@ import type { Traits } from './types'
 const HEX = /^#[0-9a-fA-F]{6}$/
 const ZONES: readonly string[] = ['crown', 'base', 'side', 'none']
 /** Most plate rows or columns a body may have. The built-in designs use at most 5; a grid far past this only costs time. */
-export const MAX_GRID = 12
+const MAX_GRID = 12
 
 const names = (list: readonly (string | readonly [string, number])[]) =>
   new Set(list.map((x) => (typeof x === 'string' ? x : x[0])))

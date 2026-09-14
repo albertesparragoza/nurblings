@@ -542,7 +542,7 @@ const LIGHT = ':is([data-theme=light],.light)'
 /** Rules that apply wherever the page is dark, the nearest marker winning. */
 export const autoCss = (rules: string) =>
   `<style>@media (prefers-color-scheme:dark){@scope (:root) to (${LIGHT}){${rules}}}@scope (:is([data-theme=dark],.dark)) to (${LIGHT}){${rules}}</style>`
-export const AUTO = autoCss(AUTO_RULES)
+const AUTO = autoCss(AUTO_RULES)
 
 /** Page grounds an antenna stands on when there is no container. */
 const PAGE = { light: '#f7f5f2', dark: '#16161a' }
@@ -620,7 +620,7 @@ export type DeepReadonly<T> = T extends (...args: never[]) => unknown
     : T
 
 /** An eye as drawn: its centre and radii, the mood's openness included. */
-export interface EyeBox {
+interface EyeBox {
   readonly x: number
   readonly y: number
   readonly rx: number
@@ -628,7 +628,7 @@ export interface EyeBox {
 }
 
 /** Where the face sits: what the eyes, brow and mouth are drawn from. */
-export interface Face {
+interface Face {
   svg: string
   /** the eye line, before the mood narrows the eyes */
   y: number

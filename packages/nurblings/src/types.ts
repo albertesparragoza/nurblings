@@ -51,7 +51,7 @@ export type EyeShape = 'round' | 'tall' | 'wide' | 'almond'
 export type Catchlight = 'none' | 'dot' | 'pair' | 'asymmetric'
 
 /** A built-in name, or one a `createNurblings` config adds to that list. */
-export type Named<T extends string> = T | (string & Record<never, never>)
+type Named<T extends string> = T | (string & Record<never, never>)
 
 export interface Eyes {
   shape: Named<EyeShape>

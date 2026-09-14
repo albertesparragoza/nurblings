@@ -18,7 +18,7 @@ import {
 import type { Frame, RenderOptions } from './types'
 
 /** Normalised seeds that resolve to Nurbi. */
-export const FLAGSHIP_SEEDS: readonly string[] = ['nurbi']
+const FLAGSHIP_SEEDS: readonly string[] = ['nurbi']
 
 const FLAGSHIP_BACKGROUND = '#15151a'
 
