@@ -3,8 +3,9 @@
 // Light DOM on purpose: the SVG's motion styles and `morph` transitions see
 // it like any other avatar.
 
-import { type NurblingOptions, type NurblingRenderer, nurbling } from 'nurblings'
+import { type NurblingRenderer, nurbling } from 'nurblings'
 import { renderNurbling, type ThemeName } from 'nurblings/themes'
+import { parseAnimate } from './animate'
 
 const TEXT = [
   'background',
@@ -41,22 +42,6 @@ type Reflected = (typeof REFLECTED)[number]
 
 // Importable on the server: the class only needs HTMLElement once it is defined.
 const Base = (typeof HTMLElement === 'undefined' ? class {} : HTMLElement) as typeof HTMLElement
-
-/**
- * The `animate` attribute: absent (motion on), `false` for a still avatar,
- * or the layers to keep, such as `animate="blink hover"`.
- */
-export function parseAnimate(value: string | null): NurblingOptions['animate'] {
-  if (value === null || value === '' || value === 'true') return undefined
-  if (value === 'false') return false
-  const on = new Set(value.split(/[\s,]+/))
-  return {
-    breath: on.has('breath'),
-    blink: on.has('blink'),
-    antennae: on.has('antennae'),
-    hover: on.has('hover'),
-  }
-}
 
 export interface NurblingElement extends Record<Reflected, string | null> {}
 

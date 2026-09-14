@@ -80,11 +80,11 @@ const src = toDataUri(nurbling('user-42', { size: 64 }))
 ## `renderTraits(traits, options?)`
 
 Renders a traits object you built or edited yourself. Takes the rendering
-options: `size`, `background`, `title`, `animate`, `frame`, `mode` and
-`transition`. Every value in the traits is checked first: a colour that is not
-6-digit hex, a name outside the known traits or a number that is not finite
-throws a `RangeError`, so traits from a database or a form can never inject
-markup.
+options: `size`, `background`, `title`, `decorative`, `animate`, `frame`,
+`mode` and `transition`. Every value in the traits is checked first: a
+colour that is not 6-digit hex, a name outside the known traits or a number
+that is not finite throws a `RangeError`, so traits from a database or a
+form can never inject markup.
 
 ## `normaliseSeed(seed)`
 
@@ -145,12 +145,31 @@ take `theme="lagoon"`; `createNurblings({ theme })` takes a theme object. See
 | `palette(colours, name?)` | A theme from 2 to 5 hex colours |
 | `themed(theme)` | A ready instance: `themed('lagoon').nurbling(seed)` |
 | `contrast`, `ensureContrast`, `readableOn`, `shade`, `pickBy`, `recolour`, `setFill` | Colour helpers for slots |
+| `themeOf(theme)` | A theme from its name, or the theme object itself; an unknown name throws a `RangeError` |
+| `renderNurbling(renderer, seed, options, theme?)` | What the framework components call: an app-wide instance when there is one, a named theme when given, otherwise the default family. For writing a component of your own |
 
 ## `morph(update, options?)` and `transitionName(key)`
 
 From `nurblings/transition`, a separate entry of under 1 KB. `morph` applies a
 page change and moves every avatar tagged with a `transition` key from where it
-was to where it lands. See [Motion and transitions](motion.md).
+was to where it lands. `options` is `MorphOptions`: `duration` in milliseconds
+(450 by default) and `easing`, any CSS easing. `transitionName(key)` returns
+the `view-transition-name` a key uses, for cross-page transitions in your
+framework. See [Motion and transitions](motion.md).
+
+## Constants and types
+
+| Export | What it is |
+| --- | --- |
+| `SILHOUETTES`, `SHELLS`, `ACCENTS` | Generation 1's body designs, body colours and accent colours by name: the values the matching options accept |
+| `SLOTS`, `SlotName` | The drawn parts in paint order, the names `slots` and `parts.after` take |
+| `NurblingOptions`, `RenderOptions` | The options of `nurbling()` and of `renderTraits()` |
+| `Traits` and its parts (`Silhouette`, `Antennae`, `Eyes`, `Brow`, `Palette`, …) | What `traits()` returns and `renderTraits()` takes |
+| `NurblingsConfig`, `ConfiguredOptions`, `Nurblings` | A `createNurblings` config, its call options, and the instance it returns |
+| `Slot`, `Slots`, `Part`, `SlotContext`, `CallOptions`, `Variant`, `Variants`, `Anchors`, `Point`, `EyeAnchor`, `ColourRole`, `Props`, `SilhouetteShape` | The pieces of an extension; see [Customising](customising.md) |
+| `NurblingRenderer` | Anything with a `nurbling(seed, options)` method: the default package or an instance. Every component's `nurblings` prop takes one |
+| `Rng` | The seeded random source behind `ctx.random()` |
+| `Theme`, `Hex`, `Motion`, `Mode`, `Frame`, `Background`, `Generation` | The value types the options use |
 
 ## Generations and stability
 

@@ -1,6 +1,7 @@
 import { createNurblings, nurbling } from 'nurblings'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { define, NurblingElement, parseAnimate } from '../src/index'
+import { parseAnimate } from '../src/animate'
+import { define, NurblingElement } from '../src/index'
 
 beforeAll(() => define())
 afterEach(() => {

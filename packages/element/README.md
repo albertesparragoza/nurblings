@@ -43,6 +43,13 @@ Each also has a matching property (`el.seed = 'grace'`), for frameworks that
 bind properties, except `title` and `animate`: those are built-in element
 members, so use the attributes.
 
+`decorative` is a boolean attribute: add it when the person's name is already
+written next to the avatar, so screen readers do not read it twice.
+
+The class is exported as `NurblingElement`, for typing
+(`document.querySelector<NurblingElement>(…)`) or for extending before you
+call `define()`.
+
 Motion is on by default. `animate="false"` draws a still avatar, and a list
 keeps only some layers: `animate="blink hover"`.
 

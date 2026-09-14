@@ -73,6 +73,9 @@ createApp(App).use(NurblingsPlugin(avatars)).mount('#app')
 
 In Nuxt, do the same from a plugin file with `nuxtApp.vueApp.use(...)`.
 
+The plugin provides the instance under the `NURBLINGS` injection key, so a
+component of your own can read it with `inject(NURBLINGS)`.
+
 See the [root documentation](https://github.com/albertesparragoza/nurblings#readme)
 for the full trait model and the `nurbling`, `traits` and `toDataUri` core
 functions.
