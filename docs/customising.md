@@ -39,14 +39,12 @@ avatars.traits('user-42', { silhouette: 'robot' }) // custom names are typed
   readable eyes and at least two such accents. Setup throws a `RangeError`
   naming the colour when that is not possible, so a palette that would give
   unreadable faces fails before a single avatar renders.
-- **Slots** are `backdrop`, `antennae`, `body`, `plates`, `extra`, `eyes`,
-  `brow` and `mouth`, painted in that order. Each receives the traits, the body
-  geometry and the size. Return your own markup to replace a part, call
-  `base()` to wrap it, or pass `false` to drop it. Keep your markup free of
-  `id` attributes, so many avatars can share a page. Slot markup goes into the SVG as it
-  is, so build it from your own code and the traits, never from user input.
-  Slots share the traits and geometry the built-in parts draw from, so treat
-  them as read-only, and return a string.
+- **Slots and parts** change or add drawn parts: see
+  [Extending parts](#extending-parts). Their markup goes into the SVG as it is,
+  so build it from your own code, the anchors and the colours, never from user
+  input, and put any text from `props` through `ctx.esc`. Keep it free of `id`
+  attributes, so many avatars can share a page. Treat what `ctx` holds as
+  read-only, and return a string.
 - **Custom body designs** need finite numbers, a positive `hw` and `width`, a
   known `plates` zone, and at most 12 plate rows and 12 columns. Setup throws a
   `RangeError` naming the design and the field otherwise.
@@ -55,100 +53,159 @@ avatars.traits('user-42', { silhouette: 'robot' }) // custom names are typed
 
 ## Extending parts
 
-Slots draw in a 100-unit square. The body is centred on `x = 50` and stands on
-its base, and `ctx.geometry` says where it is:
+Every drawn part is a named layer, painted in this order: `backdrop`,
+`antennae`, `body`, `plates`, `extra`, `eyes`, `brow`, `mouth`, and any part
+a config adds. Three tools work on them, and they combine:
+
+- **`slots`** change a part, built in or added: return markup to replace it,
+  call `base()` to wrap it, or pass `false` to drop it.
+- **`parts`** add a new part, painted right after the part it names
+  (`after`, `mouth` by default). Added parts step aside at 32 px and below
+  unless they set `small: true`.
+- **`use`** stacks presets. A preset is an ordinary config, so a recipe, a
+  brand kit and a plugin are all the same thing.
+
+### What every part reads
+
+Slots and parts all receive the same `ctx`. Built-in parts are drawn from the
+same anchors and colours, so a part placed on them fits every body, follows
+every theme and switches with the page.
 
 | Field | Is |
 | --- | --- |
-| `top` | the y of the crown |
-| `height` | body height, so the base is at `top + height` |
-| `bw` | body width |
-| `halfWidthAt(y)` | half the body's width at a given y |
+| `anchors` | Named places, in drawing units: `centre`, `base`, `crown`, `eyes` (each with `x`, `y`, `rx`, `ry`), `brow`, `mouth`, `chest`, `box`, and `band(f)`, the body's `left` and `right` edges at a height from `0` (base) to `1` (crown) |
+| `colours` | Each colour role as drawn for this avatar: `shell`, `eye`, `accent` (brow), `mark` (antennae), `wear` (extras), `ground` (container). A theme sets them all |
+| `paint(role, 'fill' \| 'stroke')` | A role as an attribute. In `mode: 'auto'`, `ground` and `mark` switch with the page, as the built-in parts do |
+| `random(name)` | A random stream of its own, the same for an avatar every time |
+| `theme`, `options`, `props` | The theme in use, the call's options, and data from the config and the call (the call wins) |
+| `small`, `size`, `mode` | 32 px and below, the pixel size, and the page mode |
+| `n(value)`, `esc(text)` | A number as the renderer writes it, and text made safe for SVG |
+| `traits`, `geometry` | The raw traits and body shape, for anything else |
 
-The eyes sit at `y = top + traits.eyes.depth * height`, `traits.eyes.spacing *
-bw / 2` either side of the centre, `traits.eyes.size * bw` wide. Everything is derived from the seed, so each recipe below fits every body.
+### Recipes
+
+Each recipe is a preset. The home page draws every one of them.
 
 **Body.** Wrap it and add a belly patch in a lighter shade of its own shell:
 
 ```ts
 import { createNurblings } from 'nurblings'
-import { shade } from 'nurblings/themes'
+import { setFill, shade } from 'nurblings/themes'
 
-createNurblings({
+const belly = {
   slots: {
-    body: ({ traits, geometry: g }, base) =>
-      `${base()}<ellipse cx="50" cy="${g.top + g.height * 0.8}"
-        rx="${g.bw * 0.26}" ry="${g.height * 0.12}"
-        fill="${shade(traits.palette.shell, 0.5)}"/>`,
+    body: ({ anchors: a, colours, n }, base) => {
+      const { left, right, y } = a.band(0.2)
+      return `${base()}<ellipse cx="${n(a.centre)}" cy="${n(y)}"
+        rx="${n((right - left) * 0.28)}" ry="${n((a.base - y) * 0.6)}"
+        fill="${shade(colours.shell, 0.5)}"/>`
+    },
   },
-})
+}
 ```
 
 **Eyes.** Keep them and put round glasses over them:
 
 ```ts
-createNurblings({
+const glasses = {
   slots: {
-    eyes: ({ traits: { eyes: e }, geometry: g }, base) => {
-      const y = g.top + e.depth * g.height
-      const dx = (e.spacing * g.bw) / 2
-      const r = e.size * g.bw * 0.85
+    eyes: ({ anchors: { eyes: [l, r] }, n }, base) => {
+      const size = l.rx * 1.7
       return `${base()}<g fill="none" stroke="#1b1b1b" stroke-width="1.3">
-        <circle cx="${50 - dx}" cy="${y}" r="${r}"/>
-        <circle cx="${50 + dx}" cy="${y}" r="${r}"/>
-        <path d="M${50 - dx + r} ${y}H${50 + dx - r}"/></g>`
+        <circle cx="${n(l.x)}" cy="${n(l.y)}" r="${n(size)}"/>
+        <circle cx="${n(r.x)}" cy="${n(r.y)}" r="${n(size)}"/>
+        <path d="M${n(l.x + size)} ${n(l.y)}H${n(r.x - size)}"/></g>`
     },
   },
-})
+}
 ```
 
-**Mouth.** Replace it with a wide smile. `ctx.small` is true at 32 px and
-below, where the built-in mouth and extras step aside; custom ones should too:
+**Mouth.** Replace it with a smile in the eye colour, as wide as the eyes are
+apart. The built-in mouth steps aside at 32 px; this one does too:
 
 ```ts
-createNurblings({
+const smile = {
   slots: {
-    mouth: ({ traits: t, geometry: g, small }) => {
+    mouth: ({ anchors: a, small, paint, n }) => {
       if (small) return ''
-      const y = g.top + (t.eyes.depth + 0.17) * g.height
-      const w = g.bw * 0.13
-      return `<path d="M${50 - w} ${y}Q50 ${y + w} ${50 + w} ${y}"
-        fill="none" stroke="${t.palette.eye}"
+      const w = (a.eyes[1].x - a.eyes[0].x) * 0.35
+      return `<path d="M${n(a.centre - w)} ${n(a.mouth)}
+        Q${n(a.centre)} ${n(a.mouth + w)} ${n(a.centre + w)} ${n(a.mouth)}"
+        fill="none"${paint('eye', 'stroke')}
         stroke-width="1.6" stroke-linecap="round"/>`
     },
   },
-})
+}
 ```
 
-**Extras.** Swap the scarf, pin or hat for your own badge:
+**Extras.** Swap the scarf, collar or hat for a heart pin on the chest:
 
 ```ts
-createNurblings({
+const pin = {
   slots: {
-    extra: ({ geometry: g, small }) => {
+    extra: ({ anchors: a, small, n }) => {
       if (small) return ''
-      const x = 50 + g.bw * 0.2
-      const y = g.top + g.height * 0.8
-      return `<path d="M${x} ${y + 2.6}l-3-3a1.8 1.8 0 0 1 3-2.4
+      const x = a.chest.x + (a.band(0.2).right - a.chest.x) * 0.4
+      const y = a.band(0.2).y
+      return `<path d="M${n(x)} ${n(y + 2.6)}l-3-3a1.8 1.8 0 0 1 3-2.4
         a1.8 1.8 0 0 1 3 2.4z" fill="#e63972"/>`
     },
   },
-})
+}
+```
+
+**A new part.** A status dot that reads `props` on each call, ringed in the
+container colour so it switches with the page:
+
+```ts
+const status = {
+  parts: {
+    status: {
+      after: 'mouth',
+      small: true,
+      draw: ({ anchors: a, props, paint, n }) => {
+        const { right, y } = a.band(0.14)
+        const fill = props.status === 'online' ? '#2e9e5b' : '#9a9a9a'
+        return `<circle cx="${n(right - 2)}" cy="${n(y)}" r="7"
+          fill="${fill}"${paint('ground', 'stroke')} stroke-width="2.5"/>`
+      },
+    },
+  },
+}
 ```
 
 **Backdrop.** Keep the container and give it your brand colour:
 
 ```ts
-import { setFill } from 'nurblings/themes'
-
-createNurblings({
+const brand = {
   slots: { backdrop: (ctx, base) => setFill(base(), '#ffd166') },
-})
+}
 ```
 
-Slots combine: pass several in one config, and use `false` for any part you
-want gone. Antennae and brows are slots too, but they carry the family look,
-so wrap them rather than replace them.
+### Combining
+
+Put presets in `use`, or combine them with `compose()`. They apply in order:
+
+- Slots chain: each later slot's `base()` is what the earlier ones drew, so
+  two presets can both wrap the eyes, and a preset can restyle a part another
+  one added.
+- A later slot that does not call `base()` replaces everything before it; a
+  later `false` drops the part, and a slot after that starts from nothing.
+- Parts, body designs, colours and props merge by name, later names winning.
+  The last theme wins, and defaults merge.
+
+```ts
+export const avatars = createNurblings({
+  use: [belly, glasses, smile, pin, status, brand],
+  theme: lagoon,
+})
+
+avatars.nurbling(user.id, { props: { status: user.online ? 'online' : 'away' } })
+```
+
+A slot for a name that is no part, or a part placed after one that does not
+exist, throws a `RangeError` at setup. Antennae and brows can be slotted too,
+but they carry the family look, so wrap them rather than replace them.
 
 ## Use it everywhere
 

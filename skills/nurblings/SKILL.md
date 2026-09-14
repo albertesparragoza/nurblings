@@ -113,6 +113,17 @@ Pass it with `nurblings={avatars}`, `NurblingsProvider` (React client),
 `accents` still throw a `RangeError` naming a colour that fails contrast: fix
 the named colour, or switch to `palette()`; never catch and ignore the error.
 
+## Extending parts
+
+Every drawn part is a named slot, and every extension is a config. To change a
+part, add a slot (`(ctx, base) => string`, `false` drops it); to add one, add
+a `parts` entry with `after` and `draw(ctx)`. Put separate features in separate
+presets and stack them with `use: [a, b]`: later slots wrap earlier ones, so
+they combine. Place markup on `ctx.anchors` (eyes, brow, mouth, chest, crown,
+`band(f)`) and colour it with `ctx.paint(role)` or `ctx.colours`, never with
+fixed coordinates or the raw palette, so it fits every body, theme and
+`mode`. Per-call data goes in `props`; put any text from it through `ctx.esc`.
+
 ## Light and dark pages
 
 On a dark page, pass `mode="dark"`. For a site with both, `mode="auto"` follows
