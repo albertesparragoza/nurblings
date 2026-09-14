@@ -100,6 +100,13 @@ const accents = Object.fromEntries(Object.values(THEMES).map((t) => [t.id, t.acc
           </label>
         </fieldset>
 
+        <fieldset class="field">
+          <legend>Screen readers</legend>
+          <div class="checks">
+            <label><input type="checkbox" data-key="decorative" /> decorative: the name is written beside it</label>
+          </div>
+        </fieldset>
+
         <button class="btn btn-ghost" id="reset" type="button">Reset to defaults</button>
       </form>
 
@@ -156,6 +163,7 @@ const accents = Object.fromEntries(Object.values(THEMES).map((t) => [t.id, t.acc
     antennae: boolean
     hover: boolean
     speed: number
+    decorative: boolean
   }
   const DEFAULTS: State = {
     seed: 'ada@example.com',
@@ -173,6 +181,7 @@ const accents = Object.fromEntries(Object.values(THEMES).map((t) => [t.id, t.acc
     antennae: true,
     hover: true,
     speed: 1,
+    decorative: false,
   }
   const NAMES = ['grace', 'linus', 'katherine', 'margaret', 'dennis', 'radia', 'barbara', 'frances', 'hedy', 'alan', 'joan', 'tim', 'guido']
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T
@@ -230,6 +239,7 @@ const accents = Object.fromEntries(Object.values(THEMES).map((t) => [t.id, t.acc
       title: state.seed || 'Nurbling',
       ...traits(),
       ...(a !== undefined ? { animate: a } : {}),
+      ...(state.decorative ? { decorative: true } : {}),
       ...extra,
     } as RenderOptions) ?? ''
   }
@@ -245,7 +255,9 @@ const accents = Object.fromEntries(Object.values(THEMES).map((t) => [t.id, t.acc
   const attr = (s: string) => s.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;')
   // a plain JSX string attribute only when nothing in it needs escaping
   const jsxProp = (k: string, v: unknown) =>
-    typeof v === 'string' && /^[^"&<>{}\\]*$/.test(v) ? `${k}="${v}"` : `${k}={${js(v)}}`
+    v === true
+      ? k
+      : typeof v === 'string' && /^[^"&<>{}\\]*$/.test(v) ? `${k}="${v}"` : `${k}={${js(v)}}`
   const props = (): [string, unknown][] => {
     const a = animate()
     return [
@@ -256,6 +268,7 @@ const accents = Object.fromEntries(Object.values(THEMES).map((t) => [t.id, t.acc
       ...(state.frame !== 'auto' ? [['frame', state.frame] as [string, unknown]] : []),
       ...Object.entries(traits()),
       ...(a !== undefined ? [['animate', a] as [string, unknown]] : []),
+      ...(state.decorative ? [['decorative', true] as [string, unknown]] : []),
     ]
   }
   const code = () => {
@@ -269,7 +282,7 @@ const accents = Object.fromEntries(Object.values(THEMES).map((t) => [t.id, t.acc
       case 'astro':
         return `---\nimport { Nurbling } from '@nurblings/astro'\n---\n\n<Nurbling ${jsx.join(' ')} />`
       case 'vue': {
-        const attrs = list.map(([k, v]) => (typeof v === 'string' ? `${k}="${attr(v)}"` : `:${k}="${attr(js(v))}"`))
+        const attrs = list.map(([k, v]) => (v === true ? k : typeof v === 'string' ? `${k}="${attr(v)}"` : `:${k}="${attr(js(v))}"`))
         return `<script setup>\nimport { Nurbling } from '@nurblings/vue'\n<\/script>\n\n<template>\n  <Nurbling ${attrs.join(' ')} />\n</template>`
       }
       case 'html': {
@@ -277,7 +290,7 @@ const accents = Object.fromEntries(Object.values(THEMES).map((t) => [t.id, t.acc
         const layers = a === false ? 'false' : a ? (['breath', 'blink', 'antennae', 'hover'] as const).filter((k) => state[k]).join(' ') : ''
         const attrs = list
           .filter(([k]) => k !== 'animate')
-          .map(([k, v]) => `${k}="${attr(String(v))}"`)
+          .map(([k, v]) => (v === true ? k : `${k}="${attr(String(v))}"`))
         if (layers) attrs.push(`animate="${layers}"`)
         const element = `<nurbling-avatar ${attrs.join(' ')}></nurbling-avatar>`
         const speed = state.speed === 1 ? '' : '\n<!-- speed has no attribute: use the JavaScript tab to set it -->'
