@@ -2,6 +2,7 @@
 
 import { checkDesign, checkTraits } from './check'
 import { contrast, ensureContrast, shade } from './colour'
+import { compose, extension, type Part, type Props, type Slots } from './extend'
 import {
   ACCENTS,
   ANTENNA_COUNTS,
@@ -24,7 +25,7 @@ import {
 } from './gen1'
 import { isFlagshipSeed, renderFlagship } from './protect'
 import { normaliseSeed, type Rng, stream } from './seed'
-import { render, type Slots } from './svg'
+import { render } from './svg'
 import type { Extra, Mood, Mouth, Palette, RenderOptions, Silhouette, Traits } from './types'
 
 export { contrast }
@@ -72,8 +73,14 @@ export interface NurblingsConfig {
   accents?: Readonly<Record<string, Hex>>
   /** body designs; spread `SILHOUETTES` to extend the built-in set, leave names out to drop them */
   silhouettes?: Readonly<Record<string, SilhouetteShape>>
-  /** replace, wrap or drop any drawn part */
+  /** replace, wrap or drop any drawn part, built in or added by `parts` */
   slots?: Slots
+  /** new parts, each painted after the part it names */
+  parts?: Readonly<Record<string, Part>>
+  /** data every slot and part can read as `ctx.props`; a call's own props win */
+  props?: Props
+  /** presets applied before this config, in order: see `compose` */
+  use?: readonly NurblingsConfig[]
   /** options applied to every call */
   defaults?: Omit<NurblingOptions, 'silhouette' | 'shell'>
 }
@@ -98,12 +105,15 @@ export type ConfiguredOptions<C extends NurblingsConfig> = Omit<
   theme?: Theme
   silhouette?: NamesOf<C['silhouettes'], SilhouetteName>
   shell?: ShellNamesOf<C>
+  /** data for this call's slots and parts, over the config's `props` */
+  props?: Props
 }
 
 type Pins = Omit<NurblingOptions, 'silhouette' | 'shell'> & {
   silhouette?: string
   shell?: string
   theme?: Theme
+  props?: Props
 }
 
 interface ShellEntry {
@@ -329,7 +339,7 @@ export function nurbling(seed: string, opts: NurblingOptions = {}): string {
  */
 export function renderTraits(t: Traits, opts: RenderOptions = {}, slots?: Slots): string {
   checkTraits(t)
-  return render(t, opts, slots)
+  return render(t, opts, slots && extension({ slots }))
 }
 
 /** An SVG string as a data URI, for an img src or a CSS background. */
@@ -442,15 +452,18 @@ function buildTables(config: NurblingsConfig): Tables {
  * parts, your defaults. The same config and seed always give the same avatar.
  * Only the default `nurbling()` draws Nurbi for the reserved seeds.
  */
-export function createNurblings<const C extends NurblingsConfig>(config: C) {
+export function createNurblings<const C extends NurblingsConfig>(input: C) {
+  // presets in `use` come first; slots chain, and everything else merges by name
+  const config = compose(input)
   const tables = buildTables(config)
+  const extend = extension(config)
   const merge = (opts: ConfiguredOptions<C>): Pins => ({ ...config.defaults, ...opts })
   // a theme on one call swaps the colours and keeps this instance's body designs
   const tablesFor = (o: Pins) =>
     o.theme && o.theme !== config.theme ? themeTables(o.theme, config) : tables
   const draw = (seed: string, opts: ConfiguredOptions<C> = {}): string => {
     const o = merge(opts)
-    return render(resolve(seed, o, tablesFor(o)), o, config.slots)
+    return render(resolve(seed, o, tablesFor(o)), o, extend)
   }
   return {
     traits: (seed: string, opts: ConfiguredOptions<C> = {}): Traits => {

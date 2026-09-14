@@ -231,7 +231,22 @@ describe('extensions cannot open a way in', () => {
         },
       },
     }).nurbling('ada-secret', { title: 'Title Secret' })
-    expect(keys.sort()).toEqual(['geometry', 'mode', 'size', 'small', 'traits'])
+    expect(keys.sort()).toEqual([
+      'anchors',
+      'colours',
+      'esc',
+      'geometry',
+      'mode',
+      'n',
+      'options',
+      'paint',
+      'props',
+      'random',
+      'size',
+      'small',
+      'theme',
+      'traits',
+    ])
     expect(text).not.toMatch(/secret/i)
   })
 

@@ -1,3 +1,16 @@
+export type {
+  Anchors,
+  CallOptions,
+  ColourRole,
+  EyeAnchor,
+  Part,
+  Point,
+  Props,
+  Slot,
+  SlotContext,
+  Slots,
+} from './extend'
+export { compose } from './extend'
 export type { AccentName, ShellName, SilhouetteName } from './gen1'
 export { ACCENTS, SHELLS, SILHOUETTES } from './gen1'
 export type {
@@ -19,8 +32,9 @@ export {
   traits,
 } from './nurbling'
 export { isFlagshipSeed } from './protect'
+export type { Rng } from './seed'
 export { normaliseSeed } from './seed'
-export type { Slot, SlotContext, SlotName, Slots } from './svg'
+export type { SlotName } from './svg'
 export { SLOTS } from './svg'
 export type {
   Antennae,
