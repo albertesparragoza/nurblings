@@ -13,6 +13,7 @@ const OPTION_SETS: Omit<NurblingProps, 'seed'>[] = [
   { background: 'circle', title: 'Bob' },
   { mood: 'curious', mouth: 'smile', extra: 'scarf', silhouette: 'pear', shell: 'sky' },
   { animate: true },
+  { decorative: true },
 ]
 
 const ssr = (props: NurblingProps) => renderToString(createSSRApp(() => h(Nurbling, props)))

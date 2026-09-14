@@ -66,6 +66,8 @@ const svg = nurbling('ada@example.com', { size: 64, title: 'Ada Lovelace' })
 ```
 
 Use the person's name as `title`: it becomes the avatar's accessible name.
+When the name is already written beside the avatar, pass `decorative: true`
+instead, so screen readers do not read it twice.
 
 ## Next.js
 

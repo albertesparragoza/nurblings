@@ -25,6 +25,14 @@ describe('flagship', () => {
     }
   })
 
+  it('hides a decorative Nurbi from assistive technology, still or moving', () => {
+    for (const animate of [false, true]) {
+      const out = renderFlagship({ decorative: true, animate })
+      expect(out).toContain('aria-hidden="true"')
+      expect(out).not.toMatch(/role=|aria-label|<title>/)
+    }
+  })
+
   it('uses no ids, so it can share a page with other avatars', () => {
     const out = renderFlagship()
     expect(out).not.toMatch(/\sid=/)

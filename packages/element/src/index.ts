@@ -62,7 +62,7 @@ export interface NurblingElement extends Record<Reflected, string | null> {}
 
 // biome-ignore lint/suspicious/noUnsafeDeclarationMerging: the interface types the reflected accessors defined on the prototype below
 export class NurblingElement extends Base {
-  static observedAttributes = ['seed', 'animate', 'theme', ...TEXT, ...NUMBER]
+  static observedAttributes = ['seed', 'animate', 'decorative', 'theme', ...TEXT, ...NUMBER]
 
   #renderer: NurblingRenderer | undefined
 
@@ -123,6 +123,9 @@ export class NurblingElement extends Base {
     }
     const animate = parseAnimate(this.getAttribute('animate'))
     if (animate !== undefined) opts.animate = animate
+    // a boolean attribute: present means decorative, unless it says false
+    const decorative = this.getAttribute('decorative')
+    if (decorative !== null && decorative !== 'false') opts.decorative = true
     const theme = (this.getAttribute('theme') || undefined) as ThemeName | undefined
     this.innerHTML = renderNurbling(this.#renderer, seed, opts, theme)
   }

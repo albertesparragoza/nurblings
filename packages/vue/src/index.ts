@@ -20,6 +20,7 @@ const OPTION_KEYS = [
   'size',
   'background',
   'title',
+  'decorative',
   'animate',
   'gen',
   'mood',
@@ -52,6 +53,8 @@ export const Nurbling = defineComponent({
       default: undefined,
     },
     title: { type: String as PropType<NurblingOptions['title']>, default: undefined },
+    // default undefined keeps an absent prop from casting to false, like animate below
+    decorative: { type: Boolean, default: undefined },
     // default undefined keeps an absent prop from casting to false: motion is on by default
     animate: {
       type: [Boolean, Object] as PropType<NurblingOptions['animate']>,

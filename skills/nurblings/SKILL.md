@@ -36,8 +36,10 @@ Use the project's package manager (check the lockfile). Imports:
 - **Seed with a stable id** (`user.id`), not an email or display name: ids
   never change, and an email in markup leaks personal data.
 - **Pass the person's name as `title`**: it becomes the accessible name
-  (`role="img"`, `aria-label`, `<title>`). Use `title` for decorative
-  duplicates too; never leave the default when a name is known.
+  (`role="img"`, `aria-label`, `<title>`); never leave the default when a name
+  is known. When the name is already written next to the avatar (a comment
+  header, a member row), pass `decorative` instead so screen readers do not
+  read it twice.
 - **Set `size`** in pixels to match the slot (40 in lists, 96+ on profiles).
   At 48 px and below the framing becomes a portrait automatically; at 32 px and
   below mouth, extras and motion drop out so the face still reads.
@@ -148,7 +150,8 @@ container colour does, so pair `mode` with `background`.
 ## Check your work
 
 - The avatar renders on the server (view source shows the `<svg>`).
-- Every avatar has a meaningful `title`.
+- Every avatar has a meaningful `title`, or `decorative` when the name is
+  written right beside it.
 - A list with 50+ avatars uses a reduced motion setting or `animate={false}`.
 - Tests: same seed and options always produce the same string, so snapshot
   tests are stable.

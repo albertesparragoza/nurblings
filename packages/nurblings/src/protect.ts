@@ -7,7 +7,7 @@ import {
   type Box,
   backdrop,
   clipFor,
-  esc,
+  label,
   MOTION,
   motion,
   n,
@@ -50,18 +50,18 @@ export function isFlagshipSeed(seed: string): boolean {
 export function renderFlagship(opts: RenderOptions = {}): string {
   const px = pixelSize(opts.size)
   const size = n(px)
-  const title = esc(opts.title ?? 'Nurbi')
+  const [named, heading] = label(opts, 'Nurbi')
   const box = flagshipBox(resolveFrame(opts.frame, px))
   const vb = `${n(box.x)} ${n(box.y)} ${n(box.s)} ${n(box.s)}`
   const back = backdrop(opts.background ?? 'none', FLAGSHIP_BACKGROUND, box)
   const live = motion(FLAGSHIP_GRAIN, false, opts.animate, px <= 32)
   const clip = clipFor(opts.background)
   if (!live) {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${size}" height="${size}" role="img" aria-label="${title}" class="nb"${clip ? ` style="${clip}"` : ''}${tagFor(opts)}><title>${title}</title>${back}${FLAGSHIP_BODY}</svg>`
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${size}" height="${size}" ${named} class="nb"${clip ? ` style="${clip}"` : ''}${tagFor(opts)}>${heading}${back}${FLAGSHIP_BODY}</svg>`
   }
   // ponytail: the stored drawing has no separate eye group, so Nurbi breathes and sways but does not blink.
   const figure = `<g class="nb-al">${LEFT}</g><g class="nb-ar">${RIGHT}</g>${REST}`
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${size}" height="${size}" role="img" aria-label="${title}" class="nb${live.cls}" style="${[live.style, clip].filter(Boolean).join(';')}"${tagFor(opts)}>${MOTION}<title>${title}</title>${back}<g class="nb-f">${figure}</g></svg>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${size}" height="${size}" ${named} class="nb${live.cls}" style="${[live.style, clip].filter(Boolean).join(';')}"${tagFor(opts)}>${MOTION}${heading}${back}<g class="nb-f">${figure}</g></svg>`
 }
 
 const FLAGSHIP_GRAIN = 1

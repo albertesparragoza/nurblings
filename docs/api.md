@@ -29,6 +29,7 @@ means two different strings can hatch the same creature.
 | `size` | `number` | `128` | Width and height in pixels, a positive number. At 32 and below, small-size mode drops the mouth and extras so the face still reads, and motion stops. |
 | `background` | `'none' \| 'circle' \| 'squircle' \| 'square'` | `'none'` | The container behind the Nurbling, in a tint of its own shell colour. |
 | `title` | `string` | `'Nurbling'` | The accessible name, used for `aria-label` and `<title>`. Escaped for you. |
+| `decorative` | `boolean` | `false` | Hides the avatar from assistive technology (`aria-hidden`, no name), for an avatar beside the person's name in text. |
 | `animate` | `boolean \| Motion` | `true` | Ambient life: breath, blink, antenna drift and a hover wiggle. `false` draws a still avatar; an object picks layers. See [Motion and transitions](motion.md). |
 | `frame` | `'auto' \| 'full' \| 'portrait'` | `'auto'` | How the Nurbling sits in its square. `portrait` crops closer on the face, which reads better in small round avatars; `full` shows the whole figure. `auto` uses a portrait at 48 px and below. |
 | `mode` | `'light' \| 'dark' \| 'auto'` | `'light'` | The page the avatar sits on. The container colour and, where needed, the antennae change; the creature does not. `auto` follows the OS or a `data-theme="dark"` or `.dark` ancestor with CSS only. |
@@ -164,6 +165,8 @@ passing `gen`.
 
 - Every SVG has `role="img"`, an `aria-label` and a `<title>`. Pass `title`
   with the person's name, for example `title: 'Ada Lovelace'`.
+- When the name is already written next to the avatar, pass
+  `decorative: true` instead, so screen readers do not read it twice.
 - Colours are chosen for contrast: the accent clears 3:1 on the body, and the
   antennae read on both light and dark pages.
 - Motion is on by default, stops completely under `prefers-reduced-motion`,

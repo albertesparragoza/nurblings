@@ -678,13 +678,20 @@ export const clipFor = (background: RenderOptions['background']) =>
       ? 'clip-path:inset(0 round 30%)'
       : ''
 
+/** The accessible name as attributes and a `<title>`; hidden from assistive tech when decorative. */
+export function label(opts: RenderOptions, name: string): [string, string] {
+  if (opts.decorative) return ['aria-hidden="true"', '']
+  const title = esc(opts.title ?? name)
+  return [`role="img" aria-label="${title}"`, `<title>${title}</title>`]
+}
+
 export function render(t: Traits, opts: RenderOptions = {}, extend?: Extension): string {
   const size = pixelSize(opts.size)
   const small = size <= 32
   const g = body(t.silhouette)
   const box = frameBox(g, t, resolveFrame(opts.frame, size))
   const face = eyes(g, t)
-  const title = esc(opts.title ?? 'Nurbling')
+  const [named, heading] = label(opts, 'Nurbling')
   const mode = opts.mode ?? 'light'
   if (mode !== 'light' && mode !== 'dark' && mode !== 'auto') {
     throw new RangeError(`nurblings: unknown mode ${String(mode)}`)
@@ -729,5 +736,5 @@ export function render(t: Traits, opts: RenderOptions = {}, extend?: Extension):
   const vars = auto ? `--nb-g:${p.backgroundDark};--nb-c:${antenna(true)}` : ''
   const style = [live?.style, vars, clipFor(opts.background)].filter(Boolean).join(';')
   const root = `class="nb${live?.cls ?? ''}${auto ? ' nb-auto' : ''}"${style ? ` style="${style}"` : ''}${tagFor(opts)}`
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${n(size)}" height="${n(size)}" role="img" aria-label="${title}" ${root}>${live ? MOTION : ''}${auto ? AUTO : ''}${out.style ?? ''}<title>${title}</title>${out.back}${drawn}</svg>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${n(size)}" height="${n(size)}" ${named} ${root}>${live ? MOTION : ''}${auto ? AUTO : ''}${out.style ?? ''}${heading}${out.back}${drawn}</svg>`
 }

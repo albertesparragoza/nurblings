@@ -35,6 +35,7 @@ safe to use in a Nuxt page, layout or server component.
 | `size` | `number` | Rendered width and height in pixels, default 128. 32 or below drops the mouth and extras. |
 | `background` | `'none' \| 'circle' \| 'squircle' \| 'square'` | Background shape behind the creature. |
 | `title` | `string` | Accessible name, default `"Nurbling"`. |
+| `decorative` | `boolean` | Hides the SVG from assistive technology, for an avatar beside a written name. |
 | `animate` | `boolean \| Motion` | Ambient life, on by default (breath, blink, antenna drift, hover wiggle). `:animate="false"` for a still avatar, or an object such as `{ blink: false, speed: 0.5 }`. |
 | `frame` | `'auto' \| 'full' \| 'portrait'` | Portrait crops closer on the face for small round avatars; full shows the whole figure. Auto (the default) picks portrait at 48 px and below. |
 | `gen` | `1` | Trait generation. Pin it so an avatar never changes under a future release. |
