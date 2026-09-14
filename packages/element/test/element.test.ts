@@ -31,6 +31,13 @@ describe('<nurbling-avatar>', () => {
     )
   })
 
+  it('takes decorative as a boolean attribute', () => {
+    expect(avatar({ seed: 'ada', decorative: '' }).innerHTML).toBe(
+      parsed(nurbling('ada', { decorative: true })),
+    )
+    expect(avatar({ seed: 'ada', decorative: 'false' }).innerHTML).toBe(parsed(nurbling('ada')))
+  })
+
   it('re-renders when an attribute changes', () => {
     const el = avatar({ seed: 'ada' })
     el.setAttribute('seed', 'grace')
