@@ -3,13 +3,19 @@
     "name": "nurblings: nurbling()",
     "path": "packages/nurblings/dist/index.js",
     "import": "{ nurbling }",
-    "limit": "8.8 KB"
+    "limit": "7.5 KB"
   },
   {
     "name": "nurblings: everything, createNurblings included",
     "path": "packages/nurblings/dist/index.js",
     "import": "*",
-    "limit": "12 KB"
+    "limit": "10.5 KB"
+  },
+  {
+    "name": "nurblings/themes: renderNurbling(), what every framework component draws with",
+    "path": "packages/nurblings/dist/themes.js",
+    "import": "{ renderNurbling }",
+    "limit": "9 KB"
   },
   {
     "name": "nurblings/transition: morph()",
@@ -36,21 +42,34 @@
     "limit": "2.75 KB"
   },
   {
-    "name": "@nurblings/element",
+    "name": "@nurblings/element with the core: what a browser loads",
+    "path": "packages/element/dist/index.js",
+    "import": "*",
+    "limit": "9.75 KB"
+  },
+  {
+    "name": "@nurblings/vue with the core (Vue itself excluded)",
+    "path": "packages/vue/dist/index.js",
+    "import": "*",
+    "limit": "9.5 KB",
+    "ignore": ["vue"]
+  },
+  {
+    "name": "@nurblings/element, adapter only",
     "path": "packages/element/dist/index.js",
     "import": "*",
     "limit": "1 KB",
     "ignore": ["nurblings"]
   },
   {
-    "name": "@nurblings/vue",
+    "name": "@nurblings/vue, adapter only",
     "path": "packages/vue/dist/index.js",
     "import": "*",
     "limit": "1 KB",
     "ignore": ["nurblings", "vue"]
   },
   {
-    "name": "@nurblings/react",
+    "name": "@nurblings/react, adapter only (a server component: the browser gets none of it)",
     "path": "packages/react/dist/index.js",
     "import": "*",
     "limit": "1 KB",
