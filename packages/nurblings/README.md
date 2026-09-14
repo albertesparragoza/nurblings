@@ -4,7 +4,7 @@ Deterministic SVG avatars: any string in, a small curious creature out. The
 same string always hatches the same Nurbling, so every user, team or
 repository gets an avatar without storing anything.
 
-This is the core: zero dependencies, under 9 KB compressed, and it runs
+This is the core: zero dependencies, about 7.5 KB compressed, and it runs
 anywhere JavaScript does (browsers, Node, Deno, Bun, edge runtimes and build
 steps). For a component, use the package for your framework instead; each one
 renders through this one.

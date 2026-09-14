@@ -117,8 +117,9 @@ with stable ids, accessible names, themes and motion.
 - **Themes and dark mode.** Ten built-in themes by name, any 2 to 5 brand
   colours through `palette()`, and `mode="auto"` for light and dark pages with
   CSS alone.
-- **Small.** The core is under 9 KB compressed with no dependencies; each
-  framework component adds well under 1 KB. Size limits run in CI.
+- **Small.** A plain avatar costs about 7.5 KB compressed, with no
+  dependencies; named themes add about 1.5 KB. The React and Astro components
+  send none of it to the browser. Size limits run in CI.
 
 ## Make it yours
 
