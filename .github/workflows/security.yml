@@ -76,7 +76,9 @@ jobs:
 
   scorecard:
     name: OpenSSF Scorecard
-    if: github.event.repository.private == false && (github.event_name == 'schedule' || github.ref == 'refs/heads/main')
+    # Scorecard only publishes from the default branch (develop here), so it runs
+    # there, weekly and on each push, never on main or a pull request
+    if: github.event.repository.private == false && (github.event_name == 'schedule' || github.ref_name == github.event.repository.default_branch)
     runs-on: ubuntu-latest
     permissions:
       contents: read
