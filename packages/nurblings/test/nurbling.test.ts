@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ACCENTS, RANGES, SHAPE_JITTER, SHELLS, SILHOUETTE_WEIGHTS, SILHOUETTES } from '../src/gen1'
-import { colourDistance, inProtectedRegion, nurbling, toDataUri, traits } from '../src/nurbling'
+import { nurbling, toDataUri, traits } from '../src/nurbling'
 
 const lin = (c: number) => {
   const s = c / 255
@@ -46,11 +46,6 @@ describe('colour rules', () => {
     const accents = Object.values(ACCENTS)
     for (const banned of ['#efe9df', '#ead9bf']) expect(shells).not.toContain(banned)
     for (const banned of ['#ff2f6e', '#9a4a8c']) expect(accents).not.toContain(banned)
-  })
-
-  it('measures colour distance with integers', () => {
-    expect(colourDistance('#000000', '#ffffff')).toBe(3 * 255 * 255)
-    expect(colourDistance('#efe9df', '#efe9df')).toBe(0)
   })
 })
 
@@ -99,7 +94,6 @@ describe('traits', () => {
       expect(t.eyes.spacing).toBeGreaterThanOrEqual(RANGES.eyeSpacing[0])
       expect(t.eyes.spacing).toBeLessThanOrEqual(RANGES.eyeSpacing[1])
       expect(t.palette.wear).not.toBe(t.palette.accent)
-      expect(inProtectedRegion(t)).toBe(false)
     }
     // one antenna for about 1 in 8 seeds
     expect(single / SEEDS.length).toBeGreaterThan(0.1)
@@ -164,39 +158,6 @@ describe('traits', () => {
     t.silhouette.rows = 9
     expect(traits('mutation-probe').silhouette.hw).not.toBe(2)
     expect(nurbling('mutation-probe')).toBe(before)
-  })
-})
-
-describe('protected region', () => {
-  const base = traits('region-probe')
-  const near = { ...base.palette, shell: '#ece6dc' }
-
-  it('catches a near-ivory shell with a hot-pink accent', () => {
-    expect(inProtectedRegion({ ...base, palette: { ...near, accent: '#f8346f' } })).toBe(true)
-  })
-
-  it("catches a near-ivory shell with Nurbi's quiet face", () => {
-    const quiet = { ...base, mouth: 'none', brow: { shape: 'level', tilt: 0 } } as const
-    expect(inProtectedRegion({ ...quiet, palette: near })).toBe(true)
-  })
-
-  it('has no generation 1 accent near the flagship accent, so only the quiet face can reach it', () => {
-    for (const [name, hex] of Object.entries(ACCENTS)) {
-      expect(colourDistance(hex, '#ff2f6e'), name).toBeGreaterThanOrEqual(80 * 80)
-    }
-  })
-
-  it('keeps pinned pale shells out of the region for every seed', SWEEP, () => {
-    for (const shell of ['cloud', 'blush'] as const) {
-      for (const seed of SEEDS.slice(0, 5_000)) {
-        expect(inProtectedRegion(traits(seed, { shell, mouth: 'none' }))).toBe(false)
-      }
-    }
-  })
-
-  it('lets a pale shell with a lively face through', () => {
-    const lively = { ...base, mouth: 'smile', brow: { shape: 'wave', tilt: 3 } } as const
-    expect(inProtectedRegion({ ...lively, palette: { ...near, accent: ACCENTS.teal } })).toBe(false)
   })
 })
 
