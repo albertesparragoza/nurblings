@@ -1,0 +1,100 @@
+---
+// Every tag that decides how a marketing page is found, shared and understood:
+// title, description, canonical, Open Graph, Twitter and the JSON-LD graph. The
+// docs get the same card and graph through DocsHead; Starlight writes the rest.
+import { site } from '../config/seo'
+
+interface Props {
+  /** the full page title, suffix included */
+  title: string
+  description: string
+  /** the share headline and blurb, when they should differ from the search ones */
+  ogTitle?: string
+  ogDescription?: string
+  ogImage?: string
+  /** what the card shows, for a reader who cannot see it */
+  ogImageAlt?: string
+  /** extra JSON-LD nodes for this page, added to the site graph */
+  schema?: Record<string, unknown>[]
+  /** keep the page out of search results */
+  noindex?: boolean
+}
+
+const {
+  title,
+  description,
+  ogTitle = title,
+  ogDescription = description,
+  ogImage = site.ogImage,
+  ogImageAlt = `${site.name}: ${ogTitle}`,
+  schema = [],
+  noindex = false,
+} = Astro.props
+
+const base = Astro.site ?? new URL('https://nurblings.com')
+const siteUrl = base.toString()
+const canonical = new URL(Astro.url.pathname, base).toString()
+const image = new URL(ogImage, base).toString()
+const [width, height] = site.ogImageSize
+
+// the site's standing facts on every page; a page adds its own nodes through `schema`
+const graph = [
+  {
+    '@type': 'WebSite',
+    '@id': `${siteUrl}#website`,
+    name: site.name,
+    url: siteUrl,
+    inLanguage: 'en',
+    publisher: { '@id': `${siteUrl}#author` },
+  },
+  {
+    '@type': 'Person',
+    '@id': `${siteUrl}#author`,
+    name: site.author.name,
+    url: site.author.url,
+    sameAs: [site.author.github],
+  },
+  {
+    '@type': 'SoftwareSourceCode',
+    '@id': `${siteUrl}#library`,
+    name: site.name,
+    description:
+      'Deterministic SVG avatars: any string in, a small curious creature out. Components for React, Vue, Astro and plain HTML.',
+    url: siteUrl,
+    codeRepository: site.repo,
+    programmingLanguage: ['TypeScript', 'JavaScript'],
+    runtimePlatform: ['Browser', 'Node.js'],
+    license: 'https://opensource.org/licenses/MIT',
+    keywords: 'avatar, identicon, svg, deterministic, react, vue, astro, web component',
+    author: { '@id': `${siteUrl}#author` },
+    sameAs: [site.npm],
+  },
+  ...schema,
+]
+const structuredData = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, follow" />}
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={site.name} />
+<meta property="og:locale" content="en_US" />
+<meta property="og:title" content={ogTitle} />
+<meta property="og:description" content={ogDescription} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={image} />
+<meta property="og:image:type" content={ogImage.endsWith('.png') ? 'image/png' : 'image/jpeg'} />
+<meta property="og:image:width" content={String(width)} />
+<meta property="og:image:height" content={String(height)} />
+<meta property="og:image:alt" content={ogImageAlt} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={ogTitle} />
+<meta name="twitter:description" content={ogDescription} />
+<meta name="twitter:image" content={image} />
+<meta name="twitter:image:alt" content={ogImageAlt} />
+
+<script type="application/ld+json" set:html={structuredData} />

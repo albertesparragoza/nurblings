@@ -4,31 +4,30 @@ import textFont from '@fontsource-variable/dm-sans/files/dm-sans-latin-wght-norm
 import '../styles/fonts.css'
 import '../styles/tokens.css'
 import '../styles/site.css'
+import Analytics from '../components/Analytics.astro'
 import Brand from '../components/Brand.astro'
 import GitHubLink from '../components/GitHubLink.astro'
 import ModeToggle from '../components/ModeToggle.astro'
+import SeoHead from '../components/SeoHead.astro'
 import SiteFooter from '../components/SiteFooter.astro'
+import { type PageKey, pages, site } from '../config/seo'
 import { isActive, NAV } from '../lib/nav'
 
 interface Props {
-  title?: string
-  description?: string
+  /** which page's metadata, from src/config/seo.ts */
+  seo: PageKey
+  /** extra JSON-LD nodes for this page */
+  schema?: Record<string, unknown>[]
   /** path of the active nav item; defaults to the page's own */
   active?: string
   class?: string
 }
 
-const {
-  title,
-  description = 'Small animated avatars for React, Vue, Astro and plain HTML. Every account gets a creature of its own that breathes, blinks and looks the same everywhere.',
-  active = Astro.url.pathname,
-  class: className,
-} = Astro.props
-const pageTitle = title
-  ? `${title} · Nurblings Avatars`
-  : 'Nurblings Avatars · A small creature for every account'
-// the page's address on the real domain, whatever host serves this build
-const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined
+const { seo, schema, active = Astro.url.pathname, class: className } = Astro.props
+const page = pages[seo]
+const pageTitle = page.title
+  ? `${page.title} · ${site.titleSuffix}`
+  : `${site.titleSuffix} · A small creature for every account`
 ---
 
 <!doctype html>
@@ -36,13 +35,21 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{pageTitle}</title>
-    <meta name="description" content={description} />
-    {canonical && <link rel="canonical" href={canonical} />}
-    <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={description} />
-    {canonical && <meta property="og:url" content={canonical} />}
+    <SeoHead
+      title={pageTitle}
+      description={page.description}
+      ogTitle={page.share.title}
+      ogDescription={page.share.description}
+      ogImage={page.ogImage}
+      ogImageAlt={page.share.alt}
+      schema={schema}
+    />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content={site.themeColor.light} media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content={site.themeColor.dark} media="(prefers-color-scheme: dark)" />
     <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={textFont} as="font" type="font/woff2" crossorigin />
     <link rel="alternate" type="text/plain" href="/llms.txt" title="Nurblings docs for AI assistants" />
@@ -65,6 +72,7 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
       })()
     </script>
     <slot name="head" />
+    <Analytics />
   </head>
   <body class={className}>
     <header class="site-header">
