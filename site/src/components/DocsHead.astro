@@ -1,12 +1,71 @@
 ---
-// The docs head: Starlight's own, plus the same font preloads as the rest of
-// the site, so the real fonts are usually ready before the first paint. When
-// one is late, the size-matched fallback in fonts.css holds its place.
+// The docs head: Starlight's own tags, plus what it leaves out. Starlight writes
+// the title, description, canonical and most Open Graph tags; this adds the
+// social card, icons, manifest, theme colour, structured data and analytics,
+// and keeps the 404 out of search results. The font preloads are the same as
+// the rest of the site, so the real fonts are usually ready before first paint.
 import Default from '@astrojs/starlight/components/Head.astro'
 import displayFont from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url'
 import textFont from '@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url'
+import { docsCard, site } from '../config/seo'
+import Analytics from './Analytics.astro'
+
+const base = Astro.site ?? new URL('https://nurblings.com')
+const siteUrl = base.toString()
+const url = new URL(Astro.url.pathname, base).toString()
+const image = new URL(docsCard.image, base).toString()
+const [width, height] = site.ogImageSize
+const is404 = /^\/404(\.html|\/)?$/.test(Astro.url.pathname)
+
+const data = Astro.locals.starlightRoute.entry.data
+const structuredData = is404
+  ? undefined
+  : JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'TechArticle',
+          '@id': `${url}#article`,
+          headline: data.title,
+          ...(data.description ? { description: data.description } : {}),
+          url,
+          inLanguage: 'en',
+          isPartOf: { '@id': `${siteUrl}#website` },
+          about: { '@id': `${siteUrl}#library` },
+          author: { '@id': `${siteUrl}#author` },
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Docs',
+              item: new URL('/docs/', base).toString(),
+            },
+            { '@type': 'ListItem', position: 2, name: data.title, item: url },
+          ],
+        },
+      ],
+    })
 ---
 
 <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
 <link rel="preload" href={textFont} as="font" type="font/woff2" crossorigin />
 <Default />
+<meta property="og:image" content={image} />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content={String(width)} />
+<meta property="og:image:height" content={String(height)} />
+<meta property="og:image:alt" content={docsCard.alt} />
+<meta name="twitter:image" content={image} />
+<meta name="twitter:image:alt" content={docsCard.alt} />
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="theme-color" content={site.themeColor.light} media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content={site.themeColor.dark} media="(prefers-color-scheme: dark)" />
+<link rel="alternate" type="text/plain" href="/llms.txt" title="Nurblings docs for AI assistants" />
+{is404 && <meta name="robots" content="noindex, follow" />}
+{structuredData && <script type="application/ld+json" set:html={structuredData} />}
+<Analytics />

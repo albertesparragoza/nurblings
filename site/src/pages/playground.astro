@@ -21,7 +21,21 @@ const frameworks = [
 const accents = Object.fromEntries(Object.values(THEMES).map((t) => [t.id, t.accent]))
 ---
 
-<Site title="Playground" active="/playground/" class="pg">
+<Site
+  seo="playground"
+  active="/playground/"
+  class="pg"
+  schema={[
+    {
+      '@type': 'SoftwareApplication',
+      name: 'Nurblings playground',
+      url: new URL('/playground/', Astro.site ?? 'https://nurblings.com').toString(),
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'Any (web browser)',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    },
+  ]}
+>
   <script is:inline slot="head" define:vars={{ accents }}>
     // a shared link's theme colours the page before it paints
     const linked = new URLSearchParams(location.hash.slice(1)).get('theme')

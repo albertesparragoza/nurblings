@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Every page is public, search engines and AI assistants alike. The docs are
+# also plain Markdown for assistants: https://nurblings.com/llms.txt
+Sitemap: https://nurblings.com/sitemap-index.xml
