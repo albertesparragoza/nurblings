@@ -158,6 +158,23 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm --filter site build
+      # A push to develop or main publishes what was just built: main to
+      # production, develop to its preview address. Pull requests build the site
+      # but never deploy, and never see these secrets.
+      - name: Deploy to Cloudflare Pages
+        if: github.event_name == 'push'
+        working-directory: site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          # the first deploy creates the project; after that it already exists
+          pnpm exec wrangler pages project create nurblings --production-branch=main >/dev/null 2>&1 || true
+          # folder and project named here, not left to config discovery
+          pnpm exec wrangler pages deploy dist --project-name=nurblings --branch="$BRANCH" | tee "$RUNNER_TEMP/deploy.log"
+          url=$(grep -oE 'https://[a-z0-9.-]+\.pages\.dev' "$RUNNER_TEMP/deploy.log" | tail -1)
+          echo "### Deployed \`$BRANCH\` to $url" >> "$GITHUB_STEP_SUMMARY"
 
   secrets:
     runs-on: ubuntu-latest
