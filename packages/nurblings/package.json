@@ -1,0 +1,52 @@
+{
+  "name": "nurblings",
+  "version": "1.0.0",
+  "description": "Deterministic avatars: any string in, a small curious creature out.",
+  "license": "MIT",
+  "author": "Albert Esparragoza",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/albertesparragoza/nurblings.git",
+    "directory": "packages/nurblings"
+  },
+  "homepage": "https://nurblings.com",
+  "bugs": "https://github.com/albertesparragoza/nurblings/issues",
+  "keywords": [
+    "avatar",
+    "identicon",
+    "svg",
+    "deterministic",
+    "generative"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./transition": {
+      "types": "./dist/transition.d.ts",
+      "default": "./dist/transition.js"
+    },
+    "./themes": {
+      "types": "./dist/themes.d.ts",
+      "default": "./dist/themes.js"
+    },
+    "./nurbi": {
+      "types": "./dist/nurbi.d.ts",
+      "default": "./dist/nurbi.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.14.3"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "nurblings-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.2.2",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/*\" build",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "pnpm -r --filter \"./packages/*\" typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "publint": "pnpm -r --filter \"./packages/*\" exec publint",
+    "attw": "pnpm -r --filter \"./packages/*\" --filter \"!@nurblings/astro\" exec attw --pack . --profile esm-only",
+    "size": "size-limit",
+    "sheet": "tsup scripts/container-sheet.ts --format esm --out-dir wip/.sheet --silent && node wip/.sheet/container-sheet.js",
+    "changeset": "changeset",
+    "knip": "knip"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@biomejs/biome": "^2.5.13",
+    "@changesets/cli": "^3.0.2",
+    "@size-limit/preset-small-lib": "^13.0.3",
+    "@vitest/coverage-v8": "^5.0.0",
+    "knip": "6.35.1",
+    "publint": "^0.3.24",
+    "size-limit": "^13.0.3",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.0"
+  }
+}

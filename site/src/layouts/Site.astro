@@ -1,0 +1,111 @@
+---
+import displayFont from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url'
+import textFont from '@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url'
+import '../styles/fonts.css'
+import '../styles/tokens.css'
+import '../styles/site.css'
+import Brand from '../components/Brand.astro'
+import GitHubLink from '../components/GitHubLink.astro'
+import ModeToggle from '../components/ModeToggle.astro'
+import SiteFooter from '../components/SiteFooter.astro'
+import { isActive, NAV } from '../lib/nav'
+
+interface Props {
+  title?: string
+  description?: string
+  /** path of the active nav item; defaults to the page's own */
+  active?: string
+  class?: string
+}
+
+const {
+  title,
+  description = 'Small animated avatars for React, Vue, Astro and plain HTML. Every account gets a creature of its own that breathes, blinks and looks the same everywhere.',
+  active = Astro.url.pathname,
+  class: className,
+} = Astro.props
+const pageTitle = title
+  ? `${title} · Nurblings Avatars`
+  : 'Nurblings Avatars · A small creature for every account'
+// the page's address on the real domain, whatever host serves this build
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={textFont} as="font" type="font/woff2" crossorigin />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="Nurblings docs for AI assistants" />
+    <script is:inline>
+      // same key as the docs, so light/dark follows the visitor across the site
+      ;(() => {
+        const root = document.documentElement
+        root.classList.add('js')
+        try {
+          const saved = localStorage.getItem('starlight-theme')
+          root.dataset.theme =
+            saved === 'light' || saved === 'dark'
+              ? saved
+              : matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+        } catch {
+          root.dataset.theme = 'light'
+        }
+      })()
+    </script>
+    <slot name="head" />
+  </head>
+  <body class={className}>
+    <header class="site-header">
+      <div class="wrap">
+        <Brand />
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+          {
+            NAV.map(([label, href]) => (
+              <a href={href} aria-current={isActive(href, active) ? 'page' : undefined}>
+                {label}
+              </a>
+            ))
+          }
+        </nav>
+        <div class="header-actions">
+          <GitHubLink />
+          <ModeToggle />
+          <button class="menu-btn" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <SiteFooter wide />
+
+    <script>
+      import { boot } from '../lib/client'
+      boot()
+
+      // phones: the nav opens under the header
+      const menu = document.getElementById('menu-toggle')
+      const siteNav = document.getElementById('site-nav')
+      menu?.addEventListener('click', () => {
+        const open = siteNav?.classList.toggle('open') ?? false
+        menu.setAttribute('aria-expanded', String(open))
+      })
+    </script>
+  </body>
+</html>

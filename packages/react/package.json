@@ -1,0 +1,56 @@
+{
+  "name": "@nurblings/react",
+  "version": "1.0.0",
+  "description": "React Server Component for nurblings, deterministic avatars.",
+  "license": "MIT",
+  "author": "Albert Esparragoza",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/albertesparragoza/nurblings.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://nurblings.com",
+  "bugs": "https://github.com/albertesparragoza/nurblings/issues",
+  "keywords": [
+    "avatar",
+    "identicon",
+    "svg",
+    "deterministic",
+    "generative",
+    "react"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "dependencies": {
+    "nurblings": "workspace:^"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "happy-dom": "^20.14.3",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  }
+}

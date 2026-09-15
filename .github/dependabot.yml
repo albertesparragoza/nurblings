@@ -1,0 +1,33 @@
+version: 2
+updates:
+  # One entry for the whole pnpm workspace: pnpm cannot update a workspace
+  # from a subdirectory, so the site cannot have an entry of its own. Its
+  # packages still come as one pull request, apart from the library's.
+  - package-ecosystem: npm
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    groups:
+      # first match wins: only packages nothing outside site/ uses
+      site:
+        patterns: ['@astrojs/starlight', '@astrojs/markdown-remark', '@fontsource-variable/*']
+      dev-dependencies:
+        dependency-type: development
+      dependencies:
+        dependency-type: production
+    ignore:
+      # TypeScript 7 breaks the tsup build; move to it deliberately, not by bot
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      # the types follow the oldest Node the packages support, which is 22
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']

@@ -1,0 +1,112 @@
+---
+// Home: every drawn part is a slot. Pick a part to see a recipe for it, drawn
+// on a few seeds, beside the code that drew it.
+import { drawRecipe, RECIPES } from '../lib/recipes'
+
+const lead = 'grace'
+const others = ['ada', 'linus', 'radia', 'hedy']
+---
+
+<section class="wrap section" data-reveal id="parts">
+  <div class="section-head">
+    <h2>Swap any part</h2>
+    <p>
+      Every part is a slot: wrap it, replace it or drop it. Add parts of your own, and stack presets that each change
+      something. The seed still decides everything else.
+    </p>
+  </div>
+  <div class="tabs" role="tablist" aria-label="Part" data-swap-tabs>
+    {
+      RECIPES.map((r, i) => (
+        <button type="button" role="tab" id={`swap-tab-${r.id}`} aria-selected={String(i === 0)} aria-controls={`swap-${r.id}`} data-swap={r.id}>
+          {r.label}
+        </button>
+      ))
+    }
+  </div>
+  {
+    RECIPES.map((r, i) => (
+      <div class="swap" role="tabpanel" id={`swap-${r.id}`} aria-labelledby={`swap-tab-${r.id}`} hidden={i !== 0}>
+        <div class="swap-stage panel">
+          <span class="av" set:html={drawRecipe(r.id, lead, 200)} />
+          <div class="swap-row">
+            {others.map((seed) => (
+              <span class="av" set:html={drawRecipe(r.id, seed, 56)} />
+            ))}
+          </div>
+        </div>
+        <div class="swap-code">
+          <p>{r.note}</p>
+          <div class="code-card">
+            <div class="code-head">
+              <span>{r.head}</span>
+              <button type="button" data-copy={r.code}>
+                <span data-copy-label>Copy</span>
+              </button>
+            </div>
+            <pre><code>{r.code}</code></pre>
+          </div>
+          <a class="more-link swap-more" href="/docs/customising/#extending-parts">How slots work</a>
+        </div>
+      </div>
+    ))
+  }
+</section>
+
+<script>
+  import { tabs } from '../lib/tabs'
+
+  const list = document.querySelector<HTMLElement>('[data-swap-tabs]')
+  if (list) {
+    tabs(list, (tab) => {
+      for (const panel of document.querySelectorAll<HTMLElement>('.swap')) {
+        panel.hidden = panel.id !== `swap-${tab.dataset.swap}`
+      }
+    })
+  }
+</script>
+
+<style>
+  .swap:not([hidden]) {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .swap-stage {
+    display: grid;
+    justify-items: center;
+    gap: 20px;
+    padding-block: 32px;
+  }
+
+  .swap-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .swap-code {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .swap-code > p {
+    margin: 0;
+    font-size: 17px;
+    color: var(--muted);
+  }
+
+  .swap-more {
+    justify-self: start;
+  }
+
+  @media (max-width: 820px) {
+    .swap:not([hidden]) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

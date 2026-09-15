@@ -1,0 +1,50 @@
+{
+  "name": "@nurblings/element",
+  "version": "1.0.0",
+  "description": "A <nurbling-avatar> custom element: deterministic avatars in plain HTML, Svelte, Solid, Angular or any CMS.",
+  "license": "MIT",
+  "author": "Albert Esparragoza",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/albertesparragoza/nurblings.git",
+    "directory": "packages/element"
+  },
+  "homepage": "https://nurblings.com",
+  "bugs": "https://github.com/albertesparragoza/nurblings/issues",
+  "keywords": [
+    "avatar",
+    "identicon",
+    "svg",
+    "deterministic",
+    "web-component",
+    "custom-element"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "./dist/define.js"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./define": {
+      "types": "./dist/define.d.ts",
+      "default": "./dist/define.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "nurblings": "workspace:^"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.14.3"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "name": "@nurblings/vue",
+  "version": "1.0.0",
+  "description": "Vue 3 component for nurblings: deterministic avatars, any string in, a small curious creature out.",
+  "license": "MIT",
+  "author": "Albert Esparragoza",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/albertesparragoza/nurblings.git",
+    "directory": "packages/vue"
+  },
+  "homepage": "https://nurblings.com",
+  "bugs": "https://github.com/albertesparragoza/nurblings/issues",
+  "keywords": [
+    "avatar",
+    "identicon",
+    "svg",
+    "deterministic",
+    "generative",
+    "vue",
+    "nuxt"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "vue": ">=3.3"
+  },
+  "dependencies": {
+    "nurblings": "workspace:^"
+  },
+  "devDependencies": {
+    "@vue/server-renderer": "^3.5.42",
+    "@vue/test-utils": "^2.5.0",
+    "happy-dom": "^20.14.3",
+    "vue": "^3.5.42"
+  }
+}

@@ -1,0 +1,26 @@
+name: Trait proposal
+description: A new silhouette, eye, brow, mouth, colour or extra for a future generation.
+labels: [trait]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        New traits ship as a new generation, so no existing avatar ever changes.
+        Every proposal is reviewed against the family's design rules before
+        anyone builds it, and none may copy the flagship's exact design or colours.
+  - type: textarea
+    id: trait
+    attributes:
+      label: The trait
+      description: What it is and why the family needs it. Sketches or SVGs welcome.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I checked it at 24, 48 and 256 px, on light and dark pages, in monochrome and as a favicon (`pnpm sheet` renders all of these).
+          required: true
+        - label: It keeps two antennae with square tips, two eyes and a brow, adds no limbs, and uses flat fills only.
+          required: true

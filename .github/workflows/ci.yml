@@ -1,0 +1,191 @@
+name: ci
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Which parts a change touches, so each job below runs only when it matters.
+  # A skipped job still satisfies a required status check. With no base to
+  # compare against (a new branch), everything runs.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      hooks: ${{ steps.diff.outputs.hooks }}
+      library: ${{ steps.diff.outputs.library }}
+      site: ${{ steps.diff.outputs.site }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            files=$(git diff --name-only "$BASE" HEAD)
+          else
+            files=ALL
+          fi
+          shared='package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|\.github/workflows/ci\.yml'
+          touches() {
+            if [ "$files" = ALL ] || grep -qE "$1" <<<"$files"; then echo true; else echo false; fi
+          }
+          {
+            echo "hooks=$(touches '^\.githooks/|^\.github/workflows/ci\.yml$')"
+            echo "library=$(touches "^(packages|examples|scripts)/|^(tsconfig\.base\.json|vitest\.config\.ts|\.size-limit\.json|$shared)$")"
+            echo "site=$(touches "^(site|docs|packages)/|^($shared)$")"
+          } | tee -a "$GITHUB_OUTPUT"
+
+  hooks:
+    needs: changes
+    if: needs.changes.outputs.hooks == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Shell syntax
+        run: bash -n .githooks/*
+      - name: Commit message hook
+        run: |
+          printf 'feat(seed): add seed normalisation\n' > "$RUNNER_TEMP/ok"
+          .githooks/commit-msg "$RUNNER_TEMP/ok"
+          printf 'Added some stuff\n' > "$RUNNER_TEMP/bad"
+          if .githooks/commit-msg "$RUNNER_TEMP/bad"; then
+            echo "commit-msg accepted a non-conventional message"; exit 1
+          fi
+
+  # the whole repository, every time: it takes seconds
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      # unused files, exports and dependencies, across every workspace
+      - run: pnpm knip
+
+  test:
+    needs: changes
+    if: needs.changes.outputs.library == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test
+
+  package:
+    needs: changes
+    if: needs.changes.outputs.library == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm publint
+      - run: pnpm attw
+      - run: pnpm size
+
+  examples:
+    needs: changes
+    if: needs.changes.outputs.library == 'true'
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NUXT_TELEMETRY_DISABLED: '1'
+      ASTRO_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Next.js example
+        run: pnpm --filter example-next-app build
+      - name: Nuxt example
+        run: pnpm --filter example-nuxt generate
+      - name: Astro example
+        run: pnpm --filter example-astro build
+      - name: Every example renders avatars into its HTML
+        run: |
+          grep -rlq '<svg' examples/next-app/.next/server/app
+          grep -rlq '<svg' examples/nuxt/.output/public
+          grep -rlq '<svg' examples/astro/dist
+          if grep -rq '<script' examples/astro/dist; then
+            echo "the Astro example shipped client JavaScript"; exit 1
+          fi
+
+  # the website renders the packages and the docs, so it builds when either changes
+  site:
+    needs: changes
+    if: needs.changes.outputs.site == 'true'
+    runs-on: ubuntu-latest
+    env:
+      ASTRO_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --filter site build
+      # A push to develop or main publishes what was just built: main to
+      # production, develop to its preview address. Pull requests build the site
+      # but never deploy, and never see these secrets.
+      - name: Deploy to Cloudflare Pages
+        if: github.event_name == 'push'
+        working-directory: site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          # the first deploy creates the project; after that it already exists
+          pnpm exec wrangler pages project create nurblings --production-branch=main >/dev/null 2>&1 || true
+          # folder and project named here, not left to config discovery
+          pnpm exec wrangler pages deploy dist --project-name=nurblings --branch="$BRANCH" | tee "$RUNNER_TEMP/deploy.log"
+          url=$(grep -oE 'https://[a-z0-9.-]+\.pages\.dev' "$RUNNER_TEMP/deploy.log" | tail -1)
+          echo "### Deployed \`$BRANCH\` to $url" >> "$GITHUB_STEP_SUMMARY"
+
+  secrets:
+    runs-on: ubuntu-latest
+    # gitleaks lists a pull request's commits to scan only those
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

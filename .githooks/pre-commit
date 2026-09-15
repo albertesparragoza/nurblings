@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Last line of defence before something leaves this machine in a public repo.
+# CI runs a full secret scan as well; this catches the obvious cases early.
+set -uo pipefail
+
+fail() { printf 'pre-commit: %s\n' "$1" >&2; exit 1; }
+
+# 1. git flow: no direct commits on the integration branches (finishing a
+#    conflicted merge is the one exception)
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [ ! -f "$(git rev-parse --git-dir)/MERGE_HEAD" ]; then
+  case "$branch" in
+    main|master|develop)
+      fail "no direct commits on '$branch'. Commit on a typed work branch (feat/*, fix/*, docs/*, ...)." ;;
+  esac
+fi
+
+# 2. secret-shaped files
+bad=$(git diff --cached --name-only --diff-filter=AM \
+  | grep -Ei '(^|/)(\.env(\.[^/]*)?|\.dev\.vars|id_(rsa|ed25519)[^/]*|[^/]*\.(pem|key|p12|pfx)|\.npmrc|\.netrc)$' \
+  | grep -v '\.env\.example$' || true)
+[ -z "$bad" ] || fail "refusing to commit secret-shaped files:"$'\n'"$bad"
+
+added=$(git diff --cached -U0 --diff-filter=AM | grep -E '^\+' | grep -Ev '^\+\+\+' || true)
+
+# 3. credential-shaped strings in added lines
+tokens='(AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{40,}|sk-ant-[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{32,}|AIza[0-9A-Za-z_-]{35}|xox[baprs]-[A-Za-z0-9-]{10,}|npm_[A-Za-z0-9]{36}|-----BEGIN [A-Z ]*PRIVATE KEY-----)'
+hit=$(printf '%s\n' "$added" | grep -Eo "$tokens" | head -3 || true)
+[ -z "$hit" ] || fail "staged changes contain what looks like a credential. Remove it and rotate it if it was real."
+
+# 4. personal absolute paths
+path=$(printf '%s\n' "$added" | grep -Eo '/home/[a-z_][a-z0-9_-]*/|/Users/[A-Za-z][A-Za-z0-9._-]*/' | head -3 || true)
+[ -z "$path" ] || fail "staged changes contain a personal absolute path ($path). Use a repo-relative path."
+
+exit 0

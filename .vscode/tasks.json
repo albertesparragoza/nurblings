@@ -1,0 +1,154 @@
+{
+  // Run with Terminal > Run Task (or Ctrl+Shift+P, "Tasks: Run Task").
+  // Dev servers use their own ports so they can all run at once:
+  // site 4321, Astro example 4322, Next.js example 3000, Nuxt example 3001.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build: packages",
+      "detail": "Build every package once; the site and examples import the built output",
+      "type": "shell",
+      "command": "pnpm build",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: site",
+      "detail": "Website with docs, playground and gallery on http://localhost:4321",
+      "type": "shell",
+      "command": "pnpm --filter site dev --port 4321",
+      "dependsOn": "build: packages",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: example (Next.js)",
+      "detail": "Next.js example on http://localhost:3000",
+      "type": "shell",
+      "command": "pnpm --filter example-next-app dev --port 3000",
+      "options": { "env": { "NEXT_TELEMETRY_DISABLED": "1" } },
+      "dependsOn": "build: packages",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: example (Nuxt)",
+      "detail": "Nuxt example on http://localhost:3001",
+      "type": "shell",
+      "command": "pnpm --filter example-nuxt dev --port 3001",
+      "options": { "env": { "NUXT_TELEMETRY_DISABLED": "1" } },
+      "dependsOn": "build: packages",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: example (Astro)",
+      "detail": "Astro example on http://localhost:4322",
+      "type": "shell",
+      "command": "pnpm --filter example-astro dev --port 4322",
+      "dependsOn": "build: packages",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: everything",
+      "detail": "Site and all three examples side by side",
+      "dependsOn": [
+        "dev: site",
+        "dev: example (Next.js)",
+        "dev: example (Nuxt)",
+        "dev: example (Astro)"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      "label": "preview: site (production build)",
+      "detail": "Build the site as it deploys and serve it on http://localhost:4321",
+      "type": "shell",
+      "command": "pnpm --filter site build && pnpm --filter site preview --port 4321",
+      "dependsOn": "build: packages",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "test",
+      "detail": "Every test once",
+      "type": "shell",
+      "command": "pnpm test",
+      "dependsOn": "build: packages",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "test: watch",
+      "detail": "Re-run affected tests on save",
+      "type": "shell",
+      "command": "pnpm test:watch",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "test: coverage",
+      "type": "shell",
+      "command": "pnpm coverage",
+      "problemMatcher": []
+    },
+    {
+      "label": "check: everything CI runs",
+      "detail": "Lint, build, typecheck, tests, package checks and size limits",
+      "type": "shell",
+      "command": "pnpm lint && pnpm build && pnpm typecheck && pnpm test && pnpm publint && pnpm attw && pnpm size",
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "lint",
+      "type": "shell",
+      "command": "pnpm lint",
+      "problemMatcher": []
+    },
+    {
+      "label": "format",
+      "detail": "Apply Biome formatting and safe fixes",
+      "type": "shell",
+      "command": "pnpm exec biome check --write .",
+      "problemMatcher": []
+    },
+    {
+      "label": "typecheck",
+      "type": "shell",
+      "command": "pnpm typecheck",
+      "dependsOn": "build: packages",
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "size: bundle limits",
+      "type": "shell",
+      "command": "pnpm size",
+      "dependsOn": "build: packages",
+      "problemMatcher": []
+    },
+    {
+      "label": "demo: container sheet",
+      "detail": "Local HTML sheet of Nurblings in avatar containers, written to wip/",
+      "type": "shell",
+      "command": "pnpm sheet",
+      "dependsOn": "build: packages",
+      "problemMatcher": []
+    },
+    {
+      "label": "demo: regenerate README banner",
+      "type": "shell",
+      "command": "node scripts/readme-art.mjs",
+      "dependsOn": "build: packages",
+      "problemMatcher": []
+    },
+    {
+      "label": "release: add a changeset",
+      "detail": "Describe your change for the changelog",
+      "type": "shell",
+      "command": "pnpm changeset",
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,0 +1,773 @@
+---
+import { createNurblings, traits } from 'nurblings'
+import { THEMES as LIBRARY, type ThemeName } from 'nurblings/themes'
+import Site from '../layouts/Site.astro'
+import { THEMES, themeIds } from '../lib/themes'
+
+// Original first, then the soft themes, then the vivid ones
+const ORDER = ['default', ...themeIds('pastel'), ...themeIds('bold')]
+const kinds = { default: 'Original colours', pastel: 'Soft theme', bold: 'Vivid theme' } as const
+const YOU = 'Ada Park'
+const handle = (name: string) => `@${name.toLowerCase().split(/\s+/)[0]}`
+
+const row = [
+  'Grace',
+  'Linus',
+  'Hedy',
+  'Radia',
+  'Joan',
+  'Tim',
+  'Frances',
+  'Dennis',
+  'Barbara',
+  'Ken',
+]
+const liked = ['Grace Liu', 'Linus Ortega', 'Hedy Moreau', 'Radia Stone', 'Joan Clarke']
+const replies = ['Alan Reyes', 'Grace Liu', 'Ken Adams']
+const chat = [
+  { name: 'Grace Liu', time: '3 min', on: true },
+  { name: 'Linus Ortega', time: '10 min', on: false },
+  { name: 'Hedy Moreau', time: '17 min', on: true },
+  { name: 'Radia Stone', time: '24 min', on: false },
+]
+const followers = ['Joan Clarke', 'Tim Berners', 'Frances Allen', 'Dennis Wright']
+const share = ['Barbara', 'Ken', 'Mary', 'Evelyn', 'Adele', 'Annie', 'Carol', 'Hal']
+
+// the group photo: the first three names with different body colours in that theme
+const crowd = [
+  'Joan Clarke',
+  'Tim Berners',
+  'Hedy Moreau',
+  'Frances Allen',
+  'Dennis Wright',
+  'Barbara Liskov',
+  'Evelyn Boyd',
+  'Hal Abelson',
+]
+const photoFor = (id: string) => {
+  const theme = LIBRARY[id as ThemeName]
+  const shellOf = theme
+    ? (name: string) => createNurblings({ theme }).traits(name).palette.shell
+    : (name: string) => traits(name).palette.shell
+  const picked: string[] = []
+  const seen = new Set<string>()
+  for (const name of crowd) {
+    const shell = shellOf(name)
+    if (seen.has(shell)) continue
+    seen.add(shell)
+    picked.push(name)
+    if (picked.length === 3) break
+  }
+  return picked
+}
+
+const snippet = (id: string) =>
+  id === 'default' ? '<Nurbling seed={user.name} />' : `<Nurbling seed={user.name} theme="${id}" />`
+const blocks = ORDER.map((id, index) => {
+  const t = THEMES[id] ?? (THEMES.default as NonNullable<(typeof THEMES)['default']>)
+  // Still by default: only the profile in each block breathes and blinks. The
+  // first block ships as SVG; the others ship as slots of the final size that
+  // the page draws just before they scroll into view, which keeps the page light.
+  const av = (seed: string, size: number, opts: Record<string, unknown> = {}) =>
+    index === 0
+      ? t.render(seed, {
+          size,
+          background: 'circle',
+          title: seed,
+          animate: false,
+          ...opts,
+        } as never)
+      : `<i class="lazy" data-seed="${seed}" data-size="${size}" data-opts='${JSON.stringify(opts)}' style="width:${size}px;height:${size}px"></i>`
+  return { id, t, av, photo: photoFor(id) }
+})
+---
+
+<Site title="Gallery" active="/gallery/" class="gal">
+  <header class="wrap gal-head">
+    <h1>Nurblings at work</h1>
+    <p class="lead">The same app screens in every theme. Every name gets a Nurbling of its own.</p>
+    <label class="you-field">
+      <span>Your name</span>
+      <input id="you-name" value={YOU} autocomplete="off" spellcheck="false" />
+    </label>
+    <nav class="theme-index" aria-label="Themes">
+      {
+        blocks.map(({ id, t }) => (
+          <a href={`#${id}`}>
+            <span class="av" set:html={t.render('nurbling', { size: 24, background: 'circle', animate: false })} />
+            {t.label}
+          </a>
+        ))
+      }
+    </nav>
+  </header>
+
+  <div class="wrap blocks">
+    {
+      blocks.map(({ id, t, av, photo }) => (
+        <section class="block" id={id} data-block={id} style={`--accent:${t.accent}`} aria-labelledby={`${id}-title`}>
+          <header class="block-head">
+            <h2 id={`${id}-title`}>{t.label}</h2>
+            <small>{kinds[t.kind]}</small>
+          </header>
+
+          <div class="strip">
+            <div class="strip-row">
+              {row.map((name) => (
+                <figure>
+                  <span class="av" set:html={av(name, 56)} />
+                  <figcaption>{name}</figcaption>
+                </figure>
+              ))}
+            </div>
+            <div class="strip-code">
+              <code>{snippet(id)}</code>
+              <button type="button" class="copy" data-copy={snippet(id)}>
+                <span data-copy-label>Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="apps">
+            <div class="col">
+              <article class="app post">
+                <div class="who">
+                  <span class="av" data-you data-size="36" set:html={av(YOU, 36)} />
+                  <p>
+                    <b data-you-name>{YOU}</b> shared a new photo
+                    <small>2 hours ago</small>
+                  </p>
+                </div>
+                <div class="post-art" role="img" aria-label="A group photo">
+                  {photo.map((name, i) => (
+                    <span class="av" set:html={av(name, i === 1 ? 120 : 92, { background: 'none', frame: 'full', mood: 'pleased' })} />
+                  ))}
+                </div>
+                <div class="liked">
+                  <span class="stack">
+                    {liked.map((name) => (
+                      <span class="av" set:html={av(name, 28)} />
+                    ))}
+                  </span>
+                  5 friends liked this
+                </div>
+                <div class="post-actions">
+                  <span class="pill">Like</span>
+                  <span class="pill wide">Comment</span>
+                </div>
+              </article>
+
+              <article class="app chat">
+                <h3>Chat</h3>
+                {chat.map((c) => (
+                  <div class="chat-row">
+                    <span class="av" set:html={av(c.name, 36, c.on ? {} : { mood: 'sleepy' })} />
+                    <p>
+                      <b>{c.name}</b>
+                      <small>
+                        {handle(c.name)} {c.on ? <i class="badge on">Active</i> : <i class="badge">Away</i>}
+                      </small>
+                    </p>
+                    <small class="time">{c.time}</small>
+                  </div>
+                ))}
+                <div class="chat-row typing-row">
+                  <span class="av" set:html={av('Alan Reyes', 36, { mood: 'curious' })} />
+                  <p>
+                    <b>Alan Reyes</b>
+                    <small class="typing" aria-label="typing">
+                      <i />
+                      <i />
+                      <i />
+                    </small>
+                  </p>
+                </div>
+              </article>
+            </div>
+
+            <div class="col">
+              <article class="app thread">
+                <div class="comment">
+                  <span class="av" set:html={av('Margaret Oduya', 36)} />
+                  <div class="bubble">
+                    <b>Margaret Oduya</b>
+                    <p>Nobody in this thread uploaded a photo, and everyone still has a face.</p>
+                  </div>
+                </div>
+                <p class="thread-actions">Reply · React</p>
+                {replies.map((name) => (
+                  <div class="reply">
+                    <span class="av" set:html={av(name, 24)} />
+                    {name}
+                  </div>
+                ))}
+              </article>
+
+              <article class="app followers">
+                <h3>Mutual followers</h3>
+                <div class="follow-grid">
+                  {followers.map((name) => (
+                    <div class="follow-tile">
+                      <span class="av" set:html={av(name, 48)} />
+                      <b>{name.split(' ')[0]}</b>
+                      <span class="pill">Follow</span>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            </div>
+
+            <div class="col">
+              <article class="app stats">
+                <div class="stats-top">
+                  <span class="av" data-you data-size="56" set:html={av(YOU, 56)} />
+                  <dl>
+                    <div>
+                      <dt>Posts</dt>
+                      <dd>143</dd>
+                    </div>
+                    <div>
+                      <dt>Followers</dt>
+                      <dd>1.2k</dd>
+                    </div>
+                    <div>
+                      <dt>Following</dt>
+                      <dd>452</dd>
+                    </div>
+                  </dl>
+                </div>
+                <b data-you-name>{YOU}</b>
+                <small>Designer, frontend developer</small>
+                <span class="pill block-btn">Follow</span>
+              </article>
+
+              <article class="app cover">
+                <div class="cover-art" />
+                <span class="av cover-av" set:html={av('Mary Edwards', 80, { animate: true })} />
+                <b>Mary Edwards</b>
+                <small>1.2k followers · 451 following</small>
+                <span class="pill">Follow</span>
+              </article>
+
+              <article class="app share">
+                <h3>Share</h3>
+                <div class="share-grid">
+                  {share.map((name) => (
+                    <figure>
+                      <span class="av" set:html={av(name, 40)} />
+                      <figcaption>{name}</figcaption>
+                    </figure>
+                  ))}
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+      ))
+    }
+  </div>
+</Site>
+
+<script>
+  import { THEMES } from '../lib/themes'
+
+  // your name, drawn into every block in that block's theme
+  const input = document.getElementById('you-name') as HTMLInputElement
+  const handle = (name: string) => `@${name.toLowerCase().split(/\s+/)[0]}`
+  let frame = 0
+  const paint = () => {
+    const name = input.value.trim() || 'Ada Park'
+    for (const slot of document.querySelectorAll<HTMLElement>('[data-you]')) {
+      const id = slot.closest<HTMLElement>('[data-block]')?.dataset.block ?? 'default'
+      const theme = THEMES[id] ?? THEMES.default
+      slot.innerHTML =
+        theme?.render(name, { size: Number(slot.dataset.size), background: 'circle', title: name, animate: false }) ?? ''
+    }
+    for (const el of document.querySelectorAll('[data-you-name]')) el.textContent = name
+    for (const el of document.querySelectorAll('[data-you-handle]')) el.textContent = handle(name)
+  }
+  input.addEventListener('input', () => {
+    cancelAnimationFrame(frame)
+    frame = requestAnimationFrame(paint)
+  })
+
+  // blocks after the first draw their Nurblings just before they scroll into view
+  const fill = (block: HTMLElement) => {
+    const theme = THEMES[block.dataset.block ?? 'default'] ?? THEMES.default
+    const name = input.value.trim() || 'Ada Park'
+    for (const slot of block.querySelectorAll<HTMLElement>('i.lazy')) {
+      const seed = slot.closest('[data-you]') ? name : (slot.dataset.seed ?? '')
+      const opts = JSON.parse(slot.dataset.opts ?? '{}') as Record<string, unknown>
+      slot.outerHTML =
+        theme?.render(seed, {
+          size: Number(slot.dataset.size),
+          background: 'circle',
+          title: seed,
+          animate: false,
+          ...opts,
+        } as never) ?? ''
+    }
+  }
+  const near = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue
+        fill(entry.target as HTMLElement)
+        near.unobserve(entry.target)
+      }
+    },
+    { rootMargin: '800px 0px' },
+  )
+  for (const block of document.querySelectorAll<HTMLElement>('[data-block]')) {
+    if (block.querySelector('i.lazy')) near.observe(block)
+  }
+</script>
+
+<style is:global>
+  .gal .gal-head {
+    padding-block: clamp(28px, 5vw, 56px) 20px;
+  }
+
+  /* a slot waiting for its Nurbling: the same size, so nothing moves when it arrives */
+  .gal i.lazy {
+    display: inline-block;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  }
+
+  .gal .gal-head h1 {
+    font-size: clamp(36px, 4.4vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+  }
+
+  .gal .you-field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 420px;
+    margin: 22px 0 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 10px 16px;
+  }
+
+  .gal .you-field:focus-within {
+    border-color: var(--accent);
+  }
+
+  .gal .you-field span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .gal .you-field input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: none;
+    font-size: 17px;
+    font-weight: 600;
+    outline: none;
+  }
+
+  .gal .theme-index {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .gal .theme-index a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 3px 12px 3px 3px;
+  }
+
+  .gal .theme-index a:hover {
+    border-color: var(--accent);
+  }
+
+  .gal .blocks {
+    display: grid;
+    /* one column that never grows past the page; the name rows scroll inside it */
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(28px, 5vw, 56px);
+    padding-bottom: 48px;
+  }
+
+  .gal .block {
+    scroll-margin-top: 84px;
+    background: color-mix(in srgb, var(--accent) 12%, var(--paper));
+    border-radius: var(--r-xl);
+    padding: clamp(14px, 2.6vw, 32px);
+  }
+
+  .gal .block-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .gal .block-head h2 {
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  .gal .block-head small {
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .gal .strip,
+  .gal .app {
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    box-shadow: 0 1px 0 var(--line);
+  }
+
+  .gal .strip {
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+
+  .gal .strip-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 18px 20px 14px;
+  }
+
+  .gal figure {
+    margin: 0;
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    flex: none;
+  }
+
+  .gal figcaption {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .gal .av {
+    display: inline-block;
+    line-height: 0;
+  }
+
+  .gal .strip-code {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px 10px 20px;
+    background: color-mix(in srgb, var(--accent) 6%, var(--paper));
+  }
+
+  .gal .strip-code code {
+    font: 13px var(--mono);
+    min-width: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .gal .copy {
+    flex: none;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .gal .apps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+
+  .gal .col {
+    display: grid;
+    gap: 16px;
+  }
+
+  .gal .app {
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .gal .app h3 {
+    font: 700 15px var(--text);
+    letter-spacing: 0;
+    margin-bottom: 10px;
+  }
+
+  .gal .app p {
+    margin: 0;
+  }
+
+  .gal .app small {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .gal .pill {
+    display: inline-block;
+    text-align: center;
+    border-radius: 999px;
+    background: var(--tint);
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .gal .who,
+  .gal .comment,
+  .gal .chat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .gal .post-art,
+  .gal .cover-art {
+    height: 150px;
+    margin: 12px -16px;
+  }
+
+  /* a group photo: three Nurblings on a flat tint of the block's colour */
+  .gal .post-art {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  }
+
+  .gal .cover-art {
+    background: color-mix(in srgb, var(--accent) 42%, var(--surface));
+  }
+
+  .gal .liked {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+  }
+
+  .gal .stack {
+    display: flex;
+  }
+
+  .gal .stack .av + .av {
+    margin-left: -8px;
+  }
+
+  .gal .post-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .gal .post-actions .wide {
+    flex: 1;
+  }
+
+  .gal .bubble {
+    flex: 1;
+    background: var(--tint);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+
+  .gal .comment {
+    align-items: flex-start;
+  }
+
+  .gal .thread-actions {
+    color: var(--muted);
+    font-size: 12px;
+    margin: 8px 0 10px 46px !important;
+  }
+
+  .gal .reply {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0 0 46px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .gal .chat-row {
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .gal .chat-row p {
+    flex: 1;
+  }
+
+  .gal .chat-row .time {
+    align-self: flex-start;
+  }
+
+  .gal .badge {
+    font-style: normal;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 1px 6px;
+    margin-left: 4px;
+    background: var(--tint);
+  }
+
+  .gal .badge.on {
+    background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+    color: var(--ink);
+  }
+
+  .gal .typing {
+    display: flex !important;
+    gap: 3px;
+    margin-top: 4px;
+  }
+
+  .gal .typing i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: nb-typing 1.2s ease-in-out infinite;
+  }
+
+  .gal .typing i:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  .gal .typing i:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  @keyframes nb-typing {
+    0%,
+    70%,
+    100% {
+      opacity: 0.3;
+    }
+    35% {
+      opacity: 1;
+    }
+  }
+
+  .gal .follow-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+  }
+
+  .gal .follow-tile {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 6px;
+  }
+
+  .gal .stats {
+    display: grid;
+    gap: 2px;
+  }
+
+  .gal .stats-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+
+  .gal .stats dl {
+    flex: 1;
+    display: flex;
+    justify-content: space-around;
+    margin: 0;
+    text-align: center;
+  }
+
+  .gal .stats dt {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .gal .stats dd {
+    margin: 0;
+    font-weight: 800;
+    order: -1;
+  }
+
+  .gal .stats dl div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .gal .block-btn {
+    margin-top: 10px;
+  }
+
+  .gal .cover {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding-top: 0;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .gal .cover-art {
+    width: calc(100% + 32px);
+    height: 110px;
+    margin: 0 -16px;
+  }
+
+  .gal .cover-av {
+    margin-top: -44px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px var(--surface);
+  }
+
+  .gal .cover .pill {
+    margin-top: 8px;
+  }
+
+  .gal .share-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px 6px;
+  }
+
+  @media (max-width: 960px) {
+    .gal .apps {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

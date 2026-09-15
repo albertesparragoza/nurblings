@@ -1,0 +1,83 @@
+---
+// Home, "Your colours": every theme at a glance, the same creature in each,
+// and one made from three brand colours. A picture only: the sticky picker at
+// the top of the page does the choosing.
+import { palette, themed } from 'nurblings/themes'
+import { THEMES, themeIds } from '../lib/themes'
+
+const seed = 'nurbling'
+const opts = { size: 30, background: 'circle', animate: false } as const
+const brand = ['#264653', '#e9c46a', '#f4a261']
+const rows = [
+  ['Soft', themeIds('pastel')],
+  ['Vivid', themeIds('bold')],
+] as const
+const own = themed(palette(brand)).nurbling(seed, opts)
+---
+
+<div class="showcase" aria-hidden="true">
+  {
+    rows.map(([label, ids]) => (
+      <div class="row">
+        <span class="label">{label}</span>
+        <span class="avs">
+          {ids.map((id) => (
+            <span class="av" set:html={THEMES[id]?.render(seed, opts) ?? ''} />
+          ))}
+        </span>
+      </div>
+    ))
+  }
+  <div class="row">
+    <span class="label">Yours</span>
+    <span class="avs">
+      <span class="av" set:html={own} />
+      <span class="swatches">{brand.map((colour) => <i style={`background:${colour}`} />)}</span>
+    </span>
+  </div>
+</div>
+
+<style>
+  .showcase {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    line-height: 1;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+  }
+
+  .label {
+    font: 600 12px / 1 var(--text);
+    color: var(--muted);
+  }
+
+  .avs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .av {
+    line-height: 0;
+  }
+
+  .swatches {
+    display: flex;
+    margin-left: 6px;
+  }
+
+  i {
+    width: 18px;
+    height: 18px;
+    margin-right: -5px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--tint);
+  }
+</style>

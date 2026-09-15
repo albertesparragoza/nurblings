@@ -1,0 +1,1234 @@
+---
+import Avatar from '../components/Avatar.astro'
+import PartSwap from '../components/PartSwap.astro'
+import ThemePicker from '../components/ThemePicker.astro'
+import ThemeShowcase from '../components/ThemeShowcase.astro'
+import Site from '../layouts/Site.astro'
+
+const satellites = [
+  { seed: 'grace', size: 72, x: 12, y: 18, d: 1.2, delay: 0 },
+  { seed: 'linus', size: 56, x: 88, y: 14, d: 0.8, delay: 1.4 },
+  { seed: 'radia', size: 64, x: 94, y: 62, d: 1.4, delay: 0.7 },
+  { seed: 'hedy', size: 52, x: 70, y: 92, d: 0.9, delay: 2.1 },
+  { seed: 'alan', size: 60, x: 16, y: 84, d: 1.1, delay: 1.1 },
+  { seed: 'margaret', size: 48, x: 4, y: 50, d: 0.7, delay: 2.6 },
+]
+
+const team = [
+  { name: 'Ada Park', seed: 'ada', role: 'Designer', on: false },
+  { name: 'Grace Liu', seed: 'grace', role: 'Engineer', on: true },
+  { name: 'Linus Ortega', seed: 'linus', role: 'Product', on: true },
+  { name: 'Margaret Oduya', seed: 'margaret', role: 'Research', on: false },
+  { name: 'Alan Reyes', seed: 'alan', role: 'Support', on: true },
+  { name: 'Hedy Moreau', seed: 'hedy', role: 'Ops', on: true },
+]
+
+const rowA = [
+  'barbara',
+  'dennis',
+  'frances',
+  'ken',
+  'edsger',
+  'katherine',
+  'tim',
+  'joan',
+  'guido',
+  'sophie',
+  'john',
+  'yukihiro',
+  'brendan',
+  'anders',
+  'rich',
+  'bjarne',
+]
+const rowB = [
+  'evelyn',
+  'niklaus',
+  'mary',
+  'jean',
+  'leslie',
+  'donald',
+  'shafi',
+  'whitfield',
+  'lynn',
+  'adele',
+  'kathleen',
+  'annie',
+  'dorothy',
+  'roberta',
+  'carol',
+  'hal',
+]
+
+// a bare `---` line inside the frontmatter would end it for some parsers
+const FENCE = '-'.repeat(3)
+
+const frameworks = [
+  {
+    id: 'react',
+    label: 'React and Next.js',
+    install: 'npm install @nurblings/react',
+    code: `import { Nurbling } from '@nurblings/react'
+
+export function Avatar({ user }) {
+  return <Nurbling seed={user.id} title={user.name} size={48} />
+}`,
+  },
+  {
+    id: 'vue',
+    label: 'Vue and Nuxt',
+    install: 'npm install @nurblings/vue',
+    code: `<script setup>
+import { Nurbling } from '@nurblings/vue'
+defineProps(['user'])
+</script>
+
+<template>
+  <Nurbling :seed="user.id" :title="user.name" :size="48" />
+</template>`,
+  },
+  {
+    id: 'astro',
+    label: 'Astro',
+    install: 'npm install @nurblings/astro',
+    code: `${FENCE}
+import { Nurbling } from '@nurblings/astro'
+const { user } = Astro.props
+${FENCE}
+
+<Nurbling seed={user.id} title={user.name} size={48} />`,
+  },
+  {
+    id: 'html',
+    label: 'Any HTML',
+    install: 'No build step',
+    code: `<script type="module"
+  src="https://cdn.jsdelivr.net/npm/@nurblings/element/dist/define.js/+esm"></script>
+
+<nurbling-avatar seed="user-42" title="Ada Lovelace" size="48"></nurbling-avatar>`,
+  },
+  {
+    id: 'js',
+    label: 'JavaScript',
+    install: 'npm install nurblings',
+    code: `import { nurbling, nurblingSrc } from 'nurblings'
+
+element.innerHTML = nurbling('user-42', { size: 48, title: 'Ada Lovelace' })
+image.src = nurblingSrc('user-42')`,
+  },
+]
+
+const prompt = `npx skills add albertesparragoza/nurblings
+
+# then, in your agent
+> Give every commenter an avatar.`
+---
+
+<Site class="home">
+  <section class="hero wrap">
+    <div class="hero-copy">
+      <h1>
+        <span style="--i:0">A</span> <span style="--i:1">small</span> <span style="--i:2">creature</span>{' '}
+        <em><span style="--i:3">for</span> <span style="--i:4">every</span> <span style="--i:5">account</span></em>
+      </h1>
+      <p class="lead">
+        Animated avatars that breathe, blink and wiggle their antennae. Everyone who signs up gets one of their
+        own, in React, Vue, Astro or plain HTML.
+      </p>
+      <label class="seed-field">
+        <span class="sr-only">Type a name</span>
+        <input id="seed" value="ada@example.com" placeholder="Type a name" autocomplete="off" spellcheck="false" />
+        <button class="btn btn-ghost" id="shuffle" type="button">Shuffle</button>
+      </label>
+      <div class="actions">
+        <a class="btn" href="/docs/getting-started/">Get started</a>
+        <a class="btn btn-ghost" href="/playground/">Open the playground</a>
+        <button class="copy-chip" type="button" data-copy="npm install @nurblings/react">
+          <code>npm install @nurblings/react</code><span data-copy-label>Copy</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="blob" aria-hidden="true"></div>
+      {
+        satellites.map((s) => (
+          <span class="sat" style={`--x:${s.x}%;--y:${s.y}%;--d:${s.d};--delay:${s.delay}`} aria-hidden="true">
+            <Avatar seed={s.seed} size={s.size} />
+          </span>
+        ))
+      }
+      <div class="hero-tilt">
+        <button class="hero-av" id="hero-av" type="button" aria-label="Boop the Nurbling" aria-describedby="bubble">
+          <Avatar id="hero-avatar" seed="ada@example.com" size={320} background="none" />
+        </button>
+      </div>
+      <span class="bubble" id="bubble" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <div class="picker-row">
+    <ThemePicker />
+  </div>
+
+  <section class="wrap section" id="scene-section" data-reveal>
+    <div class="section-head">
+      <h2>At home in real products</h2>
+      <p>Member lists, profiles, conversations. Pick a teammate and their avatar travels into the profile.</p>
+    </div>
+    <div class="panel">
+      <div class="scene">
+        <div class="card">
+          <h3>Team</h3>
+          <div id="members">
+            {
+              team.map((p) => (
+                <button
+                  class="member"
+                  type="button"
+                  data-seed={p.seed}
+                  data-name={p.name}
+                  data-role={p.role}
+                  aria-current={String(p.seed === 'grace')}
+                >
+                  <Avatar seed={p.seed} size={44} transition={p.seed} title={p.name} />
+                  <span>
+                    {p.name}
+                    <small>{p.role}</small>
+                  </span>
+                  <i class:list={['dot', { on: p.on }]} />
+                </button>
+              ))
+            }
+          </div>
+        </div>
+        <div class="card profile">
+          <div id="profile-av"><Avatar seed="grace" size={120} transition="grace" title="Grace Liu" /></div>
+          <h4 id="profile-name">Grace Liu</h4>
+          <small id="profile-role">Engineer · online</small>
+          <span class="btn" aria-hidden="true">Message</span>
+        </div>
+        <div class="card chat">
+          <h3>#launch</h3>
+          <div id="chat">
+            <div class="msg"><Avatar seed="linus" size={32} /><p>Shipping the onboarding flow today.</p></div>
+            <div class="msg me"><p>On it, reviewing after lunch.</p><Avatar seed="ada" size={32} /></div>
+          </div>
+          <div class="msg typing-row" id="typing">
+            <Avatar seed="margaret" size={32} />
+            <p class="typing"><i></i><i></i><i></i></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section family" data-reveal>
+    <div class="wrap section-head">
+      <h2>Every name hatches its own</h2>
+      <p>Scarves, hats and antennae at every angle. Each person keeps the same Nurbling wherever they show up.</p>
+    </div>
+    <div class="marquee" aria-hidden="true">
+      <div class="track">{[...rowA, ...rowA].map((s) => <Avatar seed={s} size={76} still />)}</div>
+    </div>
+    <div class="marquee reverse" aria-hidden="true">
+      <div class="track">{[...rowB, ...rowB].map((s) => <Avatar seed={s} size={76} still />)}</div>
+    </div>
+    <div class="wrap center"><a class="btn btn-ghost" href="/gallery/">See the whole family</a></div>
+  </section>
+
+  <section class="wrap section" data-reveal>
+    <div class="section-head">
+      <h2>The details come included</h2>
+    </div>
+    <div class="features">
+      <article class="feature">
+        <div class="feature-art">
+          <Avatar seed="hopper" size={40} />
+          <Avatar seed="hopper" size={64} />
+          <Avatar seed="hopper" size={96} />
+        </div>
+        <h3>Theirs for good</h3>
+        <p>The same person gets the same creature on every page and every device. Nothing to store, upload or fetch.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-art">
+          <Avatar id="motion-demo" seed="lovelace" size={96} />
+          <div class="toggles" id="motion-toggles">
+            <button type="button" aria-pressed="true" data-layer="breath">Breath</button>
+            <button type="button" aria-pressed="true" data-layer="blink">Blink</button>
+            <button type="button" aria-pressed="true" data-layer="antennae">Antennae</button>
+          </div>
+        </div>
+        <h3>Alive by default</h3>
+        <p>They breathe, blink and drift in plain CSS, and hold still for anyone who prefers reduced motion.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-art glide">
+          <Avatar seed="turing" size={44} />
+          <svg width="56" height="16" viewBox="0 0 56 16" aria-hidden="true"><path d="M2 8h48m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <Avatar seed="turing" size={96} />
+        </div>
+        <h3>Moves between views</h3>
+        <p>An avatar glides from a list into a profile, or a card into a header, instead of jumping there.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-art"><ThemeShowcase /></div>
+        <h3>Your colours</h3>
+        <p>Ten ready themes, or two to five brand colours of your own. Faces stay readable either way.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-art modes">
+          <span class="tile"><Avatar seed="radia" size={80} /></span>
+          <span class="tile dark"><Avatar seed="radia" size={80} mode="dark" /></span>
+        </div>
+        <h3>Light and dark</h3>
+        <p>Containers follow the page, and antennae stay visible on either side. One prop, no script.</p>
+      </article>
+      <article class="feature">
+        <div class="feature-art"><span class="big-num">~7 KB</span></div>
+        <h3>Light on the page</h3>
+        <p>No dependencies, full TypeScript types, and server components that send no JavaScript to the browser.</p>
+      </article>
+    </div>
+  </section>
+
+  <PartSwap />
+
+  <section class="wrap section" data-reveal>
+    <div class="section-head">
+      <h2>Works where you build</h2>
+      <p>A component for React, Vue and Astro, and one HTML tag for everything else.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Framework">
+      {
+        frameworks.map((f, i) => (
+          <button type="button" role="tab" id={`tab-${f.id}`} aria-selected={String(i === 0)} aria-controls={`panel-${f.id}`} data-tab={f.id}>
+            {f.label}
+          </button>
+        ))
+      }
+    </div>
+    {
+      frameworks.map((f, i) => (
+        <div class="code-card" role="tabpanel" id={`panel-${f.id}`} aria-labelledby={`tab-${f.id}`} data-panel={f.id} hidden={i !== 0}>
+          <div class="code-head">
+            <span>{f.install}</span>
+            <button type="button" data-copy={f.code}>
+              <span data-copy-label>Copy</span>
+            </button>
+          </div>
+          <pre><code>{f.code}</code></pre>
+        </div>
+      ))
+    }
+  </section>
+
+  <section class="wrap section" data-reveal>
+    <div class="ai-band">
+      <div>
+        <h2>Your agent can add them</h2>
+        <p>Install the Nurblings skill once, then ask for avatars in plain words.</p>
+        <div class="actions">
+          <a class="btn" href="/ai/">Get the skill</a>
+        </div>
+      </div>
+      <div class="ai-prompt">
+        <div class="code-head">
+          <span>Terminal</span>
+          <button type="button" data-copy={prompt}><span data-copy-label>Copy</span></button>
+        </div>
+        <pre data-origin>{prompt}</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap section cta" data-reveal>
+    <h2>Hatch your first one</h2>
+    <div class="actions">
+      <a class="btn" href="/docs/getting-started/">Get started</a>
+      <a class="btn btn-ghost" href="/playground/">Open the playground</a>
+    </div>
+    <div class="cta-row">
+      {['you', 'your-team', 'your-users', 'everyone', 'hello', 'world', 'nurbling'].map((s, i) => <span style={`--i:${i}`}><Avatar seed={s} size={64} /></span>)}
+    </div>
+  </section>
+</Site>
+
+<script>
+  import { morph } from 'nurblings/transition'
+  import { reducedMotion, repaint } from '../lib/client'
+  import { tabs } from '../lib/tabs'
+
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T
+  // read live: the preference can change while the page is open
+  const reduce = reducedMotion
+  const NAMES = ['ada@example.com', 'grace', 'linus', 'katherine', 'margaret', 'dennis', 'radia', 'barbara', 'frances', 'hedy', 'alan', 'joan', 'tim', 'guido', 'sophie', 'anders', 'yukihiro']
+  const pick = <T,>(list: readonly T[]) => list[Math.floor(Math.random() * list.length)] as T
+  const spring = 'cubic-bezier(.34,1.56,.64,1)'
+  const inView = new Set<Element>()
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) e.isIntersecting ? inView.add(e.target) : inView.delete(e.target)
+  })
+
+  // hero: type a seed, shuffle, boop
+  const seed = $<HTMLInputElement>('seed')
+  const hero = $('hero-avatar')
+  const heroButton = $('hero-av')
+  const pop = (el: Element | null) =>
+    !reduce() &&
+    el?.animate(
+      [{ transform: 'scale(1)' }, { transform: 'scale(.9,1.08)' }, { transform: 'scale(1.05,.96)' }, { transform: 'scale(1)' }],
+      { duration: 560, easing: spring },
+    )
+  const setHero = (value: string) => {
+    hero.dataset.seed = value || ' '
+    hero.dataset.title = value || 'Nurbling'
+    repaint(hero)
+  }
+  seed.addEventListener('input', () => setHero(seed.value))
+  $('shuffle').addEventListener('click', () => {
+    seed.value = pick(NAMES.filter((n) => n !== seed.value))
+    setHero(seed.value)
+    pop(heroButton)
+  })
+
+  // a speech bubble asks for the first click, then carries the replies
+  const MOODS = ['curious', 'pleased', 'thinking', 'sleepy', 'neutral'] as const
+  const LINES = ['hi', 'oh', 'hmm', 'zzz', 'hey']
+  let boops = 0
+  const bubble = $('bubble')
+  let hide = 0
+  const say = (text: string, hold = 0) => {
+    bubble.textContent = text
+    bubble.classList.add('on')
+    clearTimeout(hide)
+    if (hold) hide = window.setTimeout(() => bubble.classList.remove('on'), hold)
+  }
+  const ask = window.setTimeout(() => {
+    say(matchMedia('(pointer: coarse)').matches ? 'Tap me' : 'Click me')
+    heroButton.classList.add('beckon')
+  }, reduce() ? 0 : 600)
+  heroButton.addEventListener('click', () => {
+    clearTimeout(ask)
+    heroButton.classList.remove('beckon')
+    const i = boops++ % MOODS.length
+    hero.dataset.mood = MOODS[i]
+    repaint(hero)
+    pop(heroButton)
+    say(LINES[i] ?? '', 1600)
+  })
+
+  // the stage leans toward the pointer; satellites drift at their own depth
+  const stage = $('stage')
+  io.observe(stage)
+  // only a mouse leans the stage: touch scrolling should not move it
+  const fine = matchMedia('(hover: hover) and (pointer: fine)')
+  {
+    let tx = 0
+    let ty = 0
+    let x = 0
+    let y = 0
+    let raf = 0
+    const tick = () => {
+      x += (tx - x) * 0.07
+      y += (ty - y) * 0.07
+      stage.style.setProperty('--px', x.toFixed(4))
+      stage.style.setProperty('--py', y.toFixed(4))
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.0005 ? requestAnimationFrame(tick) : 0
+    }
+    addEventListener(
+      'pointermove',
+      (e) => {
+        if (reduce() || !fine.matches || !inView.has(stage)) return
+        tx = e.clientX / innerWidth - 0.5
+        ty = e.clientY / innerHeight - 0.5
+        if (!raf) raf = requestAnimationFrame(tick)
+      },
+      { passive: true },
+    )
+
+    // switching reduced motion on mid-visit stops the scripted motion too;
+    // the CSS animations already stop through the stylesheet
+    matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+      if (!e.matches) return
+      tx = ty = x = y = 0
+      stage.style.setProperty('--px', '0')
+      stage.style.setProperty('--py', '0')
+      for (const a of document.getAnimations()) if (a.constructor === Animation) a.cancel()
+    })
+
+    // satellites keep hatching new faces
+    const sats = [...document.querySelectorAll<HTMLElement>('.sat [data-av]')]
+    let next = 0
+    setInterval(() => {
+      if (reduce() || document.hidden || !inView.has(stage) || sats.length === 0) return
+      const el = sats[next++ % sats.length] as HTMLElement
+      el.dataset.seed = `${pick(NAMES)}-${Math.floor(Math.random() * 1000)}`
+      repaint(el)
+      el.firstElementChild?.animate(
+        [{ transform: 'scale(.2)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: 0.7 }, { transform: 'scale(1)' }],
+        { duration: 640, easing: spring },
+      )
+    }, 2400)
+  }
+
+  // the scene: click a teammate, or watch it run on its own
+  const members = $('members')
+  const scene = $('scene-section')
+  io.observe(scene)
+  let selected = 'grace'
+  // once a visitor picks someone, the scene stops running on its own
+  let touched = false
+  const select = (button: HTMLElement) => {
+    if (button.dataset.seed === selected) return
+    morph(() => {
+      selected = button.dataset.seed ?? ''
+      const av = $('profile-av').querySelector<HTMLElement>('[data-av]')
+      if (av) {
+        av.dataset.seed = selected
+        av.dataset.transition = selected
+        av.dataset.title = button.dataset.name
+        repaint(av)
+      }
+      $('profile-name').textContent = button.dataset.name ?? ''
+      const online = button.querySelector('.dot')?.classList.contains('on')
+      $('profile-role').textContent = `${button.dataset.role} · ${online ? 'online' : 'away'}`
+      for (const m of members.children) m.setAttribute('aria-current', String(m === button))
+    })
+  }
+  members.addEventListener('click', (e) => {
+    const button = (e.target as Element).closest<HTMLElement>('.member')
+    if (!button) return
+    touched = true
+    select(button)
+  })
+
+  const SCRIPT = [
+    { seed: 'linus', text: 'Shipping the onboarding flow today.' },
+    { seed: 'ada', text: 'On it, reviewing after lunch.', me: true },
+    { seed: 'margaret', text: 'Research notes are in the doc.' },
+    { seed: 'alan', text: 'Support queue is clear.' },
+    { seed: 'hedy', text: 'Deploy is green.' },
+    { seed: 'grace', text: 'Reviewing now.' },
+  ]
+  const chat = $('chat')
+  const typing = $('typing')
+  const typingAv = typing.querySelector<HTMLElement>('[data-av]')
+  // the first two lines are rendered on the server, so nothing grows after load
+  let line = 2
+  const post = (animate: boolean) => {
+    const m = SCRIPT[line++ % SCRIPT.length] as (typeof SCRIPT)[number]
+    const row = document.createElement('div')
+    row.className = `msg${m.me ? ' me' : ''}${animate ? ' new' : ''}`
+    const av = document.createElement('span')
+    Object.assign(av.dataset, { av: '', seed: m.seed, size: '32', bg: 'circle', title: m.seed })
+    av.className = 'av'
+    repaint(av)
+    const p = document.createElement('p')
+    p.textContent = m.text
+    row.append(...(m.me ? [p, av] : [av, p]))
+    chat.append(row)
+    while (chat.children.length > 3) chat.firstElementChild?.remove()
+    const upcoming = SCRIPT[line % SCRIPT.length]
+    if (typingAv && upcoming) {
+      typingAv.dataset.seed = upcoming.seed
+      repaint(typingAv)
+      typing.classList.toggle('me', Boolean(upcoming.me))
+    }
+  }
+
+  {
+    let beat = 0
+    setInterval(() => {
+      if (reduce() || document.hidden || !inView.has(scene) || touched) return
+      beat++
+      post(true)
+      const dots = members.querySelectorAll('.dot')
+      dots[Math.floor(Math.random() * dots.length)]?.classList.toggle('on')
+      if (beat % 2 === 0) {
+        const buttons = [...members.querySelectorAll<HTMLElement>('.member')]
+        const i = buttons.findIndex((b) => b.dataset.seed === selected)
+        const nextButton = buttons[(i + 1) % buttons.length]
+        if (nextButton) select(nextButton)
+      }
+    }, 3200)
+  }
+
+  // feature: motion layers
+  const motionDemo = $('motion-demo')
+  const layers = { breath: true, blink: true, antennae: true }
+  $('motion-toggles').addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLElement>('[data-layer]')
+    if (!b) return
+    const key = b.dataset.layer as keyof typeof layers
+    layers[key] = !layers[key]
+    b.setAttribute('aria-pressed', String(layers[key]))
+    motionDemo.dataset.motion = JSON.stringify(layers)
+    repaint(motionDemo)
+  })
+
+  // framework tabs
+  const tablist = document.querySelector<HTMLElement>('.home [role="tablist"]')
+  if (tablist) {
+    tabs(tablist, (tab) => {
+      for (const p of document.querySelectorAll<HTMLElement>('[data-panel]')) p.hidden = p.dataset.panel !== tab.dataset.tab
+    })
+  }
+</script>
+
+<style is:global>
+  .home .hero {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: clamp(24px, 4vw, 56px);
+    align-items: center;
+    /* the hero and the colour picker share the first screen, header included */
+    min-height: calc(100svh - 68px - 72px);
+    padding-block: 16px;
+  }
+
+  .home h1 {
+    font-size: clamp(44px, min(6.6vw, 9.5svh), 96px);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+  }
+
+  .home h1 em {
+    display: block;
+    text-wrap: balance;
+    font-style: normal;
+    color: var(--accent-text);
+    transition: color 0.4s var(--ease);
+  }
+
+  .home h1 span {
+    display: inline-block;
+    animation: nb-rise 0.7s var(--ease) both;
+    animation-delay: calc(var(--i) * 45ms);
+  }
+
+  @keyframes nb-rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.55em) rotate(5deg);
+    }
+  }
+
+
+  .seed-field {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 6px 6px 6px 18px;
+    max-width: 480px;
+    margin: 28px 0 18px;
+    transition: border-color 0.2s;
+  }
+
+  .seed-field:focus-within {
+    border-color: var(--accent);
+  }
+
+  .seed-field input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: none;
+    font-size: 18px;
+    font-weight: 500;
+    outline: none;
+  }
+
+  .stage {
+    --px: 0;
+    --py: 0;
+    position: relative;
+    aspect-ratio: 1;
+    width: 100%;
+    max-width: min(560px, 66svh);
+    justify-self: center;
+  }
+
+  .stage .blob {
+    position: absolute;
+    inset: 9%;
+    border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%;
+    background: var(--tint);
+    animation: nb-blob 16s ease-in-out infinite alternate;
+    transition: background-color 0.4s var(--ease);
+  }
+
+  @keyframes nb-blob {
+    to {
+      transform: rotate(10deg) scale(1.04);
+    }
+  }
+
+  .hero-tilt {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    transform: translate(calc(var(--px) * 26px), calc(var(--py) * 18px)) rotate(calc(var(--px) * 6deg));
+  }
+
+  .hero-av {
+    border: 0;
+    background: none;
+    padding: 0;
+    line-height: 0;
+    border-radius: 40%;
+  }
+
+  .hero-av svg {
+    width: min(320px, 60vw, 40svh);
+    height: auto;
+  }
+
+  .sat {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    transform: translate(-50%, -50%) translate(calc(var(--px) * var(--d) * -70px), calc(var(--py) * var(--d) * -50px));
+  }
+
+  .sat > .av {
+    animation: nb-float calc(5s + var(--delay) * 1s) ease-in-out infinite;
+    animation-delay: calc(var(--delay) * -1s);
+  }
+
+  @keyframes nb-float {
+    50% {
+      transform: translateY(-12px) rotate(3deg);
+    }
+  }
+
+  .bubble {
+    position: absolute;
+    left: 58%;
+    top: 13%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px 16px 16px 4px;
+    padding: 8px 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 10px 24px -16px rgb(0 0 0 / 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px) scale(0.96);
+    transform-origin: 0 100%;
+    transition:
+      opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .bubble.on {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* while it waits for the first click, the Nurbling hops now and then */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-av.beckon {
+      animation: nb-beckon 3.6s var(--ease) 1.2s infinite;
+    }
+  }
+
+  @keyframes nb-beckon {
+    0%,
+    78%,
+    100% {
+      transform: none;
+    }
+    85% {
+      transform: translateY(-12px) rotate(-3deg);
+    }
+    92% {
+      transform: translateY(0) rotate(2deg);
+    }
+  }
+
+  /* the colour picker stays under the header while the page scrolls */
+  .picker-row {
+    position: sticky;
+    top: 68px;
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    padding: 10px var(--gutter);
+  }
+
+  /* phones: the chips scroll, fading at the edge so the row reads as one that
+     continues; the padding leaves room for the selected chip's ring */
+  @media (max-width: 720px) {
+    .picker-row .picker {
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      width: 100%;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .picker-row .picker-scroll {
+      display: flex;
+      flex: 1;
+      min-width: 0;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+      scroll-padding-inline: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      scroll-snap-type: x proximity;
+    }
+
+    /* a fade only on the side with more chips to scroll to (set by client.ts) */
+    .picker-row .picker-scroll[data-at="start"] {
+      mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent);
+    }
+
+    .picker-row .picker-scroll[data-at="middle"] {
+      mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+    }
+
+    .picker-row .picker-scroll[data-at="end"] {
+      mask-image: linear-gradient(90deg, transparent, #000 32px);
+    }
+
+    .picker-row .picker-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .picker-row .picker-scroll > span {
+      display: none;
+    }
+
+    .picker-row .chip {
+      flex: none;
+      scroll-snap-align: start;
+    }
+  }
+
+  /* scene */
+  .scene {
+    display: grid;
+    grid-template-columns: 1.05fr 0.9fr 1.2fr;
+    gap: 16px;
+  }
+
+  .scene h3 {
+    font: 700 15px var(--text);
+    letter-spacing: 0;
+    margin-bottom: 10px;
+  }
+
+  .member {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: calc(100% + 16px);
+    margin: 0 -8px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 12px;
+    background: none;
+    text-align: left;
+    line-height: 0;
+    transition: background-color 0.2s;
+  }
+
+  .member:hover,
+  .member[aria-current='true'] {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  .member span {
+    flex: 1;
+    line-height: 1.25;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .member small {
+    display: block;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--line);
+    transition: background-color 0.4s;
+  }
+
+  .dot.on {
+    background: var(--accent);
+  }
+
+  .profile {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 6px;
+    text-align: center;
+    background: linear-gradient(var(--tint-strong) 0 40%, var(--surface) 40%);
+  }
+
+  #profile-av {
+    line-height: 0;
+    min-height: 120px;
+  }
+
+  .profile h4 {
+    margin: 10px 0 0;
+    font: 800 22px/1.1 var(--display);
+    letter-spacing: -0.02em;
+  }
+
+  .profile small {
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .chat {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #chat {
+    flex: 1;
+  }
+
+  .msg {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    margin: 10px 0;
+    line-height: 0;
+  }
+
+  .msg p {
+    margin: 0;
+    line-height: 1.4;
+    font-size: 14px;
+    background: var(--paper);
+    border-radius: 16px 16px 16px 4px;
+    padding: 9px 12px;
+  }
+
+  .msg.me {
+    justify-content: flex-end;
+  }
+
+  .msg.me p {
+    background: var(--accent);
+    color: var(--on-accent);
+    border-radius: 16px 16px 4px 16px;
+    transition: background-color 0.4s;
+  }
+
+  .msg.new {
+    animation: nb-msg 0.6s var(--spring) both;
+  }
+
+  @keyframes nb-msg {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.96);
+    }
+  }
+
+  .typing-row.me {
+    flex-direction: row-reverse;
+  }
+
+  .typing {
+    display: flex;
+    gap: 4px;
+  }
+
+  .typing i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: nb-dot 1.2s ease-in-out infinite;
+  }
+
+  .typing i:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  .typing i:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  @keyframes nb-dot {
+    0%,
+    70%,
+    100% {
+      opacity: 0.3;
+      transform: none;
+    }
+    35% {
+      opacity: 1;
+      transform: translateY(-3px);
+    }
+  }
+
+  /* family marquee */
+  .family .section-head {
+    margin-bottom: 28px;
+  }
+
+  .marquee {
+    overflow: hidden;
+    padding-block: 8px;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  .track {
+    display: flex;
+    width: max-content;
+    animation: nb-scroll 70s linear infinite;
+  }
+
+  .track > .av {
+    margin-right: 18px;
+  }
+
+  .marquee.reverse .track {
+    animation-direction: reverse;
+    animation-duration: 80s;
+  }
+
+  .marquee:hover .track {
+    animation-play-state: paused;
+  }
+
+  @keyframes nb-scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .center {
+    display: flex;
+    justify-content: center;
+    margin-top: 28px;
+  }
+
+  /* features */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .feature {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 22px;
+    transition:
+      transform 0.4s var(--spring),
+      box-shadow 0.4s;
+  }
+
+  .feature:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px -24px color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+
+  .feature-art {
+    min-height: 136px;
+    border-radius: var(--r-md);
+    background: var(--tint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding: 12px;
+    line-height: 0;
+    transition: background-color 0.4s;
+  }
+
+  .feature-art.modes {
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .modes .tile {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    align-self: stretch;
+    background: #f7f5f2;
+  }
+
+  .modes .tile.dark {
+    background: #16161a;
+  }
+
+  .feature-art.glide {
+    color: var(--muted);
+  }
+
+  .feature h3 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .feature p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .feature code {
+    font: 0.92em var(--mono);
+  }
+
+  .big-num {
+    font: 800 56px/1 var(--display);
+    letter-spacing: -0.04em;
+    color: var(--accent-text);
+  }
+
+  .toggles {
+    display: grid;
+    gap: 6px;
+    line-height: 1;
+  }
+
+  .toggles button {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .toggles button[aria-pressed='true'] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  /* AI band */
+  .ai-band {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 36px;
+    align-items: center;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: var(--r-xl);
+    padding: clamp(24px, 4vw, 52px);
+  }
+
+  .ai-band h2 {
+    font-size: clamp(34px, 4.2vw, 54px);
+    font-weight: 800;
+  }
+
+  .ai-band p {
+    font-size: 18px;
+    color: color-mix(in srgb, var(--paper) 78%, transparent);
+    margin: 14px 0 24px;
+  }
+
+  .ai-band .btn-ghost {
+    background: transparent;
+    color: var(--paper);
+    border-color: color-mix(in srgb, var(--paper) 35%, transparent);
+  }
+
+  .ai-prompt {
+    background: color-mix(in srgb, var(--paper) 9%, transparent);
+    border-radius: var(--r-md);
+    overflow: hidden;
+  }
+
+  .ai-prompt .code-head {
+    color: color-mix(in srgb, var(--paper) 70%, transparent);
+  }
+
+  .ai-prompt pre {
+    margin: 0;
+    padding: 18px;
+    font: 14px/1.6 var(--mono);
+    white-space: pre-wrap;
+  }
+
+  /* closing */
+  .cta {
+    text-align: center;
+  }
+
+  .cta h2 {
+    font-size: clamp(44px, 6.4vw, 84px);
+    font-weight: 800;
+    margin-bottom: 26px;
+  }
+
+  .cta .actions {
+    justify-content: center;
+  }
+
+  .cta-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 40px;
+  }
+
+  .cta-row > span {
+    animation: nb-hop 3.2s var(--ease) infinite;
+    animation-delay: calc(var(--i) * 0.18s);
+  }
+
+  @keyframes nb-hop {
+    0%,
+    55%,
+    100% {
+      transform: none;
+    }
+    25% {
+      transform: translateY(-14px);
+    }
+  }
+
+  /* decorative avatars float past the hero's edge: never let them scroll the
+     page sideways (clip, unlike hidden, keeps the sticky picker working) */
+  .home main {
+    overflow-x: clip;
+  }
+
+  @media (max-width: 960px) {
+    /* minmax(0, …) lets the one column shrink below its content, such as the seed field */
+    .home .hero,
+    .scene,
+    .ai-band {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .home .hero {
+      min-height: 0;
+    }
+    .features {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
