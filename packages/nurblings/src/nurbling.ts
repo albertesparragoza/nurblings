@@ -191,17 +191,14 @@ const DEFAULT_TABLES: Tables = {
 const round = (x: number) => Math.round(x * 100) / 100
 const names = (list: Weighted) => list.map(([name]) => name)
 
-/** Most rerolls before a seed stops trying to leave the protected region. */
-const MAX_REROLLS = 8
-
 const MOOD_NAMES = MOODS.map(([m]) => m)
 
 // Every trait is always drawn, then overridden by a pinned option, so pinning
 // one trait never shifts any other random draw. The one deliberate exception:
 // a pinned shell re-pairs its accent and wear colour from the accents that
 // read on that shell, because the contrast rules come first.
-function draw(seed: string, attempt: number, opts: Pins, tables: Tables): Traits {
-  const key = (group: string) => stream(seed, attempt === 0 ? group : `${group}#${attempt}`)
+function draw(seed: string, opts: Pins, tables: Tables): Traits {
+  const key = (group: string) => stream(seed, group)
 
   // a design, then this seed's own small variation of it and its own plate pattern
   const b = key('body')
@@ -282,31 +279,6 @@ function colours(c: Rng, opts: Pins, tables: Tables, grain: number): Palette {
   }
 }
 
-const FLAGSHIP_SHELL = '#efe9df'
-const FLAGSHIP_ACCENT = '#ff2f6e'
-
-/** Squared RGB distance, integer multiplication only: the same answer in every engine. */
-export function colourDistance(a: string, b: string): number {
-  const x = Number.parseInt(a.slice(1), 16)
-  const y = Number.parseInt(b.slice(1), 16)
-  const dr = (x >> 16) - (y >> 16)
-  const dg = ((x >> 8) & 255) - ((y >> 8) & 255)
-  const db = (x & 255) - (y & 255)
-  return dr * dr + dg * dg + db * db
-}
-
-/**
- * The protected region around Nurbi: a near-ivory shell together with either a
- * near-hot-pink accent or Nurbi's quiet face (mouthless, level brow). A pale
- * shell alone is not a near copy, so it stays in the pool.
- */
-export function inProtectedRegion(t: Traits): boolean {
-  const shellNear = colourDistance(t.palette.shell, FLAGSHIP_SHELL) < 45 * 45
-  const accentNear = colourDistance(t.palette.accent, FLAGSHIP_ACCENT) < 80 * 80
-  const quietFace = t.mouth === 'none' && t.brow.shape === 'level' && Math.abs(t.brow.tilt) <= 1
-  return shellNear && (accentNear || quietFace)
-}
-
 function resolve(seed: string, opts: Pins, tables: Tables): Traits {
   if (opts.gen !== undefined && opts.gen !== 1) {
     throw new RangeError(`nurblings: unknown generation ${String(opts.gen)}`)
@@ -330,17 +302,9 @@ function resolve(seed: string, opts: Pins, tables: Tables): Traits {
   const { shell, ...unpinned } = opts
   const base = tables.themed ? { ...tables, shells: DEFAULT_TABLES.shells } : tables
   const baseOpts = tables.themed ? unpinned : opts
-  let t = draw(normal, 0, baseOpts, base)
-  for (let attempt = 1; attempt <= MAX_REROLLS && inProtectedRegion(t); attempt++) {
-    t = draw(normal, attempt, baseOpts, base)
-  }
-  if (tables.themed) {
-    t = { ...t, palette: colours(stream(normal, 'colour'), opts, tables, t.silhouette.grain) }
-  }
-  // The region can only be reached through Nurbi's quiet face unless a palette
-  // brings its own near-flagship accent; a wave brow always breaks the quiet face.
-  if (inProtectedRegion(t)) t = { ...t, brow: { ...t.brow, shape: 'wave' } }
-  return t
+  const t = draw(normal, baseOpts, base)
+  if (!tables.themed) return t
+  return { ...t, palette: colours(stream(normal, 'colour'), opts, tables, t.silhouette.grain) }
 }
 
 // A theme over the built-in designs and faces: only the colours change. Built

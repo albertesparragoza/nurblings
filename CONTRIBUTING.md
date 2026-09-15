@@ -100,8 +100,8 @@ changelog entries.
 New silhouettes, eyes, antennae, colours or extras ship as a new
 **generation** so that no existing avatar ever changes. Open a trait proposal
 issue before building one: every trait is reviewed against the family's
-design rules, and none may bring a seed closer to the flagship. Check your
-trait on the sheet (`pnpm sheet`) at every size, on light and dark pages, in
+design rules, and none may copy the flagship's exact design or colours. Check
+your trait on the sheet (`pnpm sheet`) at every size, on light and dark pages, in
 monochrome and as a favicon.
 
 ## Adding a theme
