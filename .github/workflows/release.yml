@@ -35,8 +35,28 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm publint
-      - run: pnpm changeset publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: 'true'
-      - run: git push --follow-tags
+      # pnpm packs (it turns workspace: ranges into real versions) and the npm
+      # CLI uploads: pnpm 11's own publish ignored provenance for 1.0.0, while
+      # npm signs a provenance statement and also speaks trusted publishing.
+      # Each package whose version is not on npm yet is published and tagged.
+      # No npm token: every package has this workflow as its trusted publisher,
+      # so npm authenticates the run through GitHub's OIDC token (id-token:
+      # write above) and signs provenance with it.
+      - name: Publish packages not yet on npm
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/pack"
+          mkdir -p "$out"
+          for dir in packages/*/; do
+            name=$(node -p "require('./${dir}package.json').name")
+            version=$(node -p "require('./${dir}package.json').version")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "$name@$version is already on npm"
+              continue
+            fi
+            (cd "$dir" && pnpm pack --pack-destination "$out" >/dev/null)
+            tarball="$out/$(echo "${name#@}" | tr / -)-$version.tgz"
+            npm publish "$tarball" --provenance --access public
+            git tag "$name@$version"
+          done
+      - run: git push origin --tags

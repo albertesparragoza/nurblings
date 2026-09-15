@@ -157,7 +157,14 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm --filter site build
+      - name: Build the site
+        # analytics keys are public identifiers, kept as repository variables;
+        # with none set, the site ships no analytics at all
+        env:
+          PUBLIC_POSTHOG_KEY: ${{ vars.PUBLIC_POSTHOG_KEY }}
+          PUBLIC_POSTHOG_HOST: ${{ vars.PUBLIC_POSTHOG_HOST }}
+          PUBLIC_SENTRY_KEY: ${{ vars.PUBLIC_SENTRY_KEY }}
+        run: pnpm --filter site build
       # A push to develop or main publishes what was just built: main to
       # production, develop to its preview address. Pull requests build the site
       # but never deploy, and never see these secrets.
