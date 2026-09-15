@@ -1,0 +1,22 @@
+# Cloudflare Pages response headers. Astro copies public/ to the build root,
+# where Pages reads this file.
+
+/*
+  # a browser must not guess a response's type from its bytes
+  X-Content-Type-Options: nosniff
+  # the full URL to ourselves, only the origin cross-site, nothing over plain HTTP
+  Referrer-Policy: strict-origin-when-cross-origin
+  # nothing here is meant to be framed by another site
+  X-Frame-Options: SAMEORIGIN
+  # no device capabilities: the site needs none, so a dependency cannot ask
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), midi=(), serial=(), bluetooth=(), interest-cohort=()
+
+# No Content-Security-Policy yet, on purpose: the pages run inline scripts (the
+# theme switch, the playground) and, with keys set, PostHog and Sentry loaders.
+# A policy loose enough for all of that blocks little; a strict one needs the
+# playground and analytics exercised against it first.
+
+# Astro's build output has content hashes in its filenames, so it can be
+# cached forever. Everything else keeps the platform default.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
