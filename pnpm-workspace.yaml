@@ -7,3 +7,6 @@ packages:
 minimumReleaseAge: 1440
 allowBuilds:
   esbuild: true
+  # Wrangler's local runtime: CI only uploads the built site, so its install
+  # script (a binary download) never needs to run
+  workerd: false

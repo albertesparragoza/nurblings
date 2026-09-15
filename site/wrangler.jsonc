@@ -1,0 +1,9 @@
+{
+  // Cloudflare Pages, direct upload from CI (the site job in ci.yml). Auth comes
+  // from the CLOUDFLARE_API_TOKEN secret, the account from CLOUDFLARE_ACCOUNT_ID.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nurblings",
+  "compatibility_date": "2026-09-01",
+  // the static Astro build; `wrangler pages deploy` uploads this folder
+  "pages_build_output_dir": "./dist"
+}
