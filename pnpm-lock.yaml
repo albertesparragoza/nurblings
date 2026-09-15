@@ -91,7 +91,7 @@ importers:
   packages/astro:
     dependencies:
       nurblings:
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../nurblings
     devDependencies:
       astro:
@@ -101,7 +101,7 @@ importers:
   packages/element:
     dependencies:
       nurblings:
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../nurblings
     devDependencies:
       happy-dom:
@@ -117,7 +117,7 @@ importers:
   packages/react:
     dependencies:
       nurblings:
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../nurblings
     devDependencies:
       '@testing-library/react':
@@ -142,7 +142,7 @@ importers:
   packages/vue:
     dependencies:
       nurblings:
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../nurblings
     devDependencies:
       '@vue/server-renderer':

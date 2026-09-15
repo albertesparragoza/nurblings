@@ -1,6 +1,6 @@
 {
   "name": "@nurblings/astro",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Astro component for nurblings: deterministic avatars, any string in, a small curious creature out.",
   "license": "MIT",
   "author": "Albert Esparragoza",
@@ -41,7 +41,7 @@
     "astro": ">=4"
   },
   "dependencies": {
-    "nurblings": "workspace:*"
+    "nurblings": "workspace:^"
   },
   "devDependencies": {
     "astro": "^7.3.2"

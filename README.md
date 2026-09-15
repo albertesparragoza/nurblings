@@ -22,9 +22,6 @@ The same string always hatches the same Nurbling. Every one is a relative of
 **Nurbi**, a character whose two antennae are bezier control handles: the tools
 that turn an intention into a curve. Your handle becomes its handles.
 
-> [!NOTE]
-> Pre-release. The API is settled and the first version is on its way to npm.
-
 ## Install
 
 | Framework | Package | Install |
