@@ -11,9 +11,9 @@ Albert Esparragoza:
 - the flagship character Nurbi and its artwork, which `nurbi()` in
   `nurblings/nurbi` returns
 
-Every other avatar the library generates is public domain under CC0. The
-generator never produces Nurbi's look, so no generated avatar can infringe
-it.
+Every avatar the library generates is public domain under CC0. Nurbi's exact
+body design and colours are not among the generator's choices; only `nurbi()`
+returns his artwork.
 
 What is fine without asking:
 

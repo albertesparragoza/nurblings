@@ -7,7 +7,7 @@ body:
       value: |
         New traits ship as a new generation, so no existing avatar ever changes.
         Every proposal is reviewed against the family's design rules before
-        anyone builds it, and none may bring a seed closer to the flagship.
+        anyone builds it, and none may copy the flagship's exact design or colours.
   - type: textarea
     id: trait
     attributes:

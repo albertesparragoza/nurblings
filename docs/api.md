@@ -98,7 +98,7 @@ From `nurblings/nurbi`: Nurbi, the family's flagship character, as the stored
 drawing. It takes the rendering options: `size`, `background`, `title`,
 `decorative`, `animate`, `frame` and `transition`. He has an entry of his own
 so no other import carries his drawing. The seed `nurbi` is an ordinary
-Nurbling, and the generator keeps every seed away from his look.
+Nurbling.
 
 ## `createNurblings(config)`
 
@@ -196,8 +196,8 @@ passing `gen`.
 ## Licence of generated avatars
 
 The code is MIT. Every avatar it generates is dedicated to the public domain
-under CC0: use them anywhere, commercially or not, without attribution. The
-generator never produces Nurbi's look, so no generated avatar can resemble the
-flagship. The one exception is Nurbi himself, the stored drawing that
+under CC0: use them anywhere, commercially or not, without attribution.
+Nurbi's exact body design and colours are not among the generator's choices.
+The one exception is Nurbi himself, the stored drawing that
 `nurbi()` from `nurblings/nurbi` returns: the names Nurbi and Nurblings and
 that artwork are reserved, see [TRADEMARKS.md](../TRADEMARKS.md).
