@@ -1,6 +1,6 @@
 {
   "name": "@nurblings/element",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "A <nurbling-avatar> custom element: deterministic avatars in plain HTML, Svelte, Solid, Angular or any CMS.",
   "license": "MIT",
   "author": "Albert Esparragoza",

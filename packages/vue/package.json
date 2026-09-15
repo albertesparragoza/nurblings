@@ -1,6 +1,6 @@
 {
   "name": "@nurblings/vue",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Vue 3 component for nurblings: deterministic avatars, any string in, a small curious creature out.",
   "license": "MIT",
   "author": "Albert Esparragoza",
