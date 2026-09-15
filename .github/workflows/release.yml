@@ -39,9 +39,10 @@ jobs:
       # CLI uploads: pnpm 11's own publish ignored provenance for 1.0.0, while
       # npm signs a provenance statement and also speaks trusted publishing.
       # Each package whose version is not on npm yet is published and tagged.
+      # No npm token: every package has this workflow as its trusted publisher,
+      # so npm authenticates the run through GitHub's OIDC token (id-token:
+      # write above) and signs provenance with it.
       - name: Publish packages not yet on npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -euo pipefail
           out="$RUNNER_TEMP/pack"
