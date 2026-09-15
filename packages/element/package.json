@@ -42,7 +42,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "nurblings": "workspace:*"
+    "nurblings": "workspace:^"
   },
   "devDependencies": {
     "happy-dom": "^20.14.3"
