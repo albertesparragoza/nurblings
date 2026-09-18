@@ -13,6 +13,7 @@
     "typecheck": "pnpm -r --filter \"./packages/*\" typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
+    "bench": "tsup scripts/bench.ts --format esm --out-dir wip/.bench --silent && node wip/.bench/bench.js",
     "coverage": "vitest run --coverage",
     "publint": "pnpm -r --filter \"./packages/*\" exec publint",
     "attw": "pnpm -r --filter \"./packages/*\" --filter \"!@nurblings/astro\" exec attw --pack . --profile esm-only",
