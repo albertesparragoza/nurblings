@@ -2,9 +2,11 @@
 
 ## Reporting a vulnerability
 
-Report vulnerabilities privately through GitHub: open the repository's
-**Security** tab and choose **Report a vulnerability**. Please do not open a
-public issue for anything exploitable.
+Report vulnerabilities privately through GitHub:
+[open a draft advisory](https://github.com/albertesparragoza/nurblings/security/advisories/new).
+The same form is reachable from the repository's **Security** tab under
+**Report a vulnerability**. Please do not open a public issue for anything
+exploitable.
 
 Include what you found, how to reproduce it, and what an attacker could do
 with it. You will get an acknowledgement within seven days.
