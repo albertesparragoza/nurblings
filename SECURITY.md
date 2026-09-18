@@ -52,7 +52,7 @@ Every push and pull request runs, besides lint, types and tests:
 - `pnpm audit` (high and above) and OSV-Scanner on the lockfile
 - gitleaks for committed secrets
 
-Once the repository is public, CodeQL and the OpenSSF Scorecard run as well.
+CodeQL and the OpenSSF Scorecard run too, reporting to GitHub code scanning.
 A newly published dependency version waits a day before installs pick it up,
 and only esbuild may run an install script.
 
