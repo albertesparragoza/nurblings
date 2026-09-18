@@ -47,6 +47,18 @@ describe('<nurbling-avatar>', () => {
     expect(el.innerHTML).toBe(parsed(nurbling('grace', { size: 48 })))
   })
 
+  it('does not rewrite the DOM when an attribute is set to what it already was', () => {
+    const el = avatar({ seed: 'ada', size: '48' })
+    const svg = el.querySelector('svg')
+    // a framework re-render sets every attribute again, usually unchanged
+    el.setAttribute('seed', 'ada')
+    el.setAttribute('size', '48')
+    // the same node, so the CSS animations were never restarted
+    expect(el.querySelector('svg')).toBe(svg)
+    el.setAttribute('seed', 'grace')
+    expect(el.querySelector('svg')).not.toBe(svg)
+  })
+
   it('renders nothing until it has a seed', () => {
     const el = avatar({ size: '48' })
     expect(el.innerHTML).toBe('')

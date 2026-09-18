@@ -118,7 +118,17 @@ export interface SlotContext {
 
 /**
  * Changes one part, built in or added: `false` drops it; a function replaces
- * it, or wraps it by calling `base()`. Output must stay id-free.
+ * it, or wraps it by calling `base()`.
+ *
+ * **The string you return is written into the SVG as it is.** It is never
+ * escaped, because escaping it would print the markup instead of drawing it.
+ * A slot is therefore trusted code, and this boundary is yours:
+ *
+ * - build markup from your own code, `ctx.anchors` and `ctx.colours`
+ * - never build it from user input
+ * - put text through `ctx.esc`, and a colour bound for a `style` attribute
+ *   through `cssColour`
+ * - keep it free of `id` attributes, so several avatars can share a page
  */
 export type Slot = false | ((ctx: SlotContext, base: () => string) => string)
 
@@ -131,6 +141,7 @@ export interface Part {
   after?: string
   /** draw at 32 px and below too; off by default, like the built-in mouth and extras */
   small?: boolean
+  /** returns raw markup, written into the SVG as it is: see the note on `Slot` */
   draw(ctx: SlotContext): string
 }
 
@@ -143,6 +154,7 @@ export interface Part {
 export interface Variant {
   /** how often the seed picks it, relative to the rest of the list; defaults to 1 */
   weight?: number
+  /** returns raw markup, written into the SVG as it is: see the note on `Slot` */
   draw?: (ctx: SlotContext) => string
 }
 
