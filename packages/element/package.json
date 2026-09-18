@@ -45,6 +45,6 @@
     "nurblings": "workspace:^"
   },
   "devDependencies": {
-    "happy-dom": "^20.14.3"
+    "happy-dom": "^20.14.5"
   }
 }

@@ -47,6 +47,6 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "devDependencies": {
-    "happy-dom": "^20.14.3"
+    "happy-dom": "^20.14.5"
   }
 }
