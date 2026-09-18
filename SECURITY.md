@@ -2,9 +2,11 @@
 
 ## Reporting a vulnerability
 
-Report vulnerabilities privately through GitHub: open the repository's
-**Security** tab and choose **Report a vulnerability**. Please do not open a
-public issue for anything exploitable.
+Report vulnerabilities privately through GitHub:
+[open a draft advisory](https://github.com/albertesparragoza/nurblings/security/advisories/new).
+The same form is reachable from the repository's **Security** tab under
+**Report a vulnerability**. Please do not open a public issue for anything
+exploitable.
 
 Include what you found, how to reproduce it, and what an attacker could do
 with it. You will get an acknowledgement within seven days.
@@ -50,7 +52,7 @@ Every push and pull request runs, besides lint, types and tests:
 - `pnpm audit` (high and above) and OSV-Scanner on the lockfile
 - gitleaks for committed secrets
 
-Once the repository is public, CodeQL and the OpenSSF Scorecard run as well.
+CodeQL and the OpenSSF Scorecard run too, reporting to GitHub code scanning.
 A newly published dependency version waits a day before installs pick it up,
 and only esbuild may run an install script.
 
