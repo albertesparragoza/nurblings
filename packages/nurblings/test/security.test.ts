@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest'
 import { nurbi } from '../src/nurbi'
 import { createNurblings, nurbling, renderTraits, traits } from '../src/nurbling'
+import { cssColour } from '../src/svg'
 import { palette, renderNurbling, THEMES, themed, themeOf } from '../src/themes'
 import { transitionName } from '../src/transition'
 import type { Traits } from '../src/types'
@@ -204,6 +205,41 @@ describe('theme names and colours', () => {
     expect(() => createNurblings({ theme: { ...theme, darkBackdrops: [s as never] } })).toThrow(
       RangeError,
     )
+  })
+})
+
+describe('colours reaching CSS', () => {
+  // The renderer writes two palette colours into a `style` attribute in auto
+  // mode. `esc` would be the wrong guard: it escapes XML, and a `;` inside a
+  // CSS declaration needs no quote to close it and open another.
+  it.each([
+    '#fff',
+    '#12345',
+    '#1234567',
+    'red',
+    'rgb(0,0,0)',
+    '#000000;background:url(javascript:alert(1))',
+    '#000000"onload="alert(1)',
+    'var(--x)',
+    '',
+  ])('refuses %j', (bad) => {
+    expect(() => cssColour(bad)).toThrow(RangeError)
+  })
+
+  it('accepts a six-digit hex in either case', () => {
+    expect(cssColour('#1b1b1b')).toBe('#1b1b1b')
+    expect(cssColour('#AABBCC')).toBe('#AABBCC')
+  })
+
+  it('writes only hex colours into the auto-mode style attribute', () => {
+    for (const mode of ['light', 'dark', 'auto'] as const) {
+      const svg = nurbling('ada', { mode })
+      const style = /\sstyle="([^"]*)"/.exec(svg)?.[1] ?? ''
+      // --nb-g and --nb-c are the two colour properties; the rest are motion timings
+      for (const match of style.matchAll(/--nb-[gc]:([^;]*)/g)) {
+        expect(match[1]).toMatch(/^#[0-9a-fA-F]{6}$/)
+      }
+    }
   })
 })
 
