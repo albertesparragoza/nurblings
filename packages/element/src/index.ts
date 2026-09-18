@@ -50,6 +50,16 @@ export class NurblingElement extends Base {
   static observedAttributes = ['seed', 'animate', 'decorative', 'theme', ...TEXT, ...NUMBER]
 
   #renderer: NurblingRenderer | undefined
+  /**
+   * The last markup written. A framework that re-renders sets every attribute
+   * again, usually to the value it already had; without this, each of those
+   * rewrote `innerHTML` and restarted the CSS animations for nothing.
+   *
+   * Rendering stays synchronous on purpose. Coalescing several attribute
+   * changes into one microtask would save a little work and break the contract
+   * a custom element is expected to keep: set an attribute, read the DOM.
+   */
+  #drawn: string | undefined
 
   constructor() {
     super()
@@ -94,7 +104,10 @@ export class NurblingElement extends Base {
     if (!this.isConnected) return
     const seed = this.getAttribute('seed')
     if (seed === null) {
-      this.replaceChildren()
+      if (this.#drawn !== undefined) {
+        this.#drawn = undefined
+        this.replaceChildren()
+      }
       return
     }
     const opts: Record<string, unknown> = {}
@@ -112,7 +125,12 @@ export class NurblingElement extends Base {
     const decorative = this.getAttribute('decorative')
     if (decorative !== null && decorative !== 'false') opts.decorative = true
     const theme = (this.getAttribute('theme') || undefined) as ThemeName | undefined
-    this.innerHTML = renderNurbling(this.#renderer, seed, opts, theme)
+    const svg = renderNurbling(this.#renderer, seed, opts, theme)
+    // identical markup means the DOM is already right: rewriting it would only
+    // restart the animations
+    if (svg === this.#drawn) return
+    this.#drawn = svg
+    this.innerHTML = svg
   }
 }
 
