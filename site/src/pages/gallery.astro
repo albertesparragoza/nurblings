@@ -46,8 +46,11 @@ const crowd = [
 ]
 const photoFor = (id: string) => {
   const theme = LIBRARY[id as ThemeName]
-  const shellOf = theme
-    ? (name: string) => createNurblings({ theme }).traits(name).palette.shell
+  // build the instance once per theme, not once per name: createNurblings
+  // validates the config and builds its colour tables on every call
+  const instance = theme ? createNurblings({ theme }) : undefined
+  const shellOf = instance
+    ? (name: string) => instance.traits(name).palette.shell
     : (name: string) => traits(name).palette.shell
   const picked: string[] = []
   const seen = new Set<string>()
