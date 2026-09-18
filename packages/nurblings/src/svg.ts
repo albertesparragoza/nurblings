@@ -522,6 +522,28 @@ export const esc = (s: string) =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string,
   )
 
+/**
+ * A colour on its way into CSS. `esc` is the wrong tool here: it escapes XML
+ * syntax, and a CSS declaration is not XML. Escaping a quote would still leave
+ * `;` free to close the declaration and open another, so a colour reaching a
+ * `style` attribute is checked for shape instead of escaped.
+ *
+ * Every palette value is already a six-digit hex by the time it arrives: the
+ * built-in tables are literals, `hexes()` checks a config's and a theme's
+ * colours, `checkTraits()` checks traits handed in from outside, and `shade()`
+ * only ever emits `#rrggbb`. That invariant is spread across four call sites
+ * though, so a new theme or family path could quietly drop it. This asserts it
+ * where it actually matters, and gives static analysis something to see.
+ */
+export const cssColour = (value: string): string => {
+  if (typeof value !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(value)) {
+    throw new RangeError(
+      `nurblings: a colour reaching CSS must be a 6-digit hex, got ${String(value).slice(0, 20)}`,
+    )
+  }
+  return value
+}
+
 // Inline SVG styles apply to the whole page, so every rule is scoped by a layer
 // class on the avatar's own root: animated and still avatars can share a page,
 // and this text is identical in every avatar. Timing comes from per-avatar
@@ -733,7 +755,9 @@ export function render(t: Traits, opts: RenderOptions = {}, extend?: Extension):
     .join('')
   const drawn = live ? `<g class="nb-f">${figure}</g>` : figure
   const vb = `${n(box.x)} ${n(box.y)} ${n(box.s)} ${n(box.s)}`
-  const vars = auto ? `--nb-g:${p.backgroundDark};--nb-c:${antenna(true)}` : ''
+  const vars = auto
+    ? `--nb-g:${cssColour(p.backgroundDark)};--nb-c:${cssColour(antenna(true))}`
+    : ''
   const style = [live?.style, vars, clipFor(opts.background)].filter(Boolean).join(';')
   const root = `class="nb${live?.cls ?? ''}${auto ? ' nb-auto' : ''}"${style ? ` style="${style}"` : ''}${tagFor(opts)}`
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${n(size)}" height="${n(size)}" ${named} ${root}>${live ? MOTION : ''}${auto ? AUTO : ''}${out.style ?? ''}${heading}${out.back}${drawn}</svg>`
