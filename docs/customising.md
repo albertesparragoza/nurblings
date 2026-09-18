@@ -34,12 +34,14 @@ avatars.traits('user-42', { silhouette: 'robot' }) // custom names are typed
   readable eyes and at least two such accents. Setup throws a `RangeError`
   naming the colour when that is not possible, so a palette that would give
   unreadable faces fails before a single avatar renders.
-- **Slots and parts** change or add drawn parts: see
-  [Extending parts](#extending-parts). Their markup goes into the SVG as it is,
-  so build it from your own code, the anchors and the colours, never from user
-  input, and put any text from `props` through `ctx.esc`. Keep it free of `id`
-  attributes, so many avatars can share a page. Treat what `ctx` holds as
-  read-only, and return a string.
+- **Slots and parts are trusted code.** They change or add drawn parts: see
+  [Extending parts](#extending-parts). Their markup goes into the SVG **exactly
+  as it is** and is never escaped, because escaping it would print the markup
+  instead of drawing it. That makes the boundary yours: build markup from your
+  own code, the anchors and the colours, never from user input. Put any text
+  from `props` through `ctx.esc`, and any colour bound for a `style` attribute
+  through `cssColour`. Keep it free of `id` attributes, so many avatars can
+  share a page. Treat what `ctx` holds as read-only, and return a string.
 - **Custom body designs** need finite numbers, a positive `hw` and `width`, a
   known `plates` zone, and at most 12 plate rows and 12 columns. Setup throws a
   `RangeError` naming the design and the field otherwise.
