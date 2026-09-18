@@ -677,15 +677,36 @@ export interface Scene {
   built: Record<SlotName, () => string>
 }
 
-/** The parts to draw: the still backdrop layer, then the figure's parts in paint order. */
+/**
+ * The parts to draw: the still backdrop layer, then the figure's parts in paint
+ * order.
+ *
+ * TRUSTED SINK. Every string here is written into the SVG exactly as given.
+ * That is the point of an extension, and it cannot be escaped without breaking
+ * the API: a part returns markup, and escaping markup would print it instead of
+ * drawing it. The renderer therefore treats an extension as trusted code, on the
+ * same footing as the rest of the application.
+ *
+ * So whoever writes an extension owns this boundary. Build markup from your own
+ * code, the anchors and the colours. Never build it from user input. Put any
+ * text through `esc`, and any colour heading for a `style` attribute through
+ * `cssColour`. Keep the output free of `id` attributes so several avatars can
+ * share a page.
+ */
 export interface Drawn {
+  /** raw markup, written as given; see the note on `Drawn` */
   back: string
+  /** each part's raw markup by name, written as given; see the note on `Drawn` */
   figure: readonly (readonly [string, string])[]
-  /** CSS the parts need, in a style element of its own */
+  /** CSS the parts need, in a style element of its own; written as given */
   style?: string | undefined
 }
 
-/** Draws the parts of a scene in an order of its own: see `extend.ts`. */
+/**
+ * Draws the parts of a scene in an order of its own: see `extend.ts`.
+ *
+ * An extension is trusted code and its output is not sanitised: see `Drawn`.
+ */
 export type Extension = (scene: Scene) => Drawn
 
 /**
